@@ -1,0 +1,425 @@
+<include file="Public:header2" />
+
+<section id="right">
+  <div class="container mw1920 p-4" id="pay_page_div">
+    <div class="navi1">
+      <div class="menu-sub-btn">
+        <ol class="tabs-menu">
+          <li class="subbtn nav-item">
+            <a href="{:U('SchedulePay/pay')}" class="">待付薪資</a>
+          </li>
+          <li class="subbtn nav-item">
+            <a href="{:U('SchedulePay/pay_page')}" class="active">付款單</a>
+          </li>
+          <li></li>
+        </ol>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center pt-1 pb-1">
+      <div>
+        生成日期區間:
+        <input class="w100 mr-2" v-model="search_params.date_s" type="date" style="max-width: 120px;"> ~
+        <input class="w100 mr-2" v-model="search_params.date_e" type="date" style="max-width: 120px;">
+      </div>
+      <input class="w100 mr-2" v-model="search_params.mens_keyword" placeholder="姓名/別稱/手機/電話/信箱" style="max-width: 300px;">
+      <select class="mr-2" v-model="search_params.comfirm_status" @change="search_schedule_pay_page">
+        <option value="">核可狀態</option>
+        <option value="0">未核可</option>
+        <option value="1">已核可</option>
+      </select>
+      <div>
+        核可日期區間:
+        <input class="w100 mr-2" v-model="search_params.comfirm_time_s" type="date" style="max-width: 120px;"> ~
+        <input class="w100 mr-2" v-model="search_params.comfirm_time_e" type="date" style="max-width: 120px;">
+      </div>
+      <a href="###" class="btn addbtn mr-2" @click="search_schedule_pay_page">搜尋</a>
+      <a href="javascript:location.reload()" class="btn btn-light">清除搜尋</a>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table edit_table mb-2" style="min-width: 1275px;">
+        <thead>
+          <tr>
+            <th style="width: 75px;" valign="middle">
+              <input type="checkbox" id="seleall" @click="select_all($event)" />
+              <label for="seleall">序號</label>
+            </th>
+            <th style="min-width: 100px;">姓名</th>
+            <th style="min-width: 100px;">別稱</th>
+            <th style="min-width: 100px;" class="text-right">時新總計</th>
+            <th style="min-width: 100px;" class="text-right">獎懲調薪</th>
+            <th style="min-width: 100px;" class="text-right">保險自付額</th>
+            <th style="min-width: 100px;" class="text-right">應付薪資</th>
+            <th style="min-width: 100px;">生成日期</th>
+            <th style="min-width: 100px;">核可日期</th>
+            <th style="min-width: 100px;">操作</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="(pay, pay_index) in pay_pages">
+            <td>
+              <input type="checkbox" :id="'sele_'+pay.id" 
+                     :value="+pay.id" v-model="pay_selected"/>
+              <label :for="'sele_'+pay.id" v-text="pay_index+1"></label>
+            </td>
+            <td><span v-text="pay.name"></span></td>
+            <td><span v-text="pay.ename"></span></td>
+            <td class="text-right"><span v-text="pay.pay_total"></span></td>
+            <td class="text-right"><span v-text="pay.change_num"></span></td>
+            <td class="text-right">
+              <span v-if="pay.comfirm_time" v-text="pay.insurance_personal_pay"></span>
+              <input v-else type="number" class="text-right" v-model="pay.insurance_personal_pay"
+                     @blur="update_pay_page(pay_index)">
+            </td>
+            <td class="text-right"><span v-text="pay.pay_sum"></span></td>
+            <td><span v-text="pay.create_time_format.substr(0, 16)"></span></td>
+            <td>
+              <span v-if="pay.comfirm_time" v-text="pay.comfirm_time_format.substr(0, 10)"></span>
+              <input v-else="pay.comfirm_time" type="date" @change="confirm_pay_page_one_with_date(pay.id, $event)">
+            </td>
+            <td>
+              <button type="button" class="btn btn-primary mr-4" @click="view_detail(pay_index)">
+                <i aria-hidden="true" class="fas fa-eye"></i>
+              </button>
+              <if condition="$access['schedulepay_edi'] eq '1'">
+                <button class="sendbtn btn" @click="confirm_pay_page_one(pay.id)" v-if="!pay.comfirm_time">
+                  核可付款單
+                </button>
+              </if>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">分頁統計</td>
+            <td class="text-right" v-text="count_data(pay_pages, 'pay_total')"></td>
+            <td class="text-right" v-text="count_data(pay_pages, 'change_num')"></td>
+            <td class="text-right" v-text="count_data(pay_pages, 'insurance_personal_pay')"></td>
+            <td class="text-right" v-text="count_data(pay_pages, 'pay_sum')"></td>
+            <td colspan="3"></td>
+          </tr>
+          <tr>
+            <td colspan="3">搜尋統計</td>
+            <td class="text-right" v-text="count_data(all, 'pay_total')"></td>
+            <td class="text-right" v-text="count_data(all, 'change_num')"></td>
+            <td class="text-right" v-text="count_data(all, 'insurance_personal_pay')"></td>
+            <td class="text-right" v-text="count_data(all, 'pay_sum')"></td>
+            <td colspan="3"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="send">
+      <if condition="$access['schedulepay_edi'] eq '1'">
+        <div>
+          <!-- <button class="sendbtn btn mr-2" @click="comfirm_pay_page_patch">批次核可付款單</button> -->
+          <span class="mr-2">
+            批次付款日期：<input type="date" @change="comfirm_pay_page_batch" v-model="date_batch">
+          </span>
+          <button class="btn btn-secondary mr-2" @click="count_banknote_num">計算鈔票數</button>
+          <span class="mr-2">總金額：<span v-text="count.total"></span></span>
+          <span class="mr-2">千元：<span v-text="count.thousands"></span></span>
+          <span class="mr-2">百元：<span v-text="count.hundreds"></span></span>
+          <span class="mr-2">零錢：<span v-text="count.change"></span></span>
+        </div>
+      </if>
+      <div class="mt-2">
+        <crm_index_pages 
+          :change_page="change_page"
+          :current_page="search_params.current_page" 
+          :count_of_items="count_of_items" 
+          :count_of_page="search_params.count_of_page"
+        ></crm_index_pages>
+      </div>
+    </div>
+
+    <a id="pay_page_detail_btn" data-toggle="modal" data-target="#pay_page_detail"></a>
+    <div class="large_modal modal fade" id="pay_page_detail" tabindex="-1" role="dialog"
+        aria-labelledby="pay_page_detailTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div class="modal-header">
+            <h5 class="modal-title" id="pay_page_detailTitle">付款單詳細內容</h5>
+          </div>
+          <div class="modal-body">
+            <div class="edit_form">
+              <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1000px;">
+                <thead class="edit_table_thead">
+                  <tr class="edit_table tr">
+                    <th style="width: 80px;" valign="middle" class="text-left">日期</th>
+                    <th style="width: 100px;" valign="middle" class="text-left">日程名稱</th>
+                    <th style="width: 150px;" valign="middle" class="text-left">日程地點</th>
+                    <th style="width: 60px;" valign="middle" class="text-left">工種</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">總時數</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">時薪</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">正規工時</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">加班時薪</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">加班工時</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">獎懲調薪</th>
+                    <th style="width: 60px;" valign="middle" class="text-right">應付薪資</th>
+                    <th style="width: 150px;" valign="middle" class="text-left">備註</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(detail, detail_index) in pay_page_detail">
+                    <td valign="middle" class="text-left" v-text="detail.date">日期</td>
+                    <td valign="middle" class="text-left" v-text="detail.name">日程名稱</td>
+                    <td valign="middle" class="text-left" v-text="detail.location">日程地點</td>
+                    <td valign="middle" class="text-left" v-text="detail.user_skill_name">工種</td>
+                    <td valign="middle" class="text-right" v-text="count_hour(detail)">總時數</td>
+                    <td valign="middle" class="text-right" v-text="detail.user_hour_pay">時薪總計</td>
+                    <td valign="middle" class="text-right" v-text="detail.do_hour">時薪總計</td>
+                    <td valign="middle" class="text-right" v-text="detail.user_hour_pay_over">時薪總計</td>
+                    <td valign="middle" class="text-right" v-text="detail.do_hour_overtime">時薪總計</td>
+                    <td valign="middle" class="text-right" v-text="detail.change_num">獎懲調薪</td>
+                    <td valign="middle" class="text-right" v-text="count_pay_total(detail)">應付薪資</td>
+                    <td valign="middle" class="text-left" v-text="detail.note">備註</td>
+                  </tr>
+                  <tr v-if="pay_page_detail.length>0">
+                    <td valign="middle" class="text-right" colspan="10">小計</td>
+                    <td valign="middle" class="text-right" v-text="count_pay_total_all()"></td>
+                    <td valign="middle" class="text-left"></td>
+                  </tr>
+                  <tr v-if="pay_page_detail.length>0">
+                    <td valign="middle" class="text-right" colspan="10">保險自付額</td>
+                    <td valign="middle" class="text-right" v-text="insurance_personal_pay_detail"></td>
+                    <td valign="middle" class="text-left"></td>
+                  </tr>
+                  <tr v-if="pay_page_detail.length>0">
+                    <td valign="middle" class="text-right" colspan="10"><b>總計</b></td>
+                    <td valign="middle" class="text-right"><b v-text="count_pay_total_all() - insurance_personal_pay_detail"></b></td>
+                    <td valign="middle" class="text-left"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+<script type="text/javascript">
+  const count_empty = {
+    total: 0,
+    thousands: 0,
+    hundreds: 0,
+    change: 0,
+  };
+  const pay_page_data = {
+    pay_selected: [],
+    date_batch: '',
+
+    count_of_items: 0,
+    search_params: {
+      current_page: 1, 
+      count_of_page: 20,
+      date_s: '',
+      date_e: '',
+      mens_keyword: '',
+      comfirm_status: '0',
+      comfirm_time_s: '',
+      comfirm_time_e: '',
+    },
+    pay_pages: [],
+    all: [],
+
+    count: JSON.parse(JSON.stringify(count_empty)),
+    
+    insurance_personal_pay_detail: 0,
+    pay_page_detail:[],
+  };
+  const pay_pageVM = new Vue({
+    el: '#pay_page_div',
+    data: pay_page_data,
+    methods: {
+      change_page: function(page){ /*配合分頁元件*/
+        pay_pageVM.search_params.current_page = page;
+        pay_pageVM.get_schedule_pay_page();
+      },
+      search_schedule_pay_page: function(){
+        pay_pageVM.search_params.current_page = 1;
+        pay_pageVM.get_schedule_pay_page();
+      },
+      get_schedule_pay_page: function(){
+        $('#seleall').prop('checked', false);
+        pay_pageVM.pay_selected = [];
+        pay_pageVM.pay_pages = [];
+        pay_pageVM.all = [];
+        data = JSON.parse(JSON.stringify(pay_pageVM.search_params));
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('SchedulePay/get_schedule_pay_page')}",
+          success:function(res){
+            pay_pageVM.pay_pages = res.list;
+            pay_pageVM.all = res.all;
+            pay_pageVM.count_of_items = res.count_of_items;
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      
+      update_pay_page: function(pay_index){
+        pay_page = JSON.parse(JSON.stringify(pay_pageVM.pay_pages[pay_index]));
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: { 
+            id: pay_page.id,
+            data: {
+              insurance_personal_pay: pay_page.insurance_personal_pay,
+            },
+          },
+          url: "{:u('SchedulePay/update_pay_page')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              pay_pageVM.get_schedule_pay_page();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();            
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      select_all: function($event){
+        pay_pageVM.pay_selected = [];
+
+        var select_all = $($event.currentTarget);
+        if(select_all.prop('checked')==true){
+          for (var i = 0; i < pay_pageVM.pay_pages.length; i++) {
+            pay_pageVM.pay_selected.push(pay_pageVM.pay_pages[i].id);
+          }
+        }
+      },
+      confirm_pay_page_one: function(id){
+        pay_pageVM.confirm_pay_page([id]);
+      },
+      confirm_pay_page_one_with_date: function(id, $event){
+        date = $($event.currentTarget).val();
+        if(!date){
+          Vue.toasted.show('請選擇核可日期', { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          return;
+        }
+        pay_pageVM.confirm_pay_page([id], date);
+      },
+      comfirm_pay_page_batch: function(){
+        const ids = JSON.parse(JSON.stringify(pay_pageVM.pay_selected));
+        date = this.date_batch;
+        if(!date){
+          Vue.toasted.show('請選擇核可日期', { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          return;
+        }
+        this.date_batch = '';
+        pay_pageVM.confirm_pay_page(ids, date);
+      },
+      confirm_pay_page: function(ids=[], date=''){
+        if(ids.length==0){ Vue.toasted.show('請選擇對象', { duration: 1500, className: ["toasted-primary", "bg-danger"] });return; }
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: { 
+            ids: ids,
+            date: date,
+          },
+          url: "{:u('SchedulePay/confirm_pay_page')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              pay_pageVM.get_schedule_pay_page();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();            
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      
+      count_banknote_num: function(){
+        const ids = JSON.parse(JSON.stringify(pay_pageVM.pay_selected));
+        if(ids.length==0){ 
+          Vue.toasted.show('請選擇對象', { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          pay_pageVM.count = JSON.parse(JSON.stringify(count_empty));
+          return;
+        }
+        total=0; thousands=0; hundreds=0; change=0;
+        for (let x = 0; x < pay_pageVM.pay_selected.length; x++) {
+          for (let i = 0; i < pay_pageVM.pay_pages.length; i++) {
+            const element = pay_pageVM.pay_pages[i];
+            if(pay_pageVM.pay_selected[x]==element['id']){
+              pay_sum = element['pay_sum'];
+              thousands_temp = Math.floor(pay_sum / 1000);
+              pay_sum -= thousands_temp * 1000;
+              hundreds_temp = Math.floor(pay_sum / 100);
+              pay_sum -= hundreds_temp * 100;
+
+              total += Number(element['pay_sum']);
+              thousands += thousands_temp;
+              hundreds += hundreds_temp;
+              change += pay_sum;
+            }
+          }
+        }
+        pay_pageVM.count.total=total;
+        pay_pageVM.count.thousands=thousands;
+        pay_pageVM.count.hundreds=hundreds;
+        pay_pageVM.count.change=change;
+        Vue.toasted.show('計算完成', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      },
+
+      view_detail: function(pay_index){
+        pay_pageVM.insurance_personal_pay_detail = pay_pageVM.pay_pages[pay_index].insurance_personal_pay;
+        pay_pageVM.pay_page_detail = JSON.parse(JSON.stringify(pay_pageVM.pay_pages[pay_index].schedule_dates));
+        $('#pay_page_detail_btn').click();
+      },
+      count_hour: function(detail) {
+        if(detail.roll_call_come || detail.roll_call_leave){ /*有點過名*/
+          return Number(detail.do_hour) + Number(detail.do_hour_overtime);
+        }else{
+          return 0;
+        }
+      },
+      count_pay_total: function(detail) {
+        return Number(detail.pay_total) + Number(detail.change_num);
+      },
+      count_pay_total_all: function(){
+        var total = 0;
+        pay_pageVM.pay_page_detail.forEach(detail => {
+          total += pay_pageVM.count_pay_total(detail);
+        });
+        return total;
+      },
+
+      count_data(array, column){
+        var sum = 0;
+        for (let idx = 0; idx < array.length; idx++) {
+          const item = array[idx];
+          sum += Number(item[column]);
+        }
+        return sum;
+      },
+    },
+  });
+
+  async function init_data(){
+    await pay_pageVM.get_schedule_pay_page();
+  }
+  init_data();
+</script>

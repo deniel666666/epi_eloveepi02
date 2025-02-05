@@ -1,0 +1,203 @@
+
+<include file="Public:header2" />
+
+
+<section class="main ">
+	<!---->
+	<div id="right">
+		<div class="top_bar">
+			<div class="crumbs">
+				<span>字組總數：{$total_num}</span>
+			</div>
+		</div>
+		
+		<if condition="$page eq ''">
+			<form name="search" id="searchform" action="{:u('Seo/index')}" method="get">
+				<else />
+				<form name="search" id="searchform" action="{:u('Seo/index')}?p={$Think.get.p}" method="get">
+				</if>
+				<ol class="headerOl rightR">
+					
+					<li>
+						<select name="gcsele">
+							<option value="">全部分類</option>
+							<foreach name="gcs" item="d" key="key">
+								<if condition="$_GET['gcsele'] eq $key">
+									<option value="{$key}" selected>{$d}</option>
+									<else />
+									<option value="{$key}">{$d}</option>
+								</if>
+							</foreach>
+						</select>
+						<select name="engine">
+							<option value="">搜尋引擎</option>
+							<option >yahoo(台灣)</option>
+							<option >google(台灣)</option>
+							
+						</select>
+					</li>
+					<li>
+						<select name="update">
+							<option value="">月份</option>
+							<foreach name="mdate" item="op">
+								<if condition="$op eq $_GET['update']">
+									<option selected>{$op}</option>
+									<else />
+									<option >{$op}</option>
+								</if>
+							</foreach>
+							
+						</select>
+					</li>
+					
+					<li>
+						<div class="search_bar">
+							<label for=""></label>
+							<input class="text" type="text"  placeholder="搜尋..." name="key_name" value="{$_GET['key_name']}"   />
+							<input class="submit" type="submit" value="" />
+						</div>
+					</li>
+				</ol>
+			</form>
+			<div id="data" style="width:100%;position:initial">
+				
+				<div class="page">
+					{$show}
+				</div>
+				
+				<div class="seo_box edit_form">
+					<table  class="seo_table table edit_table w-100" >
+						<thead>
+							<tr>
+								<th style="width:40px">序號</th>
+								<th style="width:80px">客戶名</th>
+								<th style="width:140px">搜索引擎</th>
+								<th style="width:140px">網址</th>
+								<th style="width:140px">字組</th>
+								<th style="width:100px">分類</th>
+								<foreach name="ddate" item="list" key="key">
+									<th>{$key}</th>
+								</foreach>
+							</tr>
+						</thead>
+						<tbody>
+							<volist name="data" id="list" key="k">
+								<if condition="$k%2 eq 1"> <tr class="color1"><else /><tr></if>
+									<td>{$k}</td>
+									<td>{$list[name]|mb_substr=0,5,'utf-8'}<br/><input type="text" child="{$list.id}" dbname="crm_seo_key" row="cnamememo" myid="{$list.id}" field="cnamememo" class="memo input_content" size="10" value="{$list.cnamememo}"/></td>	
+									<td>{$list.engine}<br/><input type="text" dbname="crm_seo_key" row="enginememo" myid="{$list.id}" child="{$list.id}" field="enginememo"  class="memo input_content" size="10" value="{$list.enginememo}" /></td>	
+									<td width="80">
+									<a class="copy" data-clipboard-text="{$list.url1}">{$list.url1}</a> <br/><input type="text" dbname="crm_seo_key" row="url1memo" myid="{$list.id}" child="{$list.id}" field="url1memo"  class="memo input_content" size="10" value="{$list.url1memo}" /></td>
+									
+									<td>{$list.key_name}<br/><input type="text" dbname="crm_seo_key" row="key_namememo" myid="{$list.id}" child="{$list.id}" field="key_namememo"  class="memo input_content" size="10" value="{$list.key_namememo}" /></td>
+									
+									<td>
+										<select dbname="crm_seo_key" row="gcsele" myid="{$list.id}" class="input_content">
+											<foreach name="gcs" item="d" key="key">
+												<if condition="$key eq $list['gcsele']">
+													<option value="{$key}" selected>{$d}</option>
+													<else />
+													<option value="{$key}">{$d}</option>
+												</if>
+											</foreach>
+										</select>
+									</td>
+									<foreach name="ddate" item="d">
+										<if condition="$list['rank'][$d] eq ''">
+											<td>-</td>
+											<elseif condition="$list['rank'][$d] eq '1001'" />
+											<td>n</td>
+											<else />
+											<td>{$list['rank'][$d]}</td>
+										</if>
+									</foreach> 
+									
+								</tr>
+								</volist>
+						</tbody>
+					</table>
+				</div>
+				<!-- </div> -->
+				<!--right end-->
+				
+				<div class="page">
+					{$show}
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</section>
+<include file="Public:footer" />
+
+
+<script language="javascript">
+	$(function(){
+		$("#wrapper").css("width","100%");
+		$('.seleall').click(function(){
+			if($(this).attr('checked'))
+			$('.seleck').attr('checked',true);
+			else
+			$('.seleck').attr('checked',false);
+		});
+		/*
+			
+			//開啟即查seo表
+			$("#searchform").ajaxSubmit({
+			//dataType:'script',
+			type:'post',
+			url: "{:u('Seo/data')}?p={$_GET['p']}",    
+			beforeSubmit: function(){
+			},
+			success: function(data){
+			$("#data").html(data);
+			$('.loadingdiv').css('display','none');
+			},
+			resetForm: false,
+			clearForm: false
+			});
+			//搜尋查seo表
+			$(document).on('click','#searchbu',function(){
+			$("#searchform").ajaxSubmit({
+			//dataType:'script',
+			type:'post',
+			url: "{:u('Seo/data')}?p={$_GET['p']}",    
+			beforeSubmit: function(){
+			$('.loadingdiv').css('display','block');
+			
+			},
+			success: function(data){
+			$("#data").html(data);
+			$('.loadingdiv').css('display','none');
+			},
+			error: function(data){
+			alert(data);
+			$("#data").html(data);
+			$('.loadingdiv').css('display','none');
+			},
+			
+			resetForm: false,
+			clearForm: false
+			});
+			})
+		*/
+		$("tr").on("change",".input_content",function(){
+			var myin=$(this);
+			$.ajax({
+				method:'post',
+				dataType:'json',
+				url:"{:U('Seo/aj_chcontent')}",
+				data:{dbname:myin.attr("dbname"),row:myin.attr("row"),id:myin.attr("myid"),data:myin.val()},
+				success:function(res){
+					if(res.status==1){
+	                    bg_class = "bg-success";
+	                }else{
+	                    bg_class = "bg-danger";
+	                }
+	                Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+				}
+				
+			});
+		});
+	});
+</script>	

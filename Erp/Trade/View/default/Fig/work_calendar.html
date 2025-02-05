@@ -1,0 +1,163 @@
+<include file="Public:header2" />
+
+<!-- 工作流程：引入資源 -->
+<include file="Fig:work_flow_include" />
+<style>
+  /*EIP 樣式衝突調整*/
+  .index_read_ck_circle .index_read_ck{
+    line-height: 1.5;
+  }
+  .modal-backdrop{
+    background: #0000;
+  }	
+</style>
+
+<section class="document main mw1920">
+  <div id="right">
+    <include file="Fig:top_menu" />
+    <div class="content-table" style="display:block">
+      <div id="workFlow" class="below">
+        <div class="eventsContainer w-100">
+          <!-- ////////////////////////// events_List ////////////////////////// -->
+          <div class="cardContainer">
+            <div class="cardContainer-title">
+              <h3 class="casesubtitle mr-2 mb-2">所有事件</h3>
+              <div class="chooseCo searchform">
+                <ol class="headerOl rightR">
+                  <li>
+                    建立時間區間：
+                    <input type="date" name="fig_time_s"> ~
+                    <input type="date" name="fig_time_e">&nbsp;&nbsp;
+                  </li>
+                  <li>
+                    <label class="name mb-0">事件：</label>
+                    <select id="eve_id" name="eve_id" v-model="search.eve_id">
+                      <option value="">全部</option>
+                      <option v-for="event in events" :value="event.id" v-text="event.title"></option>
+                    </select>
+                  </li>
+                  <li><label class="name mb-0">部門：</label>
+                    <select name="apart" id="apart">
+                      <option value="">全部</option>
+                      <foreach name="eip_apart" key="key" item="vo">
+                        <if condition="$apart eq $vo['id']">
+                          <option value="{$vo['id']}" selected>{$vo['name']}</option>
+                          <else />
+                          <option value="{$vo['id']}">{$vo['name']}</option>
+                        </if>
+                      </foreach>
+                    </select>
+                  </li>
+                  <li>
+                    <label class="name mb-0">人員：</label>
+                    <select name="user" id="mens">
+                      <option value="">全部</option>
+                      <foreach name="eip_user" key="key" item="vo">
+                        <if condition="$vo[name] neq '' && $vo[id] neq $top_adminid">
+                          <if condition="$user eq $vo['id']">
+                            <option value="{$vo['id']}" selected>{$vo['name']}</option>
+                            <else />
+                            <option value="{$vo['id']}">{$vo['name']}</option>
+                          </if>
+                        </if>
+                      </foreach>
+                    </select>
+                  </li>
+                  <li>
+                    <div class="search_bar">
+                      <input id="search" class="text w100" type="text" value="{$search ?? ''}" name="search"
+                        placeholder="搜尋公司名/簡稱、事件名、事件編號、人員名" style="min-width: 350px;"/>
+                      <input class="submit" type="submit" value="">
+                    </div>
+                  </li>
+                  <li class="mr-2">
+                    <div class="search_bar">
+                      <input type="checkbox" id="show_examine_step" name="show_examine_step" value="1">
+                      <label for="show_examine_step" class="mb-0">顯示驗收步驟</label>
+                    </div>
+                  </li>
+                  <li class="mr-2">
+                    <select class="" id="show_time_type">
+                      <option value="-1">排定+無時間</option>
+                      <option value="0">無時間</option>
+                      <option value="1" selected>排定時間</option>
+                    </select>
+                  </li>
+                  <li> 
+                    <div class="search_bar" onclick="search()">
+                      <input class="text" type="text" readonly placeholder="搜尋" style="width: 70px;"/>
+                      <input class="submit" value="">
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- 工作流程：顯示畫面 -->
+            <include file="Fig:work_flow" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="footer-mobile"><include file="Public:footer" /></div>
+
+<!-- 工作流程：js -->
+<include file="Fig:work_flow_js" />
+
+<script>
+  function get_getmean(){
+    var s=$("select[name='apart']").val();
+    workFlowVM.search.apartmentid = s;
+    workFlowVM.search.user_id = "";		
+
+    $.ajax({
+      type:'POST',
+      data:{
+        apartmentid:s,
+        ck:"{$user_id}", 
+        no_no:'no_no',
+      },
+      dataType:'text',
+      url:"{:U('Ajax/aj_getmean')}",
+      success:function(res){
+        $("#mens").html("<option value=''>全部</option>"+res);
+      }
+    });
+  }
+
+  function search(){
+    workFlowVM.search.search = $('#search').val();
+    var show_examine_step = $('#show_examine_step').prop('checked');
+    workFlowVM.search.show_examine_step = show_examine_step ? 1 : 0;
+    workFlowVM.search.show_time_type = $('#show_time_type').val();
+    workFlowVM.get_work_data();
+  }
+
+  function init_setting(){
+    workFlowVM.to_current_day = true;
+    get_getmean();
+
+    $('#apart').on('change', get_getmean);
+    $('#mens').on('change', function(e){
+      var user_id = $(this).val();
+      workFlowVM.search.user_id = user_id;
+      workFlowVM.get_work_data();
+    });
+    $('#search').keyup(function(e){
+      e.preventDefault();
+      if(e.keyCode == 13){
+        search();
+      }
+    });
+    $('[type="submit"]').on('click', function(e){
+      e.preventDefault();
+      search();
+    });
+    /*EIP額外功能 監聽切換事件下拉選*/
+    $('#eve_id').on('change', function(e){
+      workFlowVM.get_work_data();
+    });
+  }
+</script>

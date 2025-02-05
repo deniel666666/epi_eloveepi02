@@ -1,0 +1,706 @@
+<include file="Public:header2" />
+
+<style>
+  #tableScroll {
+    overflow: auto;
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+  }
+
+  #tableScroll td,
+  th {
+    width: 100px;
+  }
+
+  #tableScroll th:not(:first-child) {
+    z-index: 1;
+  }
+
+  #tableScroll th {
+    background-color: lightblue;
+  }
+
+  #tableScroll table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  #tableScroll td:nth-child(1),
+  #tableScroll td:nth-child(2) {
+    position: sticky;
+    z-index: 1;
+    background-color: #ddd;
+  }
+
+  #tableScroll thead tr th {
+    position: sticky;
+    top: 0;
+  }
+
+  #tableScroll th:nth-child(1) {
+    z-index: 2;
+  }
+
+  #tableScroll th:nth-child(2) {
+    z-index: 2;
+  }
+
+  .late-come,
+  .early-leave {
+    color: red;
+  }
+</style>
+
+<div id="attendance_records_VM" class="container mw1920 p-4">
+  <div class="">
+    <div class="w100 d-flex align-items-start mb-1">
+      <div class="w100 d-flex flex-wrap">
+        <ol class="headerOl rightR mb-0 mr-3">
+          <li>
+            切換年月：
+            <select v-model="currentMonth" @change="getMonthDates">
+              <option v-for="(item, index) in monthOptions">{{item}}</option>
+            </select>
+          </li>
+        </ol>
+        <if condition="in_array(151, $use_function_top)">
+          <span class="text-danger">「排班打卡」為撈取「日程管理」中名單的打卡紀錄，若有標記「*」，則表示打卡異常，請進入該日程操作修改。</span>
+        </if>
+      </div>
+    </div>
+    <if condition="in_array(151, $use_function_top)">
+      <div class="mb-1">
+        篩選排班地點：
+        <input v-model="search_schedule_params.searchtext" @keydown.enter="search_schedules" placeholder="名稱/地點" class="w100 mr-2" style="max-width: 200px;">
+        <button class="btn pt-1 pb-1 eip-btn mr-3" @click="search_schedules">篩選</button>
+        <select v-model="schedule_id" @change="getMonthDates">
+          <option value="">請選擇排班地點</option>
+          <template v-for="(schedule,schedule_index) in schedules">
+            <option :value="schedule.id">
+              <span v-text="schedule.name"></span>
+              <template v-if="schedule.location">
+                (<span v-text="schedule.location"></span>)
+              </template>
+            </option>
+          </template>
+        </select>
+      </div>
+    </if>
+    <div class="mb-1">
+      <if condition="in_array(73, $use_function_top)">
+        <label class="mr-3">
+          部門：
+          <select class="input" v-model="search_params.apartmentid">
+            <option value="">請選擇</option>
+            <foreach name="eip_apart" item="op">
+              <option value="{$op.id}">{$op.name}</option>
+            </foreach>
+          </select>
+        </label>
+        <label class="mr-3">
+          職務：
+          <select class="input" v-model="search_params.jobid">
+            <option value="">請選擇</option>
+            <foreach name="eip_jobs" item="op">
+              <option value="{$op.id}">{$op.name}</option>
+            </foreach>
+          </select>
+        </label>
+      </if>
+      <label class="mr-3">
+        類別：
+        <select class="input" v-model="search_params.right">
+          <option value="">請選擇</option>
+          <foreach name="eip_user_right_type" item="op">
+            <option value="{$op.id}">{$op.name}</option>
+          </foreach>
+        </select>
+      </label>
+      <div class="d-inline-block search_bar">
+        <input class="text" type="text" 
+               v-model="search_params.searchtext"
+               @keypress.enter="getMonthDates"
+               placeholder="姓名/別稱/手機/電話/信箱" style="width: 250px;">
+      </div>
+      <button class="btn pt-1 pb-1 eip-btn mr-3" @click="getMonthDates">搜尋</button>
+      <button class="btn pt-1 pb-1 btn-disabled" @click="clean_search">清除搜尋</button>
+    </div>
+  </div>
+  <div class="d-flex flex-wrap align-items-start" style="overflow-x:auto;">
+    <div id="tableScroll">
+      <table class="table" style="max-width: 100px;">
+        <thead>
+          <tr>
+            <th style="left: 0px;">員工姓名</th>
+            <th style="left: 100px;">員工編號</th>
+            <template v-for="d_item in dateColumns">
+              <th class="text-center" 
+                  :style="{'color': check_holiday(d_item) ? '#e14040' : 'inherit'}">
+                {{moment(new Date(d_item)).format('DD')}}
+                ({{handleWeek(d_item)}})
+              </th>
+            </template>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(user, u_idx) in mens">
+            <td style="left: 0px;">{{user.name}}</td>
+            <td style="left: 100px;">{{user.no}}</td>
+            <template v-for="d_item in dateColumns">
+              <td class="text-center"
+                  :style="{'background-color': check_holiday(d_item) ? '#fcebe4' : 'inherit'}">
+                <template v-if="user.need_works.indexOf(d_item)!=-1">
+                  <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+                    <!-- 有紀錄 -->
+                    <template v-if="user.works_date[d_item].time_come || user.works_date[d_item].time_leave">
+                      <div class="d-flex flex-wrap align-items-center justify-content-center"
+                           :style="{'opacity': user.works_date[d_item].need_show==1 ? 1 : 0.25}">
+                        <div>
+                          <span v-if="user.works_date[d_item].edit_in === undefined"
+                            :class="{ 'late-come': handleLateTime(user, d_item), 'mr-2 cursor_pointer': true}"
+                            @dblclick="handleItemEdit(u_idx, d_item, 'in')">
+                            {{handleTime(user.works_date[d_item].time_come)}}
+                          </span>
+                          <span v-else>
+                            <input type="text" class="col-md-offset-5 col-md-12 text-center"
+                              v-model="editTimeCome" :ref="'input_in'+u_idx+'_'+d_item"
+                              @keyup.esc="element_esc(u_idx, d_item, 'in')"
+                              @keyup.enter="element_blur(u_idx, d_item, 'in')"
+                              @blur="updateItem(u_idx, d_item, 'in')" />
+                          </span>
+                          <br>
+                          <spanp v-if="user.works_date[d_item].edit_out === undefined"
+                            :class="{ 'early-leave': handleEarlyTime(user, d_item), 'mr-2 cursor_pointer': true }"
+                            @dblclick="handleItemEdit(u_idx, d_item, 'out')">
+                            {{handleTime(user.works_date[d_item].time_leave)}}
+                          </spanp>
+                          <span v-else>
+                            <input type="text" class="col-md-offset-5 col-md-12 text-center mb-2"
+                              v-model="editTimeLeave" :ref="'input_out'+u_idx+'_'+d_item"
+                              @keyup.esc="element_esc(u_idx, d_item, 'out')"
+                              @keyup.enter="element_blur(u_idx, d_item, 'out')"
+                              @blur="updateItem(u_idx, d_item, 'out')" />
+                          </span>
+                        </div>
+                        <a href="###" class="btn delate" @click="set_null_time(u_idx, d_item)">
+                          <i aria-hidden="true" class="far fa-trash-alt"></i>
+                        </a>
+                      </div>
+                    </template>
+                    <!-- 未打卡 -->
+                    <template v-else>
+                      <div class="text-center cursor_pointer" v-if="user.works_date[d_item].edit_new === undefined"
+                        @dblclick="set_new_time(u_idx, d_item)">
+                        <span style="opacity: 0.25;">
+                          <template v-if="user.works_date[d_item].need_show==1">未打卡</template>
+                        </span>
+                      </div>
+                    </template>
+                  <else />
+                    <!-- 無權限 -->
+                    <div v-if="user.works_date[d_item].time_come || user.works_date[d_item].time_leave">
+                      <span
+                        :class="{ 'late-come': handleLateTime(user, d_item) }">{{handleTime(user.works_date[d_item].time_come)}}</span>
+                      <br />
+                      <span
+                        :class="{ 'early-leave': handleEarlyTime(user, d_item) }">{{handleTime(user.works_date[d_item].time_leave)}}</span>
+                    </div>
+                    <div v-else style="opacity: 0.25;">
+                      <template v-if="user.works_date[d_item].need_show==1">未打卡</template>
+                    </span>
+                  </if>
+                </template>
+                <template v-if="user.need_works.indexOf(d_item)!=-1 && user.need_schedules.indexOf(d_item)!=-1">
+                  <template v-if="(user.works_date[d_item].time_come || user.works_date[d_item].time_leave || user.works_date[d_item].need_show==1)">
+                    <hr class="mt-1 mb-1">
+                  </template>
+                </template>
+                <template v-if="user.need_schedules.indexOf(d_item)!=-1">
+                  <a href="###" @click="show_schedule(d_item, user.name, user.schedules_date[d_item])">排班打卡</a>
+                  <sapn class="text-danger" v-if="has_no_roll_call(user.schedules_date[d_item])">*</sapn>
+                </template>
+              </td>
+            </template>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <br />
+  <if condition="$access['salary_edi'] eq '1'">
+    <div class="text-danger text-center mb-1">無打卡的日期會另外去檢查「假勤申核」、「日程管理」中有無打卡紀錄</div>
+    <div class="row">
+      <button type="button" class="btn btn-primary col-6 offset-3" @click="calculateSalary">計算薪資</button>
+    </div>
+  </if>
+
+  <!-- Modal -->
+  <a id="schedules_dates_modal_btn" class="d-none" data-toggle="modal" data-target="#show_schedule_dates">排班打卡紀錄</a>
+  <div class="modal fade large_modal" id="show_schedule_dates" tabindex="-1" role="dialog" aria-labelledby="show_schedule_datesTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="modal-header">
+          <h5 class="modal-title" id="show_schedule_datesTitle">
+            <span v-text="show_schedule_date"></span>
+            <span v-text="show_schedule_date_user"></span>
+            排班打卡紀錄
+          </h5>
+        </div>
+        <div class="modal-body">
+          <div class="edit_form" style="max-height: 70vh;">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 580px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr">
+                  <th style="min-width: 200px;">名稱</th>
+                  <th style="min-width: 300px;">地點</th>
+                  <th style="min-width: 350px;">時間</th>
+                  <th style="min-width: 300px;">備註</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(schedule,schedule_index) in show_schedule_dates">
+                  <td>
+                    <a :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank">
+                      <span v-text="schedule.name"></span>
+                    </a>
+                  </td>
+                  <td><span v-text="schedule.location"></span></td>
+                  <td>
+                    <div>
+                      上班：
+                      <span v-text="schedule.worktime_s_format.substr(0,16)"></span>
+                      ~
+                      <span v-text="schedule.worktime_e_format.substr(0,16)"></span>
+                    </div>
+                    <div>
+                      打卡：
+                      <template v-if="schedule.roll_call_come">
+                        <span :class="[schedule.roll_call_come>schedule.worktime_s ? 'text-danger' : '']"
+                              v-text="schedule.roll_call_come_format.substr(0,16)"></span>
+                      </template>
+                      <template v-else>
+                        <span class="text-danger">無</span>
+                      </template>
+                      ~
+                      <template v-if="schedule.roll_call_leave">
+                        <span :class="[schedule.roll_call_leave<schedule.worktime_e ? 'text-danger' : '']"
+                              v-text="schedule.roll_call_leave_format.substr(0,16)"></span>
+                      </template>
+                      <template v-else>
+                        <span class="text-danger">無</span>
+                      </template>
+                    </div>
+                  </td>
+                  <td><span v-text="schedule.note"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  var Request = new Object();	 
+  Request = GetRequest();
+  function GetRequest() {
+    var url = location.search; 
+    var theRequest = new Object();
+    if (url.indexOf("?") != -1) {
+      var str = url.substr(1);
+      strs = str.split("&");
+      for(var i = 0; i < strs.length; i++) {
+        theRequest[strs[i].split("=")[0]]=decodeURI(strs[i].split("=")[1]);
+      }
+    }
+    return theRequest;
+  }
+  currentMonth = Request.ym ? Request.ym : '';
+  if(currentMonth.length==6){
+    check = new Date(currentMonth.slice(0,4)+'-'+currentMonth.slice(4,6)+'-01');
+    currentMonth = check != 'Invalid Date' ? Request.ym : moment().format('YYYYMM');
+  }else{
+    currentMonth = moment().format('YYYYMM');
+  }
+
+  const search_params_empty = {
+    apartmentid: '',
+    jobid: '',
+    right: '',
+    searchtext: '',
+  };
+  const attendance_records_VM = new Vue({
+    el: '#attendance_records_VM',
+    data() {
+      return {
+        /*篩選日程組用*/
+        search_schedule_params: {
+          searchtext: '',
+        },
+        schedules: [],
+
+        /*搜尋用*/
+        schedule_id: '',
+        search_params: JSON.parse(JSON.stringify(search_params_empty)),
+
+        /*列表顯示*/
+        currentMonth: currentMonth,
+        monthOptions: [],
+        dateColumns: [],
+        mens: [],
+        weekdays: [
+          { value: 0, text: '日' },
+          { value: 1, text: '一' },
+          { value: 2, text: '二' },
+          { value: 3, text: '三' },
+          { value: 4, text: '四' },
+          { value: 5, text: '五' },
+          { value: 6, text: '六' },
+        ],
+
+        /*預設上下班時間*/
+        onWorkTime: '',
+        offWorkTime: '',
+
+        /*編輯打卡用*/
+        editTimeCome: '',
+        editTimeLeave: '',
+        addWorkTime: '', // 未打卡新增資料用
+
+        /*查看排班打卡紀錄*/
+        show_schedule_date: '',
+        show_schedule_date_user: '',        
+        show_schedule_dates: [],
+      }
+    },
+    created() {
+      // 預設上下班時間
+      let workingTime = ['{$default_work_time_come}', '{$default_work_time_leave}'];
+      this.onWorkTime = workingTime[0];
+      this.offWorkTime = workingTime[1];
+
+      // 搜尋月份下拉選單
+      let startMonth = moment().subtract(6, 'months');
+      let endMonth = moment().add(1, 'month');
+
+      if (startMonth < endMonth) {
+        let date = startMonth.startOf('month');
+
+        while (date < endMonth.endOf('month')) {
+          this.monthOptions.push(date.format('YYYYMM'));
+          date.add(1, 'month');
+        }
+      }
+
+      // 取得資料列表
+      this.getMonthDates();
+      this.get_schedules();
+    },
+    mounted() {
+    },
+    methods: {
+      search_schedules(){
+        $('#body_block').show();
+        this.get_schedules();
+        $('#body_block').hide();
+      },
+      async get_schedules(){
+        this.schedules = [];
+        data = JSON.parse(JSON.stringify(this.search_schedule_params));
+        resp = await $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('Schedule/get_schedules')}",          
+        });
+        this.schedules = resp.list;
+      },
+
+      clean_search(){
+        this.schedule_id = '';
+        this.search_params = JSON.parse(JSON.stringify(search_params_empty));
+        this.getMonthDates();
+      },
+      getMonthDates() {
+				let self = this;
+				$.ajax({
+					method: 'get',
+					url: "{:u($CONTROLLER_NAME.'/getMonthDates')}?get_month=" + this.currentMonth,
+					beforeSend: function (XMLHttpRequest) {
+						self.mens = []; // 切換月份時先畫面渲染，不然 mens 的 <td> 先重疊再正常
+						Vue.toasted.show("日期初始化，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+					},
+					success: function (res) {
+            url = location.href.replaceAll('#', '');
+            url = url.split('?')[0];
+            url = url + '?ym='+self.currentMonth;
+            let prevUrl = '';
+            if(window.history.state){
+              prevUrl = window.history.state.prevUrl;
+            }
+            if(prevUrl!=url){
+              history.pushState({ prevUrl: url}, null, url);
+            }
+            // console.log(res);
+						self.dateColumns = res.dates;
+						self.$nextTick(() => {
+							// 取得資料列表
+							self.getDataRows();
+						});
+					},
+					complete: function (XMLHttpRequest, textStatus) {
+						Vue.toasted.show("日期初始化結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+					},
+				});
+			},
+      getDataRows() {
+        let self = this;
+        $.ajax({
+          method: 'post',
+          dataType: 'json',
+          url: "{:u($CONTROLLER_NAME.'/getUserList')}",
+          data: { 
+            get_month: this.currentMonth,
+            schedule_id: this.schedule_id,
+            search_params: JSON.parse(JSON.stringify(this.search_params)),
+          },
+          beforeSend: function (XMLHttpRequest) {
+            Vue.toasted.show("搜尋中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          },
+          success: function (res) {
+            self.mens = res.mens;
+          },
+          complete: function (XMLHttpRequest, textStatus) {
+            Vue.toasted.show("搜尋結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          },
+        });
+      },
+      handleWeek(date) {
+        let weekday = moment(date).day();
+
+        let newArr = this.weekdays.filter(element => {
+          if (element.value == weekday) return element.text;
+        });
+
+        return newArr[0].text;
+      },
+      check_holiday(date){
+        return ['六','日'].indexOf(this.handleWeek(date))!=-1;
+      },
+
+      get_user_default_time(user, date){
+        let onWorkTime = user.time_come ? user.time_come : this.onWorkTime;
+        let offWorkTime = user.time_leave ? user.time_leave : this.offWorkTime;
+        return [onWorkTime, offWorkTime];
+      },
+      handleLateTime(user, date) { // 遲到判斷
+        let onWorkTime = this.get_user_default_time(user, date);
+        let obj = user.works_date[date];
+        if (!obj) return;
+        if (obj.need_show==0) return;
+        if (!obj.time_come) return;
+        if (moment(obj.date + ' ' + obj.time_come)
+          .isAfter(moment(obj.date + ' ' + onWorkTime[0] + ':00'))) return true;
+      },
+      handleEarlyTime(user, date) { //早退判斷
+        let onWorkTime = this.get_user_default_time(user, date);
+        let obj = user.works_date[date];
+        if (!obj) return;
+        if (obj.need_show==0) return;
+        if (!obj.time_leave) return;
+        if (moment(obj.date + ' ' + obj.time_leave)
+          .isBefore(moment(obj.date + ' ' + onWorkTime[1] + ':00'))) return true;
+      },
+
+      set_new_time(user_index, date) { // 建立打卡時間
+        [onWorkTime, offWorkTime] = this.get_user_default_time(this.mens[user_index], date);
+        this.mens[user_index].works_date[date].time_come = `${onWorkTime}`;
+        this.mens[user_index].works_date[date].time_leave = `${offWorkTime}`;
+        this.updateItem(user_index, date, 'new')
+      },
+      set_null_time(user_index, date){  // 清空打卡時間
+        self = this;
+        Swal.fire({
+          title: "確定清除打卡時間?",
+          confirmButtonText: "確定",
+          confirmButtonColor: "#28a745",
+          showCancelButton: true,
+          cancelButtonText: `取消`,
+        }).then((result) => {
+          /* Read more about isConfirmed, isDenied below */
+          if (result.isConfirmed) {
+            self.updateItem(user_index, date, 'delete')
+          }
+        });
+      },
+
+      element_esc(u_idx, date, type){
+        let rowData = this.mens[u_idx].works_date[date];
+        if(type == 'in'){
+          this.editTimeCome = rowData['time_come'] ? `${rowData['time_come'].slice(0, 2)}${rowData['time_come'].slice(3, 5)}` : rowData['time_come'];
+        }else if(type == 'out'){
+          this.editTimeLeave = rowData['time_leave'] ? `${rowData['time_leave'].slice(0, 2)}${rowData['time_leave'].slice(3, 5)}` : rowData['time_leave'];
+        }
+        this.$delete(rowData, 'edit_' + type);
+      },
+      element_blur(u_idx, date, type){
+        $(this.$refs['input_'+type+u_idx+'_'+date]).blur();
+      }, 
+      updateItem(user_index, date, type) {
+        let re = /^(0[0-9]|1[0-9]|2[0-3])[0-5][0-9]$/;  // HHMM 24-hour with leading 0
+        let postData = {
+          type: type,
+          id: this.mens[user_index].works_date[date]['id'],
+          date: this.mens[user_index].works_date[date]['date'],
+          user_id: this.mens[user_index]['id'],
+        }
+
+        // 檢查輸入格式
+        let lines = [];
+        if(type == 'in'){
+          lines.push(this.editTimeCome);
+        }else if(type == 'out'){
+          lines.push(this.editTimeLeave);
+        }else if ( type == 'new') {
+          lines.push(this.mens[user_index].works_date[date].time_come.replace(':',''));
+          lines.push(this.mens[user_index].works_date[date].time_leave.replace(':',''));
+        }
+        console.log(lines);
+
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i]){
+            if (!lines[i].match(re)) {
+              Vue.toasted.show('請輸入純數字及24小時制的格式', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+              return;
+            }
+          }
+        }
+        if (type === 'new') this.workingTime = lines;
+        else var newValue = lines[0] ? `${lines[0].slice(0, 2)}:${lines[0].slice(2)}:00` : lines[0];
+
+        // 若修改紀錄與原資料相符取消输入框
+        let oriRowData = this.$data.mens[user_index].works_date[date];
+        let rowsData = this.mens[user_index].works_date[date];
+        switch (type) {
+          case 'in':
+            postData.time_come = newValue;
+            if (newValue === oriRowData['time_come']) {
+              this.$delete(rowsData, 'edit_' + type);
+              return;
+            }
+            break;
+          case 'out':
+            postData.time_leave = newValue;
+            if (newValue === oriRowData['time_leave']) {
+              this.$delete(rowsData, 'edit_' + type);
+              return;
+            }
+            break;
+          case 'new': // 未打卡，新增資料
+            let tempCome = this.workingTime[0];
+            let tempLeave = this.workingTime[1];
+            postData.time_come = `${tempCome.slice(0, 2)}:${tempCome.slice(2)}:00`; // 補回冒號、秒數
+            postData.time_leave = `${tempLeave.slice(0, 2)}:${tempLeave.slice(2)}:00`; // 補回冒號、秒數
+            break;
+          case 'delete': // 清空打卡時間
+            postData.time_come = -1;
+            postData.time_leave = -1;
+            break;
+        }
+        postData.get_month = this.currentMonth;
+
+        let self = this;
+        $.ajax({
+          method: 'post',
+          dataType: 'json',
+          url: "{:u($CONTROLLER_NAME.'/saveData')}",
+          data: postData,
+          success: function (res) {
+            bg_class = res.status ? 'bg-success' : 'bg-danger';
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+
+            // 重新取得資料列表
+            if (res.status) self.getDataRows();
+          },
+        });
+      },
+      handleTime(time) { // 去秒數
+        if (time !== null)
+          return `${time.slice(0, 2)}:${time.slice(3, 5)}`;
+        else
+          return ' - ';
+      },
+      handleEditTime(time) { // 去秒數、冒號
+        if (time !== null)
+          return `${time.slice(0, 2)}${time.slice(3, 5)}`;
+      },
+      handleItemEdit(user_index, date, type) {
+        let rowData = this.mens[user_index].works_date[date];
+
+        [onWorkTime, offWorkTime] = this.get_user_default_time(this.mens[user_index], date);
+        rowData['edit_' + type] = 1; // 顯示輸入框
+
+        // 去冒號、秒數
+        if (rowData['time_come'] === null)
+          this.editTimeCome = `${onWorkTime.slice(0, 2)}${onWorkTime.slice(3, 5)}`;
+        else
+          this.editTimeCome = `${rowData['time_come'].slice(0, 2)}${rowData['time_come'].slice(3, 5)}`;
+
+        if (rowData['time_leave'] === null)
+          this.editTimeLeave = `${offWorkTime.slice(0, 2)}${offWorkTime.slice(3, 5)}`;
+        else
+          this.editTimeLeave = `${rowData['time_leave'].slice(0, 2)}${rowData['time_leave'].slice(3, 5)}`;
+        this.$forceUpdate();
+
+        setTimeout(()=>{
+          $(this.$refs['input_'+type+user_index+'_'+date]).focus();
+        }, 100);
+      },
+
+      calculateSalary() {
+        let self = this;
+        $.ajax({
+          method: 'post',
+          dataType: 'json',
+          url: "{:u('Salary/set_salary_by_attendance')}",
+          data: { salary_ym: this.currentMonth },
+          beforeSend: function (XMLHttpRequest) {
+            Vue.toasted.show("處理中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          },
+          success: function (res) {
+            bg_class = res.status ? 'bg-success' : 'bg-danger';
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+            location.href = res.url;
+          },
+        });
+      },
+
+      has_no_roll_call(schedules_dates){
+        for (let idx = 0; idx < schedules_dates.length; idx++) {
+          const schedule = schedules_dates[idx];
+          if(!schedule.roll_call_come || !schedule.roll_call_leave){ /*沒有打卡*/
+            return true;
+          }
+          else if(schedule.roll_call_come>schedule.worktime_s || schedule.roll_call_leave<schedule.worktime_e){ /*沒有遲到早退*/
+            return true;
+          }
+        }
+        return false;
+      },
+      show_schedule(date, date_user, schedules_dates){
+        $('#schedules_dates_modal_btn').click();
+        this.show_schedule_date = date;
+        this.show_schedule_date_user = date_user;
+        this.show_schedule_dates = schedules_dates;
+      }
+    }
+  });
+</script>

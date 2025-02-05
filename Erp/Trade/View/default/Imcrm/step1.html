@@ -1,0 +1,87 @@
+<include file="Public:header2" />
+
+<section class="main document">
+	<div class="top_bar">
+		<div class="crumbs">
+			<a href="#">匯入客戶</a>
+			<span>></span><a href="#">匯入資料列表</a>
+		</div>
+	</div>
+	<div class="below">
+		
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		
+		<!-- END 共用階層列表 -->
+		<div class="right">
+			<div class="document_edit">
+				
+				<form id="steptwoform" method="post" action="{:u('Imcrm/step1')}" style=" clear:both">
+					<div class="d-flex flex-wrap justify-content-between" >
+						<div class="mb-1">
+							<input type="submit" value="刪除所選">
+							<input type="text" id="" name="search"  /> <input type="submit" value="搜尋" /> 
+						</div>
+						<input class="typeBtn btn delate" type="button" value="放棄本次匯入" onclick="leaveImport()" />
+					</div>
+					
+					
+					
+					<!-- 選擇匯入腳色 -->
+					<include file="Imcrm:select_import_role" />
+					<div class="edit_form">
+						<table class="table edit_table" style="min-width:1200px" cellpadding="0" cellspacing="0" id="sameTable">
+							<thead>
+								<tr>
+									<th><input type="checkbox" class="seleall" /></th>
+									<th>{$system_parameter["廠商類型"]}</th>
+									<th>{$system_parameter["公司名稱"]}</th>
+									<th>{$system_parameter["統編"]}</th>
+									<th>{$system_parameter["地址"]}</th>
+									<th>{$system_parameter["公司電話"]}</th>
+									<th>{$system_parameter["官方網站"]}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{$gop}
+							</tbody>
+						</table>
+					</div>
+					
+					<div class="naviPage">
+						<input type="submit" value="刪除所選">
+					<span class="vRight">{$nav['previous']}{$nav['mun']}{$nav['next']}</span></div>
+					<div class="text-right mt-2">
+						<a href="{:u('Imcrm/index','','')}">
+							<input type="button" value="上一步，繼續匯入名單"  class="btn sendbtn">
+						</a>
+						<neq name="gop" value="">
+							<input id="to_step2" type="submit" value="下一步，處理重複的名單" class="btn sendbtn m-auto" />
+						</neq>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+	</div>
+</div>
+</section>
+
+<include file="Public:footer" />
+
+<script language="javascript">
+	/*
+	window.onbeforeunload = function(){
+		if (!confirm('要離開網站嗎？')) {
+			return '按一下「取消」停留在此頁';
+		}
+	};
+	*/
+
+	$('#to_step2').on('click', function(e){
+		e.preventDefault();
+		var steptwoform = $('#steptwoform');
+		steptwoform.attr("action", "{:u('Imcrm/step2')}");
+		steptwoform.submit();
+	})
+</script>

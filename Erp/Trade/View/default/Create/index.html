@@ -1,0 +1,173 @@
+<?php/* <include file="Public:header" />*/?>
+<!DOCTYPE>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>{$page_model}>{$page_title}</title>
+
+        <!-- PWA 加入桌面-->
+        <link rel="manifest" href="/Public/manifest.json">
+        
+        <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0">
+        <link href="__PUBLIC__/css/reset.css" rel="stylesheet" type="text/css" />
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/dnCalendar/css/dncalendar-skin.min.css">
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/css/style-medium.css" media="only screen and (min-width: 1281px) and (max-width: 1500px)" />
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/css/style-small.css" media="only screen and (min-width: 0px) and (max-width: 1280px)" />
+        <link href="__PUBLIC__/css/jquery-ui.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="__PUBLIC__/css/alert.css">
+        <link href="__PUBLIC__/css/old.css" rel="stylesheet" type="text/css" />
+        <link href="__PUBLIC__/css/use-phone.css" rel="stylesheet" type="text/css" />
+        <link href="__PUBLIC__/css/use2021.css?20240919-1" rel="stylesheet" type="text/css" />
+        
+        
+        <!-- <link href="__PUBLIC__/css/all.css" rel="stylesheet" type="text/css" /> -->
+        <!--提示視窗css -->
+        <link rel="Shortcut Icon" type="image/x-icon" href="__PUBLIC__/images/icon.png" />
+
+        <!-- Fontawesome kit(ICON) -->
+        <script src="https://kit.fontawesome.com/9a2047a60f.js" crossorigin="anonymous"></script>
+
+        <!-- Vue -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+        <script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+        <script>Vue.use(Toasted);</script>
+
+        <style type="text/css">
+            .chat_record_wid{color: #{$crm_cum_pri[0]['color']};}
+            .chat_record_did{color: #{$crm_cum_pri[1]['color']};}
+            .chat_record_sid{color: #{$crm_cum_pri[2]['color']};}
+            .chat_record_hid1{color: #{$crm_cum_pri[3]['color']};}
+            .chat_record_hid2{color: #{$crm_cum_pri[4]['color']};}
+            .chat_record_hid3{color: #{$crm_cum_pri[5]['color']};}
+        </style>
+    </head>
+    <body>
+        <include file="Public:header_nav" />
+
+
+<section class="document">
+	<div class="slide_content_r">
+		<div class="container">
+			<div class="top_bar">
+				<div class="crumbs">
+					<a href="{:u('Apart/index')}">部門管理</a>
+					<span>></span><a href="#">部門管理</a>
+				</div>
+			</div>
+			<div class="below">
+				
+				<!-- 共用階層列表 -->
+				<div class="list_layer">
+					<div class="upwards">
+						<div class="list_group">
+							
+							<div class="layer_1_tab">
+								<a class="ajax" value="power">權限重置</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="do_userpower">人員權限重置</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="ques">問卷分割</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="seo_date">seo設定</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="seo_del">seo刪除</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="anay_cust">重整客戶紀錄</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="men_sn">重整員工編號</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="men_no_expe">員工編號歷程</a>
+							</div>
+							<div class="layer_1_tab">
+								<a class="ajax" value="seo_reback">seo重查</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- END 共用階層列表 -->
+				
+				<div class="right">
+					
+					<form action="{:u('Create/upload')}" method="post" enctype="multipart/form-data">
+						<input type="file" name="file[]" multiple="multiple" /><input type="submit" />
+					</form><br>
+					<font color="#ff0000" style="font-size:30pt;">拜託不要按ヾ(;ﾟ;Д;ﾟ;)ﾉﾞ</font>
+					
+					<h1>備忘錄</h1>
+					<ul id="box" style="overflow:auto;height:400px">
+						<volist name="board" id="vo" key="k" >
+							{$vo['date']} {$vo['name']}:{$vo['content']}<br>
+						</volist>
+					</ul>
+					<div valign="bottom" style="">
+						<form id="save">
+							<input type="text" name="name" value="嶧德" />:
+							<input type="text" name="content" id="edit" />
+							<input type="submit" id="submit" />
+						</form>
+						<a href="{:u('Create/index')}"><input type="button" value="工程師按鈕"></a>
+						<a href="{:u('Demo/index')}"><input type="button" value="Demo按鈕"></a>
+						<a href="{:u('Row/index')}"><input type="button" value="功能按鈕"></a>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<include file="Public:footer" />
+<script language="javascript">
+	$(function(){
+		$(".ajax").click(function(){
+			$.ajax({
+				type:'POST',
+				url:"{:u('Create/"+$(this).attr("value")+"')}",
+				success:function(res)
+				{
+					$.toaster({ message : '成功:'+res});
+					
+				},
+				error:function(res){
+					$.toaster({ message : '失敗:'+res});
+				}
+			})
+		});
+		$("#edit").focus();
+		$("#submit").click(function(){
+			$("#save").ajaxSubmit({
+				//dataType:'script',
+				type:'post',
+				url: "{:u('Index/save')}",    
+				beforeSubmit: function(){
+					//$("#sky_txt").html("图片上传中...");
+				},
+				success: function(data){
+					$("#box").html(data);
+					$("#edit").val("");
+				},
+				resetForm: false,
+				clearForm: false
+			});
+			return false;
+		});
+	})
+</script>	
+						

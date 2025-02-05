@@ -1,0 +1,794 @@
+<include file="Public:header2" />
+<head>
+	<style type="text/css">
+		.color1 td{
+			border-top:1px solid black;
+		}
+		.color1 td:first-child{
+			background: #0074a05e;
+		}
+		table tr:hover{
+			background: #cacaca;
+		}
+
+		.table{
+		    margin-bottom: -5px;
+		}
+		#week tr td:nth-child(2),
+		#week tr td:nth-child(3),
+		#week tr td:nth-child(4),
+		#week tr td:nth-child(5),
+		#week tr td:nth-child(6),
+		#week tr td:nth-child(7),
+		#week tr td:nth-child(8){
+			cursor: pointer;
+		}
+		.anayrow_template td{
+			width: 8%;
+			padding: .75rem
+		}
+		.crm_block a{
+			color: white;
+		}
+		.crm_block{
+		    color: white;
+		    width: 100px;
+		    position: absolute;
+		    z-index: 99;
+		    background: #2b2929;
+		    padding: 5px;
+		    border-radius: 5px;
+		    display: none;
+		    box-shadow: 5px 5px 10px 0px #00000078;
+		}
+	</style>
+</head>
+
+<script type="text/javascript">
+	document.getElementById( 'url' ).href = "{:U('Anay/index')}#tab"+cookieArray;
+</script>
+
+<section class="main document">
+	<div class="below">
+				
+		<!-- 共用階層列表 -->
+		<include file="Anay:menu" />
+		<!-- END 共用階層列表 -->
+		
+		<div class="right" >
+			<div class="document_edit">
+				<div class="content_menu apart_manage">
+					<ul class="tabs mb-2 mt-0">
+						<if condition="$_SESSION['teamid'] neq '' || $acc neq ''">
+							<li class = "tab" value = "-2"><a class="tab_week" href="#week" onclick="showweek_selector()">週分析</a></li>
+						</if>
+						<if condition="$_SESSION['teamid'] neq '' || $acc neq ''">
+							<li class = "tab" value = "-3"><a class="tab_month" href="#month" onclick="hideweek_selector()">月分析</a></li>
+						</if>
+					</ul>
+	
+					<!---------------------------週分析---------------------------------------------->
+					<div id="week" class="tab_content">
+						<div class="right_cont apart_manage week_selector">
+							請選擇週:<input type="text" name="date" class="d_date" />
+						</div>
+						<div id="weektable">
+							<!-- <div>
+								<span>請選擇分析項目：</span>
+								<span v-for="(item,index) in anay_type_names">
+									<input type="checkbox" :id="'anay_types'+index" :value="item" v-model="anay_types" @click="save_anay_type(item)">
+									<label :for="'anay_types'+index">{{item}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+								</span>
+							</div> -->
+							<div>
+								<span>請選擇人員：</span>
+								<span v-for="item in user">
+									<input type="checkbox" :id="'w_name'+item.id" :value="item" v-model="user_selected" @click="save_user(item)">
+									<label :for="'w_name'+item.id">{{item.name}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+								</span>
+							</div>
+							<div class="edit_form">
+								<table class="table edit_table" style="min-width: 1200px;">							
+									<tr class="edit_table tr ">
+										<th class="text-right" style="width:8%;"><div>{{mon[0]}}</div>~<div>{{mon[6]}}</div></th>
+										<th class="text-right" style="width:8%;">一<br>{{mon[0]}}</th>
+										<th class="text-right" style="width:8%;">二<br>{{mon[1]}}</th>
+										<th class="text-right" style="width:8%;">三<br>{{mon[2]}}</th>
+										<th class="text-right" style="width:8%;">四<br>{{mon[3]}}</th>
+										<th class="text-right" style="width:8%;">五<br>{{mon[4]}}</th>
+										<th class="text-right" style="width:8%;color:red;">六<br>{{mon[5]}}</th>
+										<th class="text-right" style="width:8%;color:red;">日<br>{{mon[6]}}</th>
+										<th class="text-right" style="width:8%;">本週總<br>達成數</th>
+										<th class="text-right" style="width:8%;">日平均<br>目標數</th>
+										<th class="text-right" style="width:8%;">本週總<br>目標數</th>
+									</tr>
+								</table>
+								<anayrow_template v-for="(item, index) in anay_types" 
+								:anay_type_item="item"
+								:anay_type_index="index" 
+								:row_weekdata="weekdata" 
+								:row_user_selected="user_selected"></anayrow_template>
+
+							</div>
+							
+	
+							
+	
+							<hr>
+	
+							<h3>本週總計</h3>
+							<table class="table col-12 col-md-6">
+								<tr class="edit_table tr ">
+									<th class="text-right" style="width:8%;"></th>
+									<th class="text-right" style="width:8%;">本週總達成數</th>
+									<th class="text-right" style="width:8%;">本週總目標數</th>
+								</tr>
+								<tr v-for="item in anay_types" class="big_font">
+									<td class="text-right typetd">{{item}}</td>
+									<td class="text-right"
+										:style="checkaim(get_weekcount_total(item) , get_weekaim_total(item))">
+										{{ get_weekcount_total(item) }}
+									</td>
+									<td class="text-right">{{ get_weekaim_total(item) }}</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+	
+					
+					<!---------------------------月分析---------------------------------------------->
+					<div id="month" class="tab_content">
+						<div>
+							請選擇月份:<input type="text" class='d_month'/>
+						</div>
+						<div id="monthtable">
+							<!-- <div>
+								<span>請選擇分析項目：</span>
+								<span v-for="(item,index) in anay_type_names">
+									<input type="checkbox" :id="'anay_types'+index" :value="item" v-model="anay_types" @click="save_anay_type(item)">
+									<label :for="'anay_types'+index">{{item}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+								</span>
+							</div> -->
+	
+							<div>
+								<span>請選擇人員：</span>
+								<span v-for="item in user">
+									<input type="checkbox" :id="'name'+item.id" :value="item" v-model="user_selected" @click="save_user(item)">
+									<label :for="'name'+item.id">{{item.name}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+								</span>
+							</div>
+	
+							<h3><span v-text="year"></span>年<span v-text="month"></span>月</h3>
+							<div class="edit_form">
+								<table class="table edit_table" style="min-width: 1200px;">							
+									<tr class="edit_table tr ">
+										<th class="text-right" style="width:8%;"></th>
+										<th class="text-right" style="width:8%;">一</th>
+										<th class="text-right" style="width:8%;">二</th>
+										<th class="text-right" style="width:8%;">三</th>
+										<th class="text-right" style="width:8%;">四</th>
+										<th class="text-right" style="width:8%;">五</th>
+										<th class="text-right" style="width:8%;color:red;">六</th>
+										<th class="text-right" style="width:8%;color:red;">日</th>
+										<th class="text-right" style="width:8%;">本週總<br>達成數</th>
+										<th class="text-right" style="width:8%;">日平均<br>目標數</th>
+										<th class="text-right" style="width:8%;">本週總<br>目標數</th>
+									</tr>
+									<tr v-for="weeknum in week_num">
+										<td colspan="11" style="padding: 0px">
+											<table class="table edit_table" style="min-width: 1200px;">		
+												<tr class="sectr text_align_center">
+													<td class="text-center" style="width:8%;"></td>
+													<td v-for="week_day in [0,1,2,3,4,5,6]" class="text-center" style="width:8%;">
+														<span v-if="typeof(monthdata_totable[(weeknum-1)*7+week_day].date) != 'undefined'">
+															{{parseInt(month)}}/{{monthdata_totable[(weeknum-1)*7+week_day].date}}
+														</span>
+													</td>
+													<td class="text-center" style="width:8%;"></td>
+													<td class="text-center" style="width:8%;"></td>
+													<td class="text-center" style="width:8%;"></td>
+												</tr>
+												<tr v-for="(anay_type_name,index) in anay_types" class="big_font">
+													<td class="typetd">{{ anay_type_name}}</td>
+													
+													<td v-for="week_day in [0,1,2,3,4,5,6]">
+														<span v-if="typeof(monthdata_totable[(weeknum-1)*7+week_day].date) != 'undefined'">
+															<day_template :day_count="get_daycount( (weeknum-1)*7+week_day, anay_types[index] )"
+																		   :day_aim="get_weekaim( weeknum, anay_types[index] )/get_week_days(weeknum)" 
+																		   :week_day="week_day">
+															</day_template>
+														</span>
+													</td>
+		
+													<td>
+														<day_template :day_count="get_weekcount( weeknum, anay_types[index] )"
+																	   :day_aim="get_weekaim(weeknum, anay_types[index])" 
+																	   :week_day="0">
+														</day_template>
+													</td>
+													<!-- 平均數-->
+													<td class="text-right liteblue_background">
+														{{ parseFloat( get_weekaim( weeknum, anay_types[index] )/5 ).toFixed(1) }}
+													</td>
+													<td class="text-right liteblue_background">
+														{{ get_weekaim(  weeknum, anay_types[index] ).toFixed(1) }}
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+		
+							</div>
+							
+							<hr>
+							
+							<h3>本月總計</h3>
+							<table class="table col-12 col-md-6">
+								<tr class="edit_table tr ">
+									<th class="text-right" style="width:8%;"></th>
+									<th class="text-right" style="width:8%;">本月總達成數</th>
+									<th class="text-right" style="width:8%;">本月總目標</th>
+								</tr> 
+								<tr v-for="(anay_type_name,index) in anay_types" class="big_font">
+									<td class="text-right typetd">{{ anay_type_name}}</td>
+									<td class="text-right" 
+										:style="checkaim(get_monthcount(anay_types[index]), get_monthaim( anay_types[index] ))">
+										{{ get_monthcount(anay_types[index]) }}
+									</td>
+									<td class="text-right liteblue_background">
+										{{ get_monthaim( anay_types[index] ) }}
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+	
+				</div>
+			</div>
+			
+		</div>
+	</div>
+</section>
+
+
+<include file="Public:footer" />
+<script>
+	function hideweek_selector(){
+		$('.week_selector').hide();
+		if(weektable && monthtable){
+        	monthtable.user_selected = weektable.user_selected;
+        	// monthtable.anay_types = weektable.anay_types;
+        }
+	}
+	function showweek_selector(){
+		$('.week_selector').show();
+		if(weektable && monthtable){
+			weektable.user_selected = monthtable.user_selected;
+			// weektable.anay_types = monthtable.anay_types;
+		}
+	}
+</script>
+<script>
+	// 頁籤功能
+	$( ".content_menu" ).tabs();
+	if({$tab} == -2){
+		$(".tab_week").click();
+	}else if({$tab} == -3){
+		$(".tab_month").click();
+	}
+
+	$( ".tab" ).click(function(){
+		var myin=$(this);
+		$.ajax({
+			method:'post',
+			data:{data:myin.val()},
+			dataType:'json',
+			url:"{:U('Anay/tab')}",
+		});	
+	});
+
+	function anay_type_local_storage(item){
+		var pre_selected = localStorage.getItem('apdata_anay_type');
+		if(typeof(pre_selected)!='undefined' && pre_selected != null){
+			pre_selected = JSON.parse(pre_selected);
+			exist = false;
+			for (var i = 0; i < pre_selected.length; i++) {
+				if(pre_selected[i] == item){
+					exist = true;
+					pre_selected.splice(i,1);
+					break;
+				}
+			}
+			if(!exist){
+				pre_selected.push(item)
+			}
+		}else{
+			pre_selected = [item];
+		}
+		// console.log(pre_selected)
+		localStorage.setItem('apdata_anay_type', JSON.stringify(pre_selected));
+	}
+	function user_local_storage(item){
+		var pre_selected = localStorage.getItem('user_selected');
+		if(typeof(pre_selected)!='undefined' && pre_selected != null){
+			pre_selected = JSON.parse(pre_selected);
+			exist = false;
+			for (var i = 0; i < pre_selected.length; i++) {
+				if(pre_selected[i]['id'] == item.id){
+					exist = true;
+					pre_selected.splice(i,1);
+					break;
+				}
+			}
+			if(!exist){
+				pre_selected.push(item)
+			}
+		}else{
+			pre_selected = [item];
+		}
+		// console.log(pre_selected)
+		localStorage.setItem('user_selected', JSON.stringify(pre_selected));
+	}
+
+	function checkaim(num, aim, week_day=0){
+    	if(week_day==5 || week_day==6) return 'color: rgb(0,0,0)';
+    	var rgb = (num>=aim) ? 'color: rgb(0,150,0)' : 'color: rgb(225,0,0)';
+        return rgb;
+    }
+	// 週分析 開始 @mouseout="change_crm_block(anay_type_index, anay_type_item, index, item.id, 'none')"
+	Vue.component('day_template',{
+        template: `
+        	<div class="text-right"
+        		 :style="checkaim(day_count, (day_aim).toFixed(1), week_day)"
+        	>
+        		{{ day_count }} 
+					<span v-if="week_day!=5 && week_day!=6">/ {{ parseFloat(day_aim).toFixed(0) }} </span>
+				<br>
+				<span v-if="week_day!=5 && week_day!=6">
+					<span v-if="day_aim==0 && day_count==0">0%</span>
+					<span v-if="day_aim==0 && day_count!=0">100%</span>
+					<span v-if="day_aim!=0">
+						{{ parseFloat(day_count / day_aim * 100).toFixed(1)}}%
+					</span>
+				</span>
+        	</div>
+        `,
+        props: {
+        	day_count: String,
+        	day_aim: String,
+            week_day: String,
+        },
+        methods:{
+        },
+    });
+	Vue.component('anayrow_template',{
+        template: `
+			<table class="anayrow_template edit_table" style="min-width: 1200px;">
+                <tr class="color1">
+					<td colspan="11">{{anay_type_item}}數</td>
+				</tr>
+				<tr v-for="item in row_user_selected">
+					<td>{{item.name}}</td>
+
+					<td v-for="(record, index) in row_weekdata"
+						@click="change_crm_block(anay_type_index, anay_type_item, index, item.id, 'block')">
+						<day_template :day_count="get_daycount(index, anay_type_item, item.id)"
+									   :day_aim="get_weekaim(anay_type_item, item.id)/5" 
+									   :week_day="index">
+						</day_template>
+						<div :class="'crm_block_'+index+'_'+anay_type_index+'_'+item.id+' crm_block'"></div>
+					</td>
+
+					<td>
+						<day_template :day_count="get_weekcount(anay_type_item, item.id)"
+									   :day_aim="get_weekaim(anay_type_item, item.id)" 
+									   :week_day="0">
+						</day_template>
+					</td>
+					<td class="text-right">{{ (get_weekaim(anay_type_item, item.id)/5).toFixed(1) }}</td>
+					<td>
+						<input class="text-right"
+							   :value="get_weekaim(anay_type_item, item.id)" 
+							   :id="'aim_'+anay_type_index+'_'+item.id"  
+							   :db_name="anay_type_item" 
+							   :user_id="item.id" 
+							   @blur="save_aim('aim_'+anay_type_index+'_'+item.id)"
+							   style="width:100%;text-align:center" align="center" >
+					</td>
+				<tr>
+			</table>
+        `,
+        props: {
+        	anay_type_item: String,
+        	anay_type_index: Number,
+            row_weekdata: Array,
+            row_user_selected: Array,
+        },
+        methods:{
+        	get_crm: function(num ,anay_type,  user_id = 0){
+        		target = this.row_weekdata[num]['user_data'];
+        		crm_name = '';
+        		crm_name_list = [];
+        		if(user_id != 0){ // 顯示個人公司名稱
+	            	if(typeof(target[user_id][anay_type]['crm_name']) != 'undefined')
+	                    crm_name_list = target[user_id][anay_type]['crm_name'].split(',').slice(0,-1);
+	                	for(var i =0; i<crm_name_list.length; i++){
+	                		crm_data = crm_name_list[i].split(':');
+	                		crm_data_id = crm_data[1].split('@');
+	                		crm_name += '<text class="crm_type'+crm_data_id[1]+'">';
+	                		if(''!='{$use_function|in_array=75, ###}'){
+	                			crm_name += '	<a href="/index.php/Custo/view_re.html?id='+crm_data_id[0]+'" target="_blank">';
+	                        }else{
+	                        	crm_name += '	<a>';
+	                        }
+	                        crm_name += crm_data[0]+'</a>';
+                			crm_name += '</text><br/>';
+	                	}
+	                	// crm_name = crm_name_list.join('<br/>');
+	            }
+	            return crm_name;
+        	},
+        	get_daycount: function(num ,anay_type,  user_id = 0){
+	            target = this.row_weekdata[num]['user_data'];
+	            count = 0;
+	            if(user_id != 0){ // 計算個人當週總數
+	            	if(typeof(target[user_id][anay_type]['count']) != 'undefined')
+	                    count = parseInt(target[user_id][anay_type]['count']);
+	            }
+	            return count;
+	        },
+        	get_weekcount: function(anay_type, user_id = 0){
+        		count = 0
+                for(var x=0; x<this.row_weekdata.length; x++){
+                	target = this.row_weekdata[x]['user_data']
+                	if(user_id != 0){ // 計算個人當週總數
+                		try{
+                            if(typeof(target[user_id][anay_type]['count']) == 'undefined') continue;
+	                            count += parseInt(target[user_id][anay_type]['count']);
+                        }catch (e) {
+                            count +=0;
+                        }
+                	}
+                }
+                return count;
+            },
+        	get_weekaim: function(anay_type, user_id = 0){
+                count = 0;
+
+                for(var x=0; x<this.row_weekdata.length; x++){
+                    target = this.row_weekdata[x]['user_data']
+                    if(user_id != 0){ // 計算個人當週目標總數
+                    	try{
+                            count += parseFloat(target[user_id][anay_type]['aim']);
+                        }catch (e) {
+                            count +=0;
+                        }
+                 	}
+                }
+                return count;
+            },
+            save_aim:function(selector){
+				selector = '#'+selector;
+				aim_value = $(selector).val();
+				db_name = $(selector).attr("db_name");
+				user_id = $(selector).attr("user_id");
+				date = $('.d_date').val();
+
+				$.ajax({
+					method:'post',
+					data:{
+						dbname:monthtable.anay_type_db[db_name],	//資料表
+						ajax:user_id,								//員工ID
+						data:aim_value,								//數值
+						date:date									//日期YYYY-mm-dd
+					},
+					dataType:'json',
+					url:"{:U('Anay/ajax')}",
+					success:function(res){
+						if(res.status==1){
+		                    bg_class = "bg-success";
+							renew_week_data();
+		                }else{
+		                    bg_class = "bg-danger";
+		                }
+		                Vue.toasted.show(res.info+':'+aim_value, { duration: 1500, className: ["toasted-primary", bg_class] });
+					}
+				});
+            },
+            change_crm_block:function(anay_type_index, anay_type, record_index, user_id, display){
+            	$('.crm_block').css("display",'none')
+            	selector = '.crm_block_'+record_index+'_'+anay_type_index+'_'+user_id;
+            	// console.log(selector);
+            	// alert(display);
+            	crm_html = this.get_crm(record_index,anay_type,user_id);
+            	if(crm_html!=''){
+	            	$(selector).html(crm_html);
+	            	$(selector).css("display",display);
+	            }
+            }
+        }
+    })
+	// 更新週分析資料用，不改變分析項目、選擇人員
+	function renew_week_data(){
+		date = $('.d_date').val();
+		$.ajax({
+	        method:'get',
+	        dataType:'json',
+	        url:"{:u('Anay/get_week_pedata')}?date="+date,
+	        success:function(res){
+	            // console.log(res);
+	            weektable.weekdata = res.record_data;
+	            weektable.mon = res.mon;
+	        }
+	    });
+	}
+	// 初始化週分析資料
+	$.ajax({
+        method:'get',
+        dataType:'json',
+        url:"{:u('Anay/get_week_pedata')}?date="+"{$today}",
+        success:function(res){
+            // console.log(res);
+            weektable.weekdata = res.record_data;
+            weektable.user = res.eip_user;
+
+            var user_selected = localStorage.getItem('user_selected');
+            if(typeof(user_selected) != 'undefined' && user_selected != null){
+            	weektable.user_selected = JSON.parse(user_selected);
+            	monthtable.user_selected = JSON.parse(user_selected);
+            }
+            // var apdata_anay_type = localStorage.getItem('apdata_anay_type');
+            // if(typeof(apdata_anay_type) != 'undefined' && apdata_anay_type != null){
+            // 	weektable.anay_types = JSON.parse(apdata_anay_type);
+            // 	monthtable.anay_types = JSON.parse(apdata_anay_type);
+            // }
+
+            weektable.mon = res.mon;
+            // console.log(weektable.weekdata);
+        }
+    });
+    // 初始化週分析時間選擇器
+	$(".d_date").datepicker({
+        firstDay : 0,
+        defaultDate : "-7d",
+        onClose:function() { 
+            //ajax讀資料
+            renew_week_data();
+        },
+	});
+	$(".d_date").datepicker( "option", "dateFormat",'yy-mm-dd');
+	$(".d_date").datepicker("setDate",'{$today}');
+
+	var weekdata = {
+                    anay_type_names:["簽約金額"],
+                    anay_types:["簽約金額"],
+                    mon:[],
+                    weekdata: [],
+                    user:[],
+                    user_selected:[],
+                }
+
+    var weektable = new Vue({
+        el: '#weektable', 
+        data: weekdata,
+        computed: {
+        },
+        methods: {
+        	save_anay_type: function(item){
+        		anay_type_local_storage(item);
+        	},
+        	save_user: function(item){
+        		user_local_storage(item);
+        	},
+        	get_weekcount_total: function(anay_type){
+        		count = 0
+                for(var x=0; x<this.weekdata.length; x++){
+                	target = this.weekdata[x]['user_data']
+					// 計算所有人當週總數
+                    for (var i=0; i<this.user_selected.length; i++) { 
+                        try{
+                            if(typeof(target[this.user_selected[i]['id']][anay_type]['count']) == 'undefined') continue;
+                            count += parseInt(target[this.user_selected[i]['id']][anay_type]['count']);
+                        }catch (e) {
+                            count +=0;
+                        }
+                    }
+                }
+                return count;
+            },
+        	get_weekaim_total: function(anay_type){
+                count = 0;
+                for(var x=0; x<this.weekdata.length; x++){
+                    target = this.weekdata[x]['user_data']
+					 // 計算所有人當週目標總數
+                    for (var i=0; i<this.user_selected.length; i++) { 
+                        try{
+                            count += parseFloat(target[this.user_selected[i]['id']][anay_type]['aim']);
+                        }catch (e) {
+                            count +=0;
+                        }
+                    }
+                }
+                return count;
+            },
+        }
+    });
+    // 週分析結束
+
+
+	// 月分析開始
+	$(".d_month").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        showButtonPanel: true,
+        dateFormat: 'yy-mm',
+        // firstDay :  0,
+        onClose: function(dateText, inst) { 
+            var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+            var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+            $(this).datepicker('setDate', new Date(year, month, 1));
+            focus_d_month = false;
+
+            //ajax讀資料
+            get_month_data();
+        },
+    });
+    $(".d_month").datepicker("setDate",'today');
+    var focus_d_month = false;
+    $(".d_month").focus(function () {
+        $(".ui-datepicker-calendar").hide();
+        $("#ui-datepicker-div").position({
+            my: "center top",
+            at: "center bottom",
+            of: $(this)
+        });
+        focus_d_month = true;
+
+    });
+    $(".d_month").click(function () {
+        var d_month = $('.d_month').val()
+        if(d_month != ''){
+            $('.ui-datepicker-year option[value="'+d_month.split('-')[0]+'"]').selected();
+            $('.ui-datepicker-month option[value="'+ (parseInt(d_month.split('-')[1])-1 )+'"]').selected();
+        }
+    });
+
+    function get_month_data(){
+        $.ajax({
+            method:'get',
+            url:"{:u('Anay/get_month_pedata')}?id={$_GET['id']}"+"&date="+$('.d_month').val(),
+            success:function(res){
+                monthtable.monthdata = res.record_data;
+                monthtable.user = res.eip_user;
+                // monthtable.user_selected = res.eip_user;
+                monthtable.year =  $(".d_month").val().split('-')[0];
+                monthtable.month = $(".d_month").val().split('-')[1];
+                // console.log(monthtable.monthdata);
+            }
+        });
+    }
+
+    var monthdata = {
+                    anay_type_names:["簽約金額"],
+                    anay_type_db:{
+                    				'簽約金額':'anay_pedata',
+                    			},
+                    anay_types:["簽約金額"],
+                    monthdata: [], year:"", month:"",
+                    user:[],
+                    user_selected:[],
+                }
+    var monthtable = new Vue({
+        el: '#monthtable', 
+        data: monthdata,
+        computed: {
+            current_month_datetime:  function () {
+                var d = new Date(this.year, parseInt(this.month)-1);
+                return d
+            },
+            week_num: function () {
+                var d = this.current_month_datetime;
+                var add_weeknum = d.getDay() == 0 ? 7 : d.getDay()
+                return Math.ceil( ( parseInt(add_weeknum) + this.monthdata.length) /7);
+            },
+            monthdata_totable: function(){
+                b = this.current_month_datetime.getDay()-1 <0 ? 6 : this.current_month_datetime.getDay()-1
+                var temp = [];
+                for (var i=0; i<b; i++) { temp.push({}); }
+                temp = temp.concat(this.monthdata);
+                for(var i=0; temp.length<42; i++){ temp.push({}); }
+
+                return  temp;
+            },
+        },
+        methods: {
+        	save_anay_type: function(item){
+        		anay_type_local_storage(item);
+        	},
+        	save_user: function(item){
+        		user_local_storage(item);
+        	},
+        	get_week_days: function(weeknum){
+        		counts = 0;
+        		for (var i = 0; i < [0,1,2,3,4,5,6].length; i++) {
+        			if(typeof(this.monthdata_totable[(weeknum-1)*7+i].date) != 'undefined'){
+        				date = new Date(this.year+'-'+(this.month)+'-'+this.monthdata_totable[(weeknum-1)*7+i].date)
+        				if(date.getDay()!=0 && date.getDay()!=6){ /*不是週日跟週六*/
+        					counts+=1;
+        				}
+        			}
+        		}
+        		return counts;
+        	},
+            get_daycount: function(num, anay_type){
+                target = this.monthdata_totable[num]['user_data']
+                count = 0;
+                for (var i=0; i<this.user_selected.length; i++) { 
+                    try{
+                        if(typeof(target[this.user_selected[i]['id']][anay_type]['count']) == 'undefined') continue;
+                        count += parseInt(target[this.user_selected[i]['id']][anay_type]['count']);
+                    }catch (e) {
+                        count +=0;
+                    }
+                }
+                return count;
+            },
+            get_weekcount: function(weeknum, anay_type){
+                count = 0;
+                if (weeknum*7 == 42){
+                    $index_start = (weeknum-1)*7;
+                    $index_end = this.monthdata_totable.length;
+                }else{
+                	$index_start = (weeknum-1)*7;
+                	$index_end = weeknum*7;
+                }
+
+                for(var x=$index_start; x<$index_end; x++){
+                    count += this.get_daycount(x, anay_type)
+                }
+                return count;
+            },
+            get_monthcount: function(anay_type){
+                count = 0;
+                for(var weeknum =1; weeknum<=this.week_num; weeknum++){
+                	count += this.get_weekcount(weeknum, anay_type);
+                }
+                return count;
+            },
+            get_weekaim: function(weeknum, anay_type){
+                count = 0;
+                if (weeknum*7 == 42){
+                    weekarray = this.monthdata_totable.slice( (weeknum-1)*7);
+                }else{
+                    weekarray = this.monthdata_totable.slice( (weeknum-1)*7, weeknum*7);
+                }
+                for(var x=0; x<weekarray.length; x++){
+
+                    target = weekarray[x]['user_data']
+                    if(typeof(target) == 'undefined') continue;
+                    for (var i=0; i<this.user_selected.length; i++) { 
+                        try{
+                            count += parseInt(target[this.user_selected[i]['id']][anay_type]['aim']);
+                        }catch (e) {
+                            count +=0;
+                        }
+                    }
+                }
+                return count;
+            },
+            get_monthaim: function(anay_type){
+                count = 0;
+                for(var weeknum =1; weeknum<=this.week_num; weeknum++){
+                	count += this.get_weekaim(weeknum, anay_type);
+                }
+                return count;
+            },
+        }
+    });
+
+    $(document).ready(function(){
+        get_month_data();
+    })
+    // 月分析結束
+</script>		

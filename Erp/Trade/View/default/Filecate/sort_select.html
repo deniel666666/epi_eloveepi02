@@ -1,0 +1,41 @@
+<div class="document_edit">
+	<!-- 輸入階層名稱 -->
+	<form action="{:u('Filecate/select_sort')}" method="post" class="layer_setting w100">
+		<input type="hidden" name="fid" value="{$_GET['id']}">
+		<div class="name_layer">
+			<label for="">選擇分類：</label>
+			<div class="outter_select">
+				<select name="sort2">
+					<option value="">選擇分類</option>
+					<foreach name="is_sort" item="vo" key="vo_key">
+						<option value="{$vo_key}">{$vo_key}</option>
+					</foreach>
+				</select>
+			</div>
+		</div>
+		<input class="change_layer_send addbtn btn" type="button" value="送出" onclick="send()">
+	</form>
+	<!-- end -->
+</div>
+	
+<script>
+	function send(){
+		$.ajax({
+	        method:'post',
+	        dataType:'json',
+	        url:"{:u('Filecate/select_sort')}",
+	        data:{fid:"{$_GET['id']}", sort:$('select[name="sort2"]').val()},
+	        success:function(res){
+	        	localStorage.setItem('Filecate_read_url', res.url);
+	        	$.ajax({
+                    method:'get',
+                    dataType:'text',
+                    url:res.url,
+                    success:function(res2){
+                        $('.document .right').html(res2)
+                    }
+                });
+	        }
+	    });
+	}
+</script>

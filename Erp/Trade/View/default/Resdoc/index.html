@@ -1,0 +1,73 @@
+<include file="Public:header2" />
+
+<!-- .wrapAll -->
+<section class="main">
+	<!---->
+	<div id="right">
+		<div class="document_edit">
+			<if condition="$access['resdoc_new'] eq '1'">
+				<form action="{:u('Resdoc/do_add')}" method="post">
+					標題：<input type="text" placeholder="標題..." name="title" /><br>
+					內文：
+					<input type="hidden" name="content" id="descriptions" value="請輸入內容...">
+					<input type="submit" class="btn mt-1 mb-1 addbtn"/>
+				</form>
+			</if>
+			<div class="edit_form mt-2">
+				<table class="w-100 table edit_table" style="min-width:992px">
+					<thead>
+						<tr class="gray">
+							<th style="width:60px">代號</th>
+							<th>標題</th>
+							<th>內文</th>
+							<th style="width:120px">編寫者</th>
+							<th style="width:120px">日期</th>
+						</tr>
+					</thead>
+					<tbody>
+						<volist name="resources_document" id="vo" key="k" >
+							<tr>
+								<td>{$k}</td>
+								<td><a href="{:u('Resdoc/view','id='.$vo['id'])}">{$vo['title']}</a></td>
+								<td>{$vo['content']|strip_tags|mb_substr=0,30,'utf-8'}...</td>
+								<td>{$vo['name']}</td>
+								<td>{$vo['date']|date="Y/m/d",###}</td>
+							</tr>
+						</volist>
+					</tbody>
+					
+					
+					
+				</table>
+			</div>
+		</div>
+		
+		
+	</div><!-- .wrapAll end-->
+</section>
+<include file="Public:footer" />
+
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script>
+	var editor;
+	KindEditor.ready(function(K) {
+		editor = K.create('#descriptions', {
+			afterBlur: function(){this.sync();},
+			langType : 'zh_TW',
+			items:[
+			'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
+			'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+			'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+			'superscript', 'quickformat', 'selectall', '|', 'fullscreen', '/', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+			'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
+			'table', 'hr', 'emoticons', 'pagebreak',
+			'anchor', 'link', 'unlink', '|', 'about'],
+			width:'100%',
+			height:'300px',
+			resizeType:0
+		});
+	});
+</script>
+

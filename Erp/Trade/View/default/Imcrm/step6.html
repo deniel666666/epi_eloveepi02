@@ -1,0 +1,54 @@
+<include file="Public:header2" />
+
+<section class="document main">
+	<div class="top_bar">
+		<div class="crumbs">
+			<a href="#">匯入客戶</a>
+			<span>></span><a href="#">本次新匯入的名單</a>
+		</div>
+	</div>
+	<div class="below">
+		
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+		
+
+		<div class="right">
+			<div class="document_edit">
+				<div class="d-flex justify-content-end"><input class="btn delate" type="button" value="離開匯入客戶" onclick="leaveImport(need_check=false)" /></div>
+				
+				<form method="post" action="">
+					<span>本次新匯入的名單</span>
+					<!--<input type="submit" value="刪除所選"> -->
+					
+					<div class="naviPage"><span class="vRight">{$nav['previous']}{$nav['mun']}{$nav['next']}</span></div>
+					<div class="edit_form">
+						<table class="table edit_table" cellpadding="0" cellspacing="0" id="sameTable">
+							<thead>
+								<tr>
+									<th style="width:40px"><input type="checkbox" class="seleall" /></th>
+									<th>{$coper_role['name']}人員</th>
+									<th>{$system_parameter["廠商類型"]}</th>
+									<th>{$system_parameter["公司名稱"]}</th>
+									<th>{$system_parameter["統編"]}</th>
+									<th>{$system_parameter["地址"]}</th>
+									<th>{$system_parameter["公司電話"]}</th>
+									<th>{$system_parameter["官方網站"]}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{$op}
+							</tbody>
+						</table>
+					</div>
+					<div class="naviPage">
+						<!--<input type="submit" value="刪除所選">-->
+					<span class="vRight">{$nav['previous']}{$nav['mun']}{$nav['next']}</span></div>
+				</form>
+			</div>
+			
+		</div>
+	</div>
+</section>
+<include file="Public:footer" />

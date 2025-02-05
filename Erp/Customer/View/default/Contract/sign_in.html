@@ -1,0 +1,361 @@
+<include file="Public:header" />
+
+<head>
+  <!-- 簽名功能 -->
+  <link href="/Public/qhand/signature/signature.css?2" rel="stylesheet" type="text/css" />
+
+  <style type="text/css">
+    body{
+      line-height: 1;
+    }
+    table td{
+      border: 1px solid #3c3c3c;
+    }
+    .question_red:has(.span_title),
+    .signature_area .signature_red{
+      border-color: red;
+      color: red;
+    }
+    .signature_area .question_click:has(.span_ans),
+    .signature_area .signature_click:has(img){
+      border: 0;
+    }
+    .signature_red.border-0.text-dark span{
+      display: none;
+    }
+    .signature_area{
+      border: 0;
+      background: unset;
+    }
+    .signature_area .question_click{
+			justify-content: left;
+      /* background: white; */
+    }
+    .modal-open .modal{
+      background: #00000088;
+    }
+    .modal-backdrop.show{
+      display: none;
+    }
+
+    .div_html{
+      width: 100%;
+      height: 100%;
+    }
+
+    .contract_upload_img{
+      max-width: 100%;
+      max-height: 100%;
+      /*-drag: none;
+      user-select: none;
+      -moz-user-select: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;*/
+    }
+  </style>
+</head>
+
+<div id="body_block" class="bg-dark position-fixed w-100" style="
+     display: none;
+     height: 100vh;
+     z-index: 10000;
+     opacity: 0.5;
+     top: 0;
+"></div>
+<section id="signature_sign_in"  class="main">
+  <div class="border-0">
+    <div class="signature_area d-block">
+      <!-- 簽名區 -->
+      <div class="d-flex align-items-center flex-column mt-3">
+        <div class="sign_in_area">
+          <h3 class="font-weight-bold">合約內容</h3>
+        </div>
+        <div class="sign_in_area mb-3 d-flex flex-wrap">
+          <h5 class="font-weight-bold col-md-6 col-12 p-0">客戶名稱：<span v-text="c_name"></span></h5>
+          <h5 class="font-weight-bold col-md-6 col-12 p-0">合約金額：
+            <span v-text="Math.round(allmoney*(invoice=='二聯' || invoice=='三聯' ? 1.05 : 1)).toLocaleString('en-US')"></span>
+            <span v-if="invoice=='二聯' || invoice=='三聯'">(含稅)</span>
+          </h5>
+          <!-- <div v-if="complete=='0'" class="col-12 p-0">
+            <textarea id="note" style="width: 100%; height: 500px;"></textarea>
+          </div> -->
+        </div>
+      </div>
+      <hr class="col-12 p-0">
+      <!-- 簽名區 -->
+      <div id="canvas_img" class="d-flex justify-content-center mb-3">
+        <div style="overflow-x: scroll;">
+          <div class="sign_in_area" style="width: auto;">
+            <div class="overflow_hidden" style="overflow: visible;">
+              <div :class="['signature_click signature_red', complete==0 ? 'cursor_pointer' : 'border-0']"
+                   :id="'signature_click_' + index"
+                   v-for="(signature, index) in signatures"
+                   v-bind:style="{
+                      width: signature.w + 'px',
+                      height: signature.h + 'px',
+                      left: signature.p_x + 'px',
+                      top: signature.p_y + 'px',
+                   }"
+                   @click="eidt_signature(index)">
+                <span v-if="signature.sign==''">點我簽名</span>
+                <img class="w-100" v-if="signature.sign!=''" :src="signature.sign" draggable="false">
+              </div>
+              <div v-for="(question, index) in questions"
+                  :id="'question_click_' + index"
+                  :class="[
+                    question.staff_only=='0' || (question.staff_only=='1' && adminId) ? 'question_red' : '', 
+                    complete==0 ? 'cursor_pointer' : 'border-0',
+                    (question.staff_only=='1' && !adminId) ? 'border-0' : '',
+                    'question_click',
+                    question.type=='img' ? 'd-flex align-items-center justify-content-center' : '',
+                  ]" 
+                  v-bind:style="{
+                    width: question.w + 'px',
+                    height: question.h + 'px',
+                    left: question.p_x + 'px',
+                    top: question.p_y + 'px',
+                  }"
+                  @click="eidt_question(index)">
+                <template v-if="['text','number','date'].indexOf(question.type)!=-1">
+                  <span class="span_ans" v-text="question.ans" v-if="question.ans!=''"></span>
+                  <span class="span_title" v-text="question.title" 
+                        v-if="((adminId && question.staff_only==1 || question.staff_only==0)) && 
+                              (question.ans=='' && complete=='0')">
+                  </span>
+                </template>
+                <template v-if="['textarea'].indexOf(question.type)!=-1">
+                  <div class="span_ans div_html" v-if="question.ans!=''" v-html="question.ans"></div>
+                  <span class="span_title" v-text="question.title" 
+                        v-if="((adminId && question.staff_only==1 || question.staff_only==0)) && 
+                              (question.ans=='' && complete=='0')">
+                  </span>
+                </template>
+                <template v-if="['checkbox','radio','select'].indexOf(question.type)!=-1">
+                  <span class="span_ans" v-text="question.ans.join(', ')" v-if="question.ans.length!=0"></span>
+                  <span class="span_title" v-text="question.title" 
+                        v-if="((adminId && question.staff_only==1 || question.staff_only==0)) && 
+                              (question.ans.length==0 && complete=='0')">
+                  </span>
+                </template>
+                <template v-if="types_file.indexOf(question.type)!=-1">
+                  <template v-if="question.ans.data">
+                    <a class="span_ans"
+                      :name="'field_id_'+ question.i+'_link'" 
+                      :href="question.ans.blob_link ? question.ans.blob_link : question.ans.data" 
+                      target="_blank"
+                      v-if="question.type=='file'"
+                      v-text="question.ans.file_name">
+                    </a>
+                    <img class="contract_upload_img" v-if="question.type=='img'" :src="question.ans.data">
+                  </template>
+                  <span class="span_title" v-text="question.title" 
+                        v-if="((adminId && question.staff_only==1 || question.staff_only==0)) && 
+                              (!question.ans.data && complete=='0')">
+                  </span>
+                </template>
+              </div>
+            </div>
+            <div class="img_content">
+              <div class="position-relative" v-for="(img, index) in imgs">
+                <img class="" style="max-width: 1000px;" :src="img">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <div class="sign_in_area">
+          <template v-if="complete!='0'">
+            <p class="text-danger text-center">附註：可點右鍵再按列印，列印成紙本或另存成PDF，或透「轉成圖片」按鈕保留合約</p>
+            <div class="w-100 btn btn-primary mb-3" @click="print">轉成圖片</div>
+          </template>
+          <template v-if="complete=='0'">
+            <if condition="$adminId">
+              <p class="text-danger text-center">附註：可點右鍵再按列印，列印成紙本或另存成PDF，或透「轉成圖片」按鈕保留合約</p>
+              <div class="w-100 btn btn-primary mb-3" @click="print">轉成圖片</div>
+              <div class="w-100 btn btn-warning mb-4" @click="submit_setting">設定合約內容</div>
+            </if>
+            <div class="w-100 btn btn-success mb-3" @click="submit">送出合約</div>
+          </template>
+        </div>
+      </div>
+      <div id="print_area"></div>
+    </div>
+  </div>
+
+  <!--簽名畫面///////////////////////////////////////////////-->
+  <a id="signatureEditView_btn" data-toggle="modal" data-target="#signatureEditView"></a>
+  <div class="modal p-0 fade" id="signatureEditView" tabindex="-1" role="dialog" 
+       aria-labelledby="signatureEditViewTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="signatureEditViewTitle">簽名</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body container-fluid">
+          <div class="row w-100 m-0">
+            <div class="col-12 p-0 mb-4">
+              <div class="sigPad mb-2" v-if="complete=='0'">
+                簽名區：<span class="btn btn-danger clearButton float-right">清空簽名區</span>
+                <div class="sig sigWrapper">
+                  <canvas class="pad border" width="100" height="100"></canvas>
+                </div>
+              </div>
+              <div v-if="edit_view.sign!=''">
+                簽名：</span>
+                <img class="w-100" :src="edit_view.sign" draggable="false">
+              </div>
+              <span class="text-danger" v-if="complete=='0'">請簽名後點擊儲存</span>
+            </div>
+            <button class="btn btn-success col-12" 
+                    v-if="complete=='0'"
+                    @click="save_signature">儲存
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--提問畫面///////////////////////////////////////////////-->
+  <a id="signatureEditView_question_btn" data-toggle="modal" data-target="#signatureEditView_question"></a>
+  <div class="modal big_modal p-0 fade" id="signatureEditView_question" tabindex="-1" role="dialog" 
+       aria-labelledby="signatureEditView_questionTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="signatureEditView_questionTitle">
+            <div>
+              問題:
+              <span v-text="edit_view_question.title"></span>
+            </div>
+          </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body container-fluid">
+          <div class="col-12 mb-4">
+            <p>
+              資料類型：
+              <select v-model="edit_view_question.type" disabled>
+                <option v-for="key in Object.keys(data_types)" :value="key" v-text="data_types[key]"></option>
+              </select>
+              <!-- 
+              資料來源：
+              <span v-if="edit_view_question.fields_set_id!=0">常用欄位</span>
+              <span v-if="edit_view_question.fields_set_id==0">自訂</span>
+              -->
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              員工填寫：<input type="checkbox" v-model="edit_view_question.staff_only" true-value="1" false-value="0" disabled/>
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              必填：<input type="checkbox" v-model="edit_view_question.required" true-value="1" false-value="0" disabled/>
+            </p>
+            <!-- 問題輸入區 -->
+            <p>
+              <h5>輸入區：</h5>
+              <div :class="[['textarea'].indexOf(edit_view_question.type)==-1?'d-none':'']">
+                <textarea id="edit_view_textarea" class="form-control" 
+                          :name="'field_id_'+ edit_view_question.i"></textarea>
+              </div>
+              <template v-if="['text','number','date'].indexOf(edit_view_question.type)!=-1">
+                <input :type="edit_view_question.type" class="form-control" :name="'field_id_'+ edit_view_question.i" v-model="edit_view_question.ans">
+              </template>
+              <template v-if="['radio'].indexOf(edit_view_question.type)!=-1">
+                <template v-for="(option, option_k) in edit_view_question.options">
+                  <div class="d-inline-block mr-2">
+                    <input type="radio" 
+                          :id="'field_id_'+ edit_view_question.i+'_'+option_k" 
+                          :name="'field_id_'+ edit_view_question.i"
+                          :value="option"
+                          v-model="edit_view_question.ans[0]"
+                    >
+                    <label :for="'field_id_'+ edit_view_question.i+'_'+option_k"
+                          v-text="option"></label>
+                  </div>
+                </template>
+              </template>
+              <template v-if="['checkbox'].indexOf(edit_view_question.type)!=-1">
+                <template v-for="(option, option_k) in edit_view_question.options">
+                  <div class="d-inline-block mr-2">
+                    <input type="checkbox" 
+                        :id="'field_id_'+ edit_view_question.i+'_'+option_k" 
+                        :name="'field_id_'+ edit_view_question.i"
+                        :value="option"
+                        v-model="edit_view_question.ans"
+                    >
+                    <label :for="'field_id_'+ edit_view_question.i+'_'+option_k"
+                          v-text="option"></label>
+                  </div>
+                </template>
+              </template>
+              <template v-if="['select'].indexOf(edit_view_question.type)!=-1">
+                <select class="form-control" :name="'field_id_'+ edit_view_question.i" v-model="edit_view_question.ans[0]">
+                  <option value="">請選擇</option>
+                  <template v-for="(option, option_k) in edit_view_question.options">
+                    <option :value="option" v-text="option"></option>
+                  </template>
+                </select>
+              </template>
+              <template v-if="types_file.indexOf(edit_view_question.type)!=-1">
+                <input type="file" class="form-control" 
+                        @change="previewFiles"
+                        :name="'field_id_'+ edit_view_question.i"
+                        :accept="edit_view_question.limit">
+                  <template v-if="edit_view_question.ans.data">
+                    已上傳檔案：
+                    <a :name="'field_id_'+ edit_view_question.i+'_link'" 
+                        :href="edit_view_question.ans.blob_link ? edit_view_question.ans.blob_link : edit_view_question.ans.data" 
+                        target="_blank"
+                        v-text="edit_view_question.ans.file_name">
+                    </a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="###" @click="cancel_file">取消上傳</a>
+                  </template>
+              </template>
+            </p>
+            <p :class="[edit_view_question.discription ? '' : 'd-none']">
+              說明：
+              <textarea id="editor_question" :disabled="edit_view_question.fields_set_id!=0"></textarea>
+            </p>
+          </div>
+          <div class="row w-100 m-0">
+            <template v-if="edit_view_question.staff_only=='0' || (edit_view_question.staff_only=='1' && adminId)">
+              <button class="btn btn-success col-12" 
+                      v-if="complete=='0'"
+                      @click="save_question">儲存
+              </button>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<include file="Public:footer" />
+
+<script charset="utf-8" src="/Public/qhand/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="/Public/qhand/js/kindeditor/lang/zh_TW.js"></script>
+
+<!-- 截圖js -->
+<script charset="utf-8" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+
+<!-- 簽名功能 -->
+<script type="text/javascript">
+  const contract_id = '{$id}';
+  const adminId = '{$adminId}';
+</script>
+<script src="/Public/qhand/signature/signature_sign_in.js?2222"></script>
+<script src="/Public/qhand/signature/draw.js"></script>
+<script type="text/javascript">
+  $('#signature_sign_in').on('contextmenu', function(){
+    return false
+  });
+  var sigPad = $('.sigPad').signaturePad({ drawOnly: true });
+</script>

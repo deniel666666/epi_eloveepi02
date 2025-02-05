@@ -1,0 +1,180 @@
+<include file="Public:header2" />
+
+<section class="main document">
+	<div class="top_bar">
+		<div class="crumbs">
+			<a href="#">匯入客戶</a>
+			<span>></span><a href="#">匯入名單名內比對重複</a>
+		</div>
+	</div>
+	<div class="below">
+		
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+		
+		<div class="right">
+			<div class="document_edit">
+				<div class="d-flex justify-content-end" >
+					<input class="typeBtn btn delate" type="button" value="放棄本次匯入" onclick="leaveImport()" />
+				</div>
+				
+				<form id="steptwoform" method="post" action="">
+					<div class="naviPage">
+						<span class="font15px colorRed">匯入數量:{$importclientcount}
+						</span></div>
+						<div class="naviPage">
+							<ul class="handlePro">
+								<li class="proli1 pronow1" >校對
+									{$system_parameter["公司名稱"]}、
+									{$system_parameter["統編"]}、
+									{$system_parameter["地址"]}、
+									{$system_parameter["公司電話"]}、
+									{$system_parameter["官方網站"]}
+								</li>
+							</ul>
+							<div class="deal_repeat d-flex justify-content-end mb-1">
+								<input type="button" class="btn btn-secondary mr-2" onclick="$('table tr:nth-of-type(2) .select_checkbox').attr('checked','checked')" value="不分區選擇第一個"/>
+								<input type="button" class="btn btn-secondary mr-2" onclick="$('table tr:nth-last-of-type(2) .select_checkbox').attr('checked','checked')" value="不分區選最後一個"/>
+								<input type="button" class="btn btn-secondary" onclick="$('.select_checkbox').attr('checked','checked')" value="不分區全選"/>
+							</div>
+						</div>
+						
+						<div id="htmltext" class="edit_form">
+							<!-- 重複名單顯示位置 -->
+							<br />
+						</div>
+						<br />
+						<div class="text-right mt-2">
+							<input id="do_deal_repeat" type="submit" value="處理重複" class="btn sendbtn deal_repeat"/>
+	
+							<a id="nextPage" hidden="true" href="{:u('Imcrm/step3','','')}">
+								<input type="button" value="確認合併，前往下一步" class="btn sendbtn"/>
+							</a>
+						</div>
+				</form>
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+
+<include file="Public:footer" />
+
+<script language="javascript">
+	var arrayProItem = ["name", "no", "addr", "comphone", "url1"];
+	var arrayProWord = [
+		'{$system_parameter["公司名稱"]}',
+		'{$system_parameter["統編"]}',
+		'{$system_parameter["地址"]}',
+		'{$system_parameter["公司電話"]}',
+		'{$system_parameter["官方網站"]}',
+	];
+
+	var handlePro = $('.handlePro');
+	var objText = document.getElementById('htmltext');
+
+	/* 檢查重複 */
+	function goNext(num){
+		//alert(num);
+		var sendData = new Object();
+		sendData.check = arrayProItem[num];
+		// 取得下一個項目的資料
+		$.ajax({
+			type:"POST",
+			dataType:'text',
+			url:"{:u('Imcrm/step2_get_repeat')}",
+			data:sendData,
+			beforeSend: function(){
+				handlePro.append('<li>比對'+ arrayProWord[num] +'中，請稍候...</li>')
+			},
+			success:function(response){
+				// console.log(response.trim());
+				if(response.trim() != ""){ /*有重複*/
+					handlePro.append('<li>'+ arrayProWord[num] +'發現重複</li>')
+					objText.innerHTML = response;
+				}else{
+					num++
+					if(num>=arrayProItem.length){
+						// 資料比對完成
+						objText.innerHTML = '<font color="#FF0000">資料已全部比對完成, 請點擊下一步</font>';
+						$('#nextPage').attr('style', 'display: inline-block !important');
+						$('.deal_repeat').hide();
+					}else{
+						goNext(num);
+					}
+				}//end if
+				
+			},
+			error:function(xhr, ajaxOptions, thrownError){ 
+				alert(xhr.status); 
+				alert(thrownError); 
+			}
+		});
+	}
+	goNext(0);
+
+	$('#do_deal_repeat').on('click', function(e){
+		$('.same td').css('border', 'none');
+
+		count_do = $('.operate_area input[type="radio"]:checked');
+		count_need_do = $('.operate_area');
+
+		error = false;
+		for (var i = 0; i < count_need_do.length; i++) {
+			operate_area = $(count_need_do[i]);
+			operate_method = operate_area.find('input[type="radio"]:checked').val();
+			operate_area_key = operate_area.attr('key');
+
+			/*檢查有無點選處理方式*/
+			switch (operate_method) {
+				case 'monthnull':
+				case 'monthrep':
+					$(count_need_do[i]).css('border', 'none');
+
+					/*檢查是否勾選母體*/
+					monther = $('input[name="monther[' + operate_area_key + ']"]:checked');
+					mother_td = $('.' + operate_area_key + ' .mother_td');
+					if(monther.length==0){
+						mother_td.css('border', 'solid 1px red');
+						error = true;
+					}
+
+					/*檢查是否勾選子體*/
+					child = $('input[name="child[' + operate_area_key + '][]"]:checked');
+					child_td = $('.' + operate_area_key + ' .child_td');
+					if(child.length==0){ /*標記未勾選母體的*/
+						child_td.css('border', 'solid 1px red');
+						error = true;
+					}
+					break;
+			  
+				case 'delck':
+				case 'status1':
+				case 'aloneck':
+					$(count_need_do[i]).css('border', 'none');
+
+					/*檢查是否勾選選擇*/
+					ckb = $('input[name="ckb[' + operate_area_key + '][]"]:checked');
+					ckb_td = $('.' + operate_area_key + ' .ckb_td');
+					console.log(ckb)
+					if(ckb.length==0){ /*標記未勾選母體的*/
+						ckb_td.css('border', 'solid 1px red');
+						error = true;
+					}
+					break;
+
+				default:
+					$(count_need_do[i]).css('border', 'solid 1px red'); /*標記未選擇處理的*/
+					error = true;
+			}
+			
+		}
+
+		if(error){
+			alert('有項目未勾選，請選擇後再點處理重複')
+			e.preventDefault();
+		}
+	});
+</script>

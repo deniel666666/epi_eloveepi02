@@ -1,0 +1,17 @@
+
+	<script src="__PUBLIC__/js/dk-tw-citySelector/dk-tw-citySelector.js"></script>
+	<script language="javascript" type="text/javascript">
+		function ch_value(myObj){
+			var revalue = 1;
+			if($("#"+myObj).val() == 1){
+				revalue = 0;
+				
+				$("#"+myObj).prop("checked",false);
+			}
+			$("#"+myObj).val(revalue);
+		}
+		// $('.citybar').tw_citySelector('.city', '.town');
+		$(function() {
+		    $('form').dk_tw_citySelector('select.city', 'select.town');
+		});
+	</script>

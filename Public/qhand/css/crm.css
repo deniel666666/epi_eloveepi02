@@ -1,0 +1,91 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+
+
+.top{ height:50px; line-height:50px; border-bottom:1px solid #ccc; text-align:left;}
+
+.left_menu dl dt{ border-bottom:1px solid #ccc; border-top:1px solid #ccc;background:#eee; font-weight:bold; padding:0 5px;}
+.left_menu dl dd{ padding:0 16px;}
+
+.list{ margin-top:5px;}
+.list li{ float:left; width:140px; margin-right:2px; margin-bottom:5px;}
+.list li a.list_title{ text-align:center; border:1px solid #ccc; display:block; background:#FFC;}
+.content_menu{
+	display: inline-block;
+}
+
+.clear{margin-bottom:5px;}
+
+#crm_basic{margin-bottom:5px;}
+#crm_details,#crm_boss{
+	float:left;
+	width:100%;
+}
+#crm_sep{float:left; width:0.1%;}
+#add_crm .title{ background:#f6f6f6; width:16%; }
+#crm_details .titleshort{width:5%;}
+#crm_details input,#crm_boss input,#add_crm input{
+	width:100%;
+}
+.editinput{width:60px;}
+.pagelinks a,.pagelinks span{ margin:0 3px;clear:both;}
+.line-bg{
+	background-image:url(imgs/line-bg.gif);
+	background-repeat:no-repeat;}
+.defaults{width:330px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.pagelinks {
+	clear: both;
+
+}
+#crm_details .w200 input {
+	width: 200px;
+}
+.left_menu {
+	width: 15%;
+	float: left;
+}
+.left_menu.spWidth {
+	width: 22%;
+}
+.MTL{
+	width: 20%;
+	float: left;
+}
+.right {
+	float: left;
+	width: 80%;
+}
+.right.spWidth {
+	width:78%;
+}
+
+.crm td.gray {
+	max-width: 70px;
+}
+#crm_basic td {
+	width: 100px;
+}
+td.w0 {
+	padding-top: 0px;
+	padding-right: 1px;
+	padding-bottom: 0px;
+	padding-left: 1px;
+}
+#add_crm  span.w100 input {
+	width: 210px;
+}
+#add_crm div.no100 input {
+	width: auto;
+	margin-right: 5px;
+}
+.no100 {
+	clear: both;
+}
+.w300 {
+	width: 400px;
+}
+.w400 {
+	width: 450px;
+}

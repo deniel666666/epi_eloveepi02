@@ -1,0 +1,108 @@
+<head>
+	<meta charset='UTF-8'>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>列印</title>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+	<!-- Vue -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+	<script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+	<script>Vue.use(Toasted);</script>
+	<style>
+		@page{
+			size: A4 landscape;
+ 			margin-top: 3cm;
+			size: auto;
+			margin: 0mm;
+		}
+		@media print{
+			* {
+				-webkit-print-color-adjust: exact !important;
+			}
+			.noBreak {
+				break-inside: avoid;
+			}
+			.noPrint {
+				display: none;
+			}
+			.noPrintShow {
+				visibility: hidden;
+			}
+		}
+		.print{
+			position: fixed;
+		    bottom: 10px;
+		    left: 48%;
+	        z-index: 999;
+		}
+		.n_font_size, .n_font_size *,
+		.title,
+		.title span{
+			font-weight: 100;
+		}
+
+		.n_font_size, .n_font_size *{
+			font-size:20pt !important;
+		}
+		.rotate{
+			display: inline-block;
+    		transform: rotate(-90deg);
+		}
+
+		.r_addr span{
+			margin: 3pt;
+			min-width: 2rem;
+		}
+		.title span{
+    		margin: 0pt;
+		    min-width: 24pt;
+    		font-size: 28pt;
+		}
+		text{
+		    text-align: -webkit-center;
+		}
+
+		b, b *{
+			font-weight: 100 !important;
+		}
+	</style>
+</head>
+<!-- 2480x3508(A4)(PS) -->
+<!-- 991x1403(A4)(Web) -->
+<!-- 信寬 = (PS寬) * 991 / 2480 -->
+<!-- 信高 = (PS高) * 1403 / 3508 -->
+<body style="margin:0"> <!-- 信封過大無法放入印表機，改成印地址條 -->
+	<input type="button" value="列印" id="print" class="print">
+	<div class="Section1">
+		<volist name="crmlist" id="one" key="num">
+			<!-- 收件者欄 -->
+			<div class="p-4 border">
+				<div class="title">
+					<!-- font-family:'標楷體', sans-serif; -->
+					<span style="font-family:'Noto Sans TC', sans-serif;">
+						<span id="addr_{$one.id}"></span>
+						{$one.address}<br>
+
+						<if condition="$one.cname neq ''">
+							{$one.name}<br>
+							{$one.cname}&nbsp;&nbsp;{$one.cposition}&nbsp;&nbsp;啟<br>
+						<else/>
+							{$one.name}&nbsp;&nbsp;啟<br>
+						</if>
+					</span>
+				</div>
+			</div>
+		</volist>
+	</div>
+
+	<include file="./Erp/Trade/View/default/Custo/print_envelope/zip_js.html" />
+</body>

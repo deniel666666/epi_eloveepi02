@@ -1,0 +1,216 @@
+
+<include file="Public:header2" />
+
+<section class="main ">
+	<!---->
+	<div id="right">
+	
+		<div class="document_edit">
+			<if condition="$page eq ''">
+				<form name="search" id="searchform" action="{:u('Seoto/index')}" method="get">
+					<else />
+					<form name="search" id="searchform" action="{:u('Seoto/index')}?p={$Think.get.p}" method="get">
+					</if>
+					<ol class="headerOl rightR">
+						
+						<li>
+							<select name="gcsele">
+								<option value="">全部分類</option>
+								<foreach name="gcs" item="d" key="key">
+									<if condition="$_GET['gcsele'] eq $key">
+										<option value="{$key}" selected>{$d}</option>
+										<else />
+										<option value="{$key}">{$d}</option>
+									</if>
+								</foreach>
+							</select>
+							<select name="searchEngine">
+								<option value="">搜尋引擎</option>
+								<if condition="$_GET[searchEngine] eq 'yahoo(台灣)'">
+									<option selected>yahoo(台灣)</option>
+									<else />
+									<option >yahoo(台灣)</option>
+								</if>
+								<if condition="$_GET[searchEngine] eq 'google(台灣)'">
+									<option selected>google(台灣)</option>
+									<else />
+									<option >google(台灣)</option>
+								</if>
+								
+							</select>
+						</li>
+						<li>
+							<select name="update">
+								<option value="">月份</option>
+								<foreach name="mdate" item="op">
+									<if condition="$op eq $_GET['update']">
+										<option selected>{$op}</option>
+										<else />
+										<option >{$op}</option>
+									</if>
+								</foreach>
+								
+							</select>
+						</li>
+						
+						<li>
+							<div class="search_bar">
+								<label for=""></label>
+								<input class="text" type="text"  placeholder="搜尋..." name="key_name" value="{$_GET['key_name']}"   />
+								<input class="submit" type="submit" value="" />
+							</div>
+						</li>
+					</ol>
+				</form>
+			<div class="calendar">
+				<p id="nowdata" class="mb-1">{$today}</p>
+				<ul class="seo_month">
+					<foreach name="dis" item="op">
+						<!--{$date}{$op}-->
+						<if condition="$date eq $op">
+							<li style="border:solid 2px red;">
+								<else />
+								<li style="">
+									
+								</if>
+								
+								<a href="{:u('Seoto/index')}?todate={$op}">
+									{$op|substr=8,11}<br>
+								{$monnum[$op]}</a>
+							</li>
+					</foreach>
+				</ul>
+			</div>
+			<div class="status col-lg-6 mb-4">
+				<div class="row">
+					<div class="edit_form">
+						<table class="table edit_table w-100" style="min-width:768px">
+							<tbody>
+								<tr>
+									<td class="gray">總字數</td>
+									<td><a href="{:u('Seoto/index')}?todate={$_GET['todate']}&r=-1">{$total_num}</a></td>
+									<td class="gray">今日掉落</td>
+									<td><a href="{:u('Seoto/index')}?todate={$_GET['todate']}&r=1">{$todaygg}</a></td>
+									<td class="gray">今日上榜</td>
+									<td><a href="{:u('Seoto/index')}?todate={$_GET['todate']}&r=2">{$todaydc}</a></td>
+									<td class="gray">操作達成</td>
+									<td><a href="{:u('Seoto/index')}?todate={$_GET['todate']}&r=3">{$today_sun}&nbsp;&nbsp;<span>達成率：{$today_sun/$total_num*100|number_format=2}%</span></a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+			</div>
+			<div class="edit_form">
+				<table class="table edit_table w-100" style="min-width:1400px">
+					<thead>
+						<tr>
+							<th style="width:4%"><label class="mb-0">全選 <input type="checkbox" class="seleall" name="all" id="all"  /></label></th>
+							<th>序號</th>
+							<th>客戶名</th>
+							<th>搜索引擎</th>
+							<th>網址</th>
+							<th>字組</th>
+							<th>排名</th>
+							<th>達成範圍</th>
+							<th>{$crm_cum_pri[0]['name']}</th>
+							<th>月價格</th>
+							<th>分類</th>
+						</tr>
+					</thead>
+					<tbody>
+						<foreach name="list" item="seo" key="linit">
+							<if condition="$_GET['gcsele'] eq ''">
+								<tr>
+									<td ><input type="checkbox" class="sele" value="{$seo.key_Id}" name="flags[]"/></td>
+									<td>{$linit+1}</td>
+									<td>{$seo[customers_name]|mb_substr=0,5,'utf-8'}</td>
+									<!-- <td>{$seo.engine}</td> -->
+									<td>
+									{$newcont[$seo[key_id]][engine]}</td>
+									<td>
+									{$seo[url_ranking]}</td>
+									<td>{$seo.key_name}</td>
+									<td>{$seo.key_ranking}</td>
+									<td>
+										{$starts[$newcont[$seo[key_id]][starts]]}
+										
+									</td>
+									<td>{$eip_user[$newcont[$seo[key_id]][eid]][rname]}</td>
+									<td>{$newcont[$seo[key_id]][price]}</td>
+									<td>{$gcsele[$newcont[$seo[key_id]][gcsele]]}</td>
+								</tr>
+								<else />
+								<if condition="$newcont[$seo[key_id]][gcsele] eq $_GET['gcsele']">
+									<tr>
+										<td><input type="checkbox" class="sele" value="{$seo.key_Id}" name="flags[]"/></td>
+										<td>{$linit}</td>
+										<td>{$seo[customers_name]|mb_substr=0,5,'utf-8'}</td>
+										<!-- <td>{$seo.engine}</td> -->
+										<td>
+										{$newcont[$seo[key_id]][engine]}</td>
+										<td>
+										{$seo[url_ranking]}</td>
+										<td>{$seo.key_name}</td>
+										<td>{$seo.key_ranking}</td>
+										<td>
+											{$starts[$newcont[$seo[key_id]][starts]]}
+											
+										</td>
+										<td>{$eip_user[$newcont[$seo[key_id]][eid]][rname]}</td>
+										<td>{$newcont[$seo[key_id]][price]}</td>
+										<td>{$gcsele[$newcont[$seo[key_id]][gcsele]]}</td>
+									</tr>
+								</if>
+							</if>
+						</foreach>
+					</tbody>
+					
+					
+					
+				</table>
+			</div>
+			
+			
+		</div>
+		
+	</div>
+	
+</section>
+<include file="Public:footer" />
+
+
+<script language="javascript">
+		$("#searchform").ajaxSubmit({
+		//dataType:'script',
+		type:'post',
+		url: "{:u('Seo/data')}",    
+		beforeSubmit: function(){
+		},
+		success: function(data){
+		$("#data").html(data);
+		$('.loadingdiv').css('display','none');
+		},
+		resetForm: false,
+		clearForm: false
+		});
+		$(document).on('click','#searchbu',function(){
+		$("#searchform").ajaxSubmit({
+		//dataType:'script',
+		type:'post',
+		url: "{:u('Seo/data')}",    
+		beforeSubmit: function(){
+		$('.loadingdiv').css('display','block');
+		
+		},
+		success: function(data){
+		$("#data").html(data);
+		$('.loadingdiv').css('display','none');
+		},
+		resetForm: false,
+		clearForm: false
+		});
+		})
+	});*/
+</script>	

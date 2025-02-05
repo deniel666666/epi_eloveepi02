@@ -1,0 +1,308 @@
+<include file="Public:header2" />
+	<style>
+		#outerIframe{
+		    width: 100%;
+	    	min-width: 820px;
+		}
+	</style>
+
+		<section class="main ">
+			<div id="right" >
+				<form id="searchForm" name="search" class="searchForm" action="{:u($CONTROLLER_NAME.'/index',$_GET)}" method="get">
+					<div class="w100 d-flex align-items-start">
+						<div class="w100 d-flex flex-wrap">
+							<ol class="headerOl rightR">
+								<include file="Custo:search_setting_default" />
+								<include file="Alllist:search_setting_default" />
+							</ol>
+							<div class="accordion" id="accordion_search">
+								<div id="collapseOne" class="collapse collapse" aria-labelledby="headingOne" data-parent="#accordion_search">
+									<ol class="headerOl rightR">
+										<include file="Custo:search_setting" />
+									</ol>
+								</div>
+							</div>
+							<div class="search_bar">
+								<input type="submit" class="text text-center" readonly
+										style="width: 80px; cursor: pointer; padding: 0px" type="submit" value="搜尋  ">
+								<input type="submit" value="" class="submit">
+							</div>
+							<div class="search_bar">
+								<a href="{:u($CONTROLLER_NAME.'/index')}">
+									<input type="text" class="text text-center" readonly
+										style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+								</a>
+							</div>
+						</div>
+						<button class="btn btn-link d-inline-block p-0" type="button" style="width: 100px;" 
+								data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+								進階搜尋
+						</button>
+					</div>
+				</form>
+				<div class="content-table">
+					<div class="navi1">
+						<div class="menu-sub-btn">
+							<ol>
+								<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?cate=&p=1" class="{$_GET['cate']|compare_return='', 'current'}">全部</a></li>
+								<foreach name="crm_cum_cat" item="vo">
+									<if condition="$_GET['cate'] eq $vo['id']">
+										<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?cate={$vo.id}&p=1" class="current">{$vo.name}</a></li>
+									<else />
+										<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?cate={$vo.id}&p=1">{$vo.name}</a></li>
+									</if>
+								</foreach>
+							</ol>
+						</div>
+						<ol class="mb-2 mb-md-0">
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag=-1&flag2=1&p=1" class="{$flag_flag2|compare_return='-1_1', 'current'}">執行區</a></li>
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag=0&flag2=1&p=1" class="{$flag_flag2|compare_return='0_1', 'current'}">提案</a></li>
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag=1&flag2=1&p=1" class="{$flag_flag2|compare_return='1_1', 'current'}">已簽約</a></li>
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag=2&flag2=1&p=1" class="{$flag_flag2|compare_return='2_1', 'current'}">問題案</a></li>
+							<if condition="$access[strtolower($CONTROLLER_NAME).'_hid'] eq '1'">
+								<li>
+									<a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag=-1&flag2=3&p=1" class="{$flag_flag2|compare_return='-1_3', 'current'}">垃圾桶</a>
+								</li>
+							</if>
+						</ol>
+					</div>
+					<div class="page justify-content-end">
+						{$show}
+					</div>
+					<form action="{:u($CONTROLLER_NAME.'/patchupdate')}" method="post">
+						<div class="edit_form">
+							<table cellpadding="2" cellspacing="1" class="table edit_table">
+								<thead class="edit_table_thead">
+									<tr class="edit_table tr ">
+										<th style="width: 20px;" class="text-center" valign="middle">
+											<input type="checkbox" class="seleall" name="all" id="all" />
+										</th>
+										<th style="width: 50px;" class="text-right" valign="middle">序號</th>
+										<th style="width: 100px;" class="text-left">
+											{$system_parameter["客戶"]}{$system_parameter["簡稱"]}
+										</th>
+										<th style="width: 150px" class="text-left"><a href="{:u($CONTROLLER_NAME.'/index', $_GET)}?order=sn">{$system_parameter['合約']}號</a></th>
+										<th style="width: 150px" class="text-left">主題</th>
+										<th style="width: 125px;" class="text-right"><a href="{:u($CONTROLLER_NAME.'/index', $_GET)}?order=allmoney">總金額</a></th>
+										<th style="width: 125px;" class="text-right">
+											{$control_money_input|compare_return=0,'稅後金額','稅前金額'}
+										</th>
+										<th style="width: 100px;" class="text-right"><a href="{:u($CONTROLLER_NAME.'/index', $_GET)}?order=money">訂金</a></th>
+										<th style="width: 100px;" class="text-center"><a href="{:u($CONTROLLER_NAME.'/index', $_GET)}?order=sign_date">簽約日期</a></th>
+
+										<if condition="in_array(65, $use_function_top)">
+											<th style="width: 50px;" class="text-center">字組</th>
+										</if>
+										<th style="width: 50px;" class="text-left"><a href="{:u($CONTROLLER_NAME.'/index', $_GET)}?order=flag">狀態</a></th>
+										<th style="width: 75px;" class="text-left">{$crm_cum_pri[0]['name']}</th>
+										<!-- <th style="width: 75px;" class="text-left">{$crm_cum_pri[1]['name']}</th> -->
+										<!-- <th style="width: 75px;" class="text-left">{$crm_cum_pri[2]['name']}</th> -->
+										<th style="width: 200px;" class="text-left">備註</th>
+										<th style="width: 190px;" class="text-center">操作</th>
+									</tr>
+								</thead>
+								<tbody>
+									<foreach name="crm_contract" key="num" item="one">
+										<tr id="{$one.id}" class="cate_{$one.flag}_color">
+											<td class="text-center">
+												<input type="checkbox" class="seleck" value="{$one.pid}" name="flags[]" />
+											</td>
+											<td class="text-right">{$num+1+$linit}</td>
+											<td>
+												<if condition="in_array(75, $use_function_top)">
+													<a class="cate_{$one.flag}_color" href="{:u('Custo/view_re')}?id={$one[id]}" target="_blank">
+												<else />
+													<a class="cate_{$one.flag}_color" href="{:u('Custo/addcrm')}?id={$one[id]}" target="_blank">
+												</if>
+													{$one['show_name']}
+												</a>
+											</td>
+											<td>
+												<a class="cate_{$one.flag}_color" href="{:u($CONTROLLER_NAME.'/view')}?id={$one[pid]}" target="_blank">
+													{$one.sn}
+												</a>
+											</td>
+											<td>{$one.topic}</td>
+											<td class="text-right">{$one.allmoney|number_format_sys=$control_money_input}</td>
+											<td class="text-right">
+												<if condition="$control_money_input eq 0">
+													{$one.allmoney_aftertax|number_format_sys=$control_money_input}
+												<else />
+													{$one.allmoney_pretax|number_format_sys=$control_money_input}
+												</if>
+											</td>
+											<td class="text-right">
+												{$one.money|number_format_sys=$control_money_input}
+											</td>
+											<td class="text-center">
+												<if condition="$one['sign_date']">{$one.sign_date|date=" Y-m-d",###}</if>
+											</td>
+											<if condition="in_array(65, $use_function_top)">
+												<td class="text-center">
+													<if condition="$access[strtolower($CONTROLLER_NAME).'_new'] eq '1'">
+														<if condition="$one['cate'] eq 1">
+															<a href="{:u($CONTROLLER_NAME.'/addseokey')}?id={$one.pid}" target="_blank">
+																<input type="button" value="新增" class="btn addbtn" /></a>
+														<else />
+															---
+														</if>
+													</if>
+												</td>
+											</if>
+											<td>
+												<if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+													<select id="flag" class="flag input_content" dbname="crm_contract" row="flag"
+																	myid="{$one.pid}">
+														<foreach name="crm_cum_flag" item="op">
+															<if condition="$one['flag'] eq $op['id']">
+																<option value="{$op['id']}" selected>{$op['name']}</option>
+																<else />
+																<option value="{$op['id']}">{$op['name']}</option>
+															</if>
+														</foreach>
+													</select>
+												<else />
+													<foreach name="crm_cum_flag" item="op">
+														<if condition="$one['flag'] eq $op['id']">
+															{$op['name']}
+														</if>
+													</foreach>
+												</if>
+											</td>
+											<td>{$eip_user[$one['wid']]['rname']}</td>
+											<!-- <td>{$eip_user[$one['did']]['rname']}</td> -->
+											<!-- <td>{$eip_user[$one['sid']]['rname']}</td> -->
+											<td>
+												<if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+													<textarea style="color:gray;" rows="1" cols="30" class="input_content" dbname="crm_contract"
+														row="note" myid="{$one.pid}">{$one.note}</textarea>
+												<else />
+													{$one.note}
+												</if>
+											</td>
+											<td class="text-center">
+												<if condition="in_array(149, $use_function_top)">
+													<a class="btn btn-primary" href="{:u('Balance/contract')}?caseid={$one.pid}" target="_blank">
+														收支
+													</a>
+												</if>
+												<if condition="$access['schedule_new'] eq '1' AND $access['schedule_red'] eq '1' AND $one.get_or_pay eq 0">
+													<a class="btn btn-warning" href="{:u('Schedule/contract_action')}?pid={$one.pid}&show_name={$one.show_name}">
+														日程
+													</a>
+												</if>
+												<if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+													<a class="btn sendbtn" href="{:u($CONTROLLER_NAME.'/add')}?id={$one.id}&pid={$one.pid}">
+														修改
+													</a>
+												</if>
+												<if condition="$control_sign_in eq '1'">
+													<a class="btn bg-warning" href="/customer.php/Contract/sign_in/id/{:md5($one['sn'].'_'.$one['pid'])}" target="_blank">
+														查看簽名
+													</a>
+												</if>
+											</td>
+										</tr>
+									</foreach>
+									<tr class="table_total">
+										<td colspan="5">分頁總計</td>
+										<td class="text-right">{$tallmoney|number_format_sys=$control_money_input}</td>
+										<td class="text-right">
+											<if condition="$control_money_input eq 0">
+												{$tallmoney_aftertax|number_format_sys=$control_money_input}
+											<else />
+												{$tallmoney_pretax|number_format_sys=$control_money_input}
+											</if>
+										</td>
+										<td class="text-right">{$tmoney|number_format_sys=$control_money_input}</td>
+										<td colspan="8"></td>
+									</tr>
+									<tr class="table_total">
+										<td colspan="5">搜尋總計</td>
+										<td class="text-right">{$tallmoney_all|number_format_sys=$control_money_input}</td>
+										<td class="text-right">
+											<if condition="$control_money_input eq 0">
+												{$tallmoney_aftertax_all|number_format_sys=$control_money_input}
+											<else />
+												{$tallmoney_pretax_all|number_format_sys=$control_money_input}
+											</if>
+										</td>
+										<td class="text-right">{$tmoney_all|number_format_sys=$control_money_input}</td>
+										<td colspan="8"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+							<select id="flag" class="flag" name="flag">
+								<option value="">{$system_parameter['合約']}狀態</option>
+								<foreach name="crm_cum_flag" item="op">
+									<if condition="$op['id'] != -1">
+										<option value="{$op['id']}">{$op['name']}</option>
+									</if>
+								</foreach>
+							</select>
+							<input id="flag3" class="flag" name="flag3" type="hidden" value="">
+							<select id="flag2" class="flag" name="flag2">
+								<option value="">{$system_parameter['合約']}位置</option>
+								<if condition="$_GET['flag2'] neq '1'">
+									<option value="{$crm_cum_flag2[0]['id']}">{$crm_cum_flag2[0]['name']}</option>
+								</if>
+								<if condition="$_GET['flag2'] neq '2'">
+									<option value="{$crm_cum_flag2[1]['id']}">{$crm_cum_flag2[1]['name']}</option>
+								</if>
+								<if condition="$access[strtolower($CONTROLLER_NAME).'_hid'] eq '1' && $_GET['flag2'] neq '3'">
+									<option value="{$crm_cum_flag2[2]['id']}">{$crm_cum_flag2[2]['name']}</option>
+								</if>
+								<if condition="$access[strtolower($CONTROLLER_NAME).'_del'] eq '1' && $_GET['flag2'] eq '3'">
+									<option value="10">刪除</option>
+								</if>
+							</select>
+							<input type="submit" name="update" value="確定修改" class="btn sendbtn" />
+						</if>
+						<div class="page">
+							{$show}
+						</div>
+					</form>
+				</div>
+			</div>
+			<!--right end-->
+		</section>
+
+		<include file="Public:footer" />
+
+		<include file="Custo:search_setting_js" />
+
+		<script language="javascript" type="text/javascript">
+			$("tr").on("change",".input_content",function(){
+				var myin=$(this);
+				$.ajax({
+					method:'post',
+					dataType:'json',
+					url:"{:U($CONTROLLER_NAME.'/aj_chcontent')}",
+					data:{dbname:myin.attr("dbname"),row:myin.attr("row"),id:myin.attr("myid"),data:myin.val()},
+					success:function(res){
+						if(res.status==1){
+		                    bg_class = "bg-success";
+		                }else{
+		                    bg_class = "bg-danger";
+		                }
+		                Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+					}
+				});
+			});
+		</script>
+		<script language="javascript">
+			function ch_value(myObj){
+				var revalue = 1;
+				if($("#"+myObj).val() == 1){
+					revalue = 0;
+					
+					$("#"+myObj).prop("checked",false);
+				}
+				$("#"+myObj).val(revalue);
+			}
+		</script>
+	</body>
+</html>

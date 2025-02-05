@@ -1,0 +1,252 @@
+<include file="Public:header2" />
+<!-- <style>		
+	#content-table tr:nth-child(odd){
+		background :#cfecff96;
+	} 		
+	#content-table tr:nth-child(even){
+		background :#7ec9fa96;
+	} 	
+</style> -->
+
+<section class="document main">
+	<div class="below">
+				
+		<!-- 共用階層列表 -->
+		<include file="Org:menu" />
+		<!-- END 共用階層列表 -->	
+		
+		<div class="right">
+			<div class="document_edit">
+				<ul>
+					<li >
+						組別名稱： <input type="text" id="team_name" name="name" value="{$my_apart['name']}" /> 
+									<button onclick="change_team('team_name',0)" class="btn addbtn pl-3 pr-3 ml-1">確認</button>
+					</li>
+					<li>
+						部門名稱：
+						<ul class="branch-items mb-2">
+							<li>
+								<select id="apart" class="p-1 ">
+									<option value="">部門選單</option>
+									<foreach name="eip_apart" key="key" item="vo">
+										<if  condition="$vo['id'] neq ''">
+										<option value="{$vo['id']}">{$vo['name']}</option>
+										</if>
+									</foreach>
+								</select>
+							</li>
+							<li>
+								<select id="mens" name="boss_id" class="p-1 ">
+									<option value="">人員選單</option>
+									<foreach name="eip_user" key="key" item="vo">
+										<option value="{$vo['id']}">{$vo['name']}</option>
+									</foreach>
+								</select>
+							</li>
+							<li>
+								<input id="no" class="p-1 " name="name" type="text" placeholder="請輸入員工編號">
+							</li>
+							<li>
+								<button type="button" onclick="change_team('add_member',0)" class="btn addbtn pl-3 pr-3 ">新增</button>
+							</li>
+						</ul>
+						
+					</li>
+					<li>
+						設定：
+						<ul class="branch-items mb-2">
+							<li><input style="width:18px; height:18px;margin-right: 4px;" type="checkbox" onclick="change_team('team_access','each_customers')" <?php if($each_customers=='1'){ echo'checked';}?> id="each_customers" value="{$each_customers}"> <label for="each_customers">組員互相查看客戶</label></li>
+							<li><input style="width:18px; height:18px;margin-right: 4px;" type="checkbox" onclick="change_team('team_access','show_leader_customers')" <?php if($show_leader_customers=='1'){ echo'checked';}?> id="show_leader_customers" value="{$show_leader_customers}"><label for="show_leader_customers">顯示組長客戶</label></li>
+							<li><input style="width:18px; height:18px;margin-right: 4px;" type="checkbox" onclick="change_team('team_access','edit_member_customes')" <?php if($edit_member_customes=='1'){ echo'checked';}?> id="edit_member_customes" value="{$edit_member_customes}"><label for="edit_member_customes">編輯組員客戶</label></li>
+							<li><input style="width:18px; height:18px;margin-right: 4px;" type="checkbox" onclick="change_team('team_access','edit_leader_customers')" <?php if($edit_leader_customers=='1'){ echo'checked';}?> id="edit_leader_customers" value="{$edit_leader_customers}"><label for="edit_leader_customers">編輯組長客戶</label></li>
+						</ul>
+						
+					</li>
+					<li>
+						追蹤績效：
+						<select name="is_kpi" class="is_kpi mb-2">
+							<option value="0">關閉</option>									
+							<if condition="$my_apart['is_kpi'] eq 1">
+								<option value="1" selected>啟動</option>
+								<else />
+								<option value="1" >啟動</option>	
+							</if>
+						</select><br>
+					</li>
+					<li>
+						人員列表:
+						<div class="edit_form">
+							<table id="content-table" class="table edit_table " style="min-width: 992px;">
+								<thead>
+									<tr>
+										<th style="width:120px">員工編號</th>
+										<th style="width:120px;">姓名</th>
+										<th>部門</th>
+										<th>職稱</th>
+										<th>狀態</th>
+										<th>操作</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr >
+										<td class="p-2">{$team_leader[0]['no']}</td>
+										<td class="p-2">{$team_leader[0]['name']}</td>
+										<td class="p-2">{$eip_apart[$team_leader[0]['apartmentid']]['rname']}</td>
+										<td class="p-2">{$eip_jobs[$team_leader[0]['jobid']]['rname']}</td>
+										<td class="p-2">組長</td>
+										<td class="p-2"></td>
+									</tr>						
+				
+									<foreach name="team_member" key="key" item="vo">
+										<tr >
+											<td class="p-2">{$vo['no']}</td>
+											<td class="p-2">{$vo['name']}</td>
+											<td class="p-2">{$eip_apart[$vo['apartmentid']]['rname']}</td>
+											<td class="p-2">{$eip_jobs[$vo['jobid']]['rname']}</td>
+											<td class="p-2">組員</td>
+											<td class="p-2">
+											<button type="button" onclick="change_team('leader',{$vo['id']})" class="btn pl-2 pr-2 addbtn">設為組長</button>
+											<button type="button" onclick="change_team('delete',{$vo['id']})" class="btn pl-2 pr-2 delate">刪除</button>
+											</td>
+										</tr>
+									</foreach>
+								</tbody>
+							</table>
+						</div>
+						
+						
+					</li>
+					<!--if condition="$my_apart['parent_id'] neq $my_apart['id']">
+						<li>
+							母部門:
+							<select name="parent_id">
+								<foreach name="eip_team" item="one">
+									<if condition="$my_apart['parent_id'] eq $one['id']">
+										<option value="{$one.id}" selected>{$one.name}</option>
+										<else />
+										<option value="{$one.id}">{$one.name}</option>
+									</if>
+									
+									
+								</foreach>
+							</select><br><br>
+						</li>
+					</if-->
+					
+				</ul>						
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />	
+
+<script language="javascript">
+	function change_team(type,id){
+		var team_id = "{$_GET['id']}";
+		var no ='';
+		if(type =='add_member'){
+			no = $('#no').val();
+			id = $('#mens').val();
+		}
+		
+		if(type == 'team_name'){
+			id = $('#team_name').val();
+		}
+		
+		if(type == 'team_access'){
+			no = $('#'+id).val();
+		}	
+		
+		// console.log(type);
+		$.ajax({
+			type:'POST',
+			dataType:'json',
+			url:"{:U('Org/do_editer')}",
+			data:{
+				id:id,
+				type:type,
+				no:no,
+				team_id:team_id
+			},
+			success:function(res){
+				if(res.status==1){
+                    bg_class = "bg-success";
+                    location.href = "{:U('Org/editer')}?id="+team_id;
+                }else{
+                    bg_class = "bg-danger";
+                }
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+			}
+		});
+	}
+
+	$('#apart').change(function(){
+		$.ajax({
+			type:'POST',
+			dataType:'text',
+			url:"{:U('Ajax/aj_getmean')}",
+			data:{
+				apartmentid:$(this).val(),
+				ck:"{$user_id}"
+			},
+			success:function(res){
+				$("#mens").html("<option value=''>全部</option>"+res);
+			}
+		});
+	});
+
+	$('.is_kpi').on('change', function(){
+		change_team('is_kpi', $('select.is_kpi').val());
+	})
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			

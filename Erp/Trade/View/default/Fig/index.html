@@ -1,0 +1,249 @@
+<include file="Public:header2" />
+
+<head>
+	<style type="text/css">
+		tr.list.red{
+			color: #f00;
+		}
+		tr.list.pink{
+			color: #f8a;
+		}
+	</style>
+</head>
+
+<section class="document main">
+	<div id="right">
+		<include file="Fig:top_menu" />
+		<div class="content-table">
+			<div class="eventsContainer">
+				<!-- ////////////////////////// events_List ////////////////////////// -->
+				<div class="cardContainer">
+					<div class="cardContainer-title" style="justify-content: space-between;">
+						<form method="get" action="{:u('Fig/index')}" id="search_add" class="chooseCo searchform ml-md-2">
+							<h3 class="casesubtitle mr-2 mb-2">全部事件</h3>
+							<ol class="headerOl rightR">
+								<li>
+									<select name="year">
+										<option value="">年份</option>
+										<foreach name="years" item="op">
+											<if condition="$op eq $_GET['year']">
+												<option selected>{$op}</option>
+												<else />
+												<option>{$op}</option>
+											</if>
+										</foreach>
+									</select>
+								</li>
+								<li>
+									<select name="month">
+										<option value="">月份</option>
+										<foreach name="months" item="op">
+											<if condition="$op eq $_GET['month']">
+												<option selected>{$op}</option>
+												<else />
+												<option>{$op}</option>
+											</if>
+										</foreach>
+									</select>
+								</li>
+								<li>
+									<label class="name mb-0">狀態:</label>
+									<select name="result">
+										<option value="">全部</option>
+										<foreach name="eve_role_flow" key="key" item="vo">
+											<if condition="in_array($vo['id'], [-1,0,2,4,6,8])">
+												<if condition="$Think.get.result eq $vo['id']">
+													<option value="{$vo['id']}" selected>{$vo['name']}</option>
+													<else />
+													<option value="{$vo['id']}">{$vo['name']}</option>
+												</if>
+											</if>
+										</foreach>
+									</select>
+								</li>
+								<li>
+									<label class="name mb-0">階段:</label>
+									<select name="step_id">
+
+										<option value="">全部</option>
+										<foreach name="eve_role_steps" key="key" item="vo">
+											<if condition="$Think.get.step_id eq $vo['id']">
+												<option value="{$vo['id']}" selected>{$vo['name']}</option>
+												<else />
+												<option value="{$vo['id']}">{$vo['name']}</option>
+											</if>
+										</foreach>
+
+									</select>
+								</li>
+								<li>
+									<label class="name mb-0">部門:</label>
+									<select name="apart" id="apart">
+										<option value="">全部</option>
+										<foreach name="eip_apart" key="key" item="vo">
+											<if condition="$Think.get.apart eq $vo['id']">
+												<option value="{$vo['id']}" selected>{$vo['name']}</option>
+
+												<else />
+												<option value="{$vo['id']}">{$vo['name']}</option>
+											</if>
+										</foreach>
+									</select>
+								</li>
+								<li>
+									<label class="name mb-0">人員:</label>
+									<select name="user" id="mens">
+										<option value="">全部</option>
+										<foreach name="eip_user" key="key" item="vo">
+											<if condition="$vo[name] neq '' && $vo[id] neq $top_adminid">
+												<if condition="$Think.get.user eq $vo['id']">
+													<option value="{$vo['id']}" selected>{$vo['name']}</option>
+
+													<else />
+													<option value="{$vo['id']}">{$vo['name']}</option>
+												</if>
+											</if>
+										</foreach>
+									</select>
+								</li>
+								<li>
+									<div class="search_bar">
+										<label for=""></label>
+										<input class="text" type="text" placeholder="搜尋事件" value="{$Think.get.value}" name="value" />
+										<input class="submit" type="submit" value="" />
+									</div>
+								</li>
+							</ol>
+						</form>
+						
+						<div class="dropdown state-dropdown">
+							<a href="/" class="dropdown-toggle" role="button" id="state-dropdown" data-toggle="dropdown"
+							 data-display="static" aria-haspopup="true" aria-expanded="false">
+							 事件簿執行區
+							</a>
+							<div class="dropdown-menu state-dropdown-items dropdown-menu-lg-right" aria-labelledby="state-dropdown">
+								<a href="{:U('Fig/file')}" class="navBtnStyle  modelEdit">事件簿歸檔區</a>
+								<a href="{:U('Fig/trash_can')}" class="navBtnStyle  modelEdit">事件簿垃圾桶</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="edit_form">
+						<form method="post" action="{:u('Fig/do_updata')}" id="search_add" class="chooseCo">
+							<table width="100%" class="myFormTheme table edit_table" style="min-width: 1400px;" >
+								<thead>
+									<tr>
+										<th style="width: 20px" class="text-center"><input type="checkbox" class="seleall" /></th>
+										<th style="width: 50px" class="text-right">序號</th>
+										<th style="width: 100px;" class="text-left">{$system_parameter["客戶"]}{$system_parameter["簡稱"]}</th>
+										<th style="width: 200px;" class="text-left">主旨</th>
+										<th style="width: 300px" class="text-left">執行工作</th>
+										<th style="width: 150px" class="text-left">事件號</th>
+										<th style="width: 150px" class="text-left">{$system_parameter['合約']}號</th>
+
+										<th style="width:50px" class="text-left">等級</th>
+										<th style="width: 75px" class="text-left">目前位置</th>
+										<th style="width:75px" class="text-left">發佈者</th>
+										<!-- <th style="width:110px" class="text-left">創建時間</th> -->
+										<th style="width:75px" class="text-left">狀態</th>
+										<th style="width:50px" class="text-right">進度</th>
+									</tr>
+								</thead> 
+								<tbody>
+									<foreach name="events" key="key" item="em">
+										<tr class="list {$em.color}" id="{$em.id}">
+											<td class="text-center"><input type="checkbox" name="ids[]" value="{$em.id}"  /></td>
+											<?php if($_GET['p']==null)$_GET['p']=1 ?>
+											<td class="text-right">{$key+1+(($_GET['p']-1)*$event_list_page_count)}</td>
+											<td>
+												<if condition="in_array(75, $use_function_top)">
+													<a href="{:u('Custo/view_re')}?id={$em.cum_id}" target="_blank">
+												<else />
+													<a href="{:u('Custo/addcrm')}?id={$em.cum_id}" target="_blank">
+												</if>
+													{$em.show_name}
+												</a>
+											</td>
+											<td>
+												<if condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+													<a style="color:red;" href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+													<elseif condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+													<a style="color:blue;" href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+													<else />
+													<a href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+												</if>
+											</td>
+											<td>{$em.role_name}-{$em.es_content}</td>
+											<td>{$em.evesno}</td>
+											<td><if condition="$em['caseid'] neq '0'">{$em.case_name}<else />-</if></td>
+											<td>{$eve_role_level[$em['eve_level']]['rname']}</td>
+											<td>{$em.user_name}</td>
+											<td>{$em.publish_name}</td>
+											<!-- <td>{$em.create_time|date="Y/m/d",###}</td> -->
+											<td>{$eve_role_flow[$em['result']]['rname']}</td>
+											<td class="text-right">{$em.schedule}</td>
+											
+										</tr>
+									</foreach>
+								</tbody>
+							</table>
+							
+							<select id="flag" class="flag mt-2" name="flag">
+									<option value="6">還原</option>
+									<option value="8">暫停</option>
+									<option value="9">歸檔</option>
+									<option value="10">垃圾桶</option>
+							</select>
+							<input type="submit" value="確定送出" class="delete btn addbtn" />
+						</form>
+						<div class="page">
+							{$show}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<div class="footer-mobile">
+	<include file="Public:footer" />
+</div>
+
+
+<script>
+	$('#apart').change(function(){
+		$.ajax({
+			type:'POST',
+			data:{apartmentid:$(this).val()},
+			dataType:'text',
+			url:"{:U('Ajax/aj_getmean')}",
+			success:function(res){
+				$("#mens").html(res);
+			}
+		});
+	});
+	$('.seleall').click(function(){
+		if($(".seleall").prop("checked")) {
+			$('input[type=checkbox]').prop("checked", true);
+			} else {
+
+			$('input[type=checkbox]').prop("checked", false);
+		}
+	});		
+
+	$( window ).load(function() {
+		var s=$("select[name='apart']").val();
+
+		if(s!=''){
+			$.ajax({
+				type:'POST',
+				data:{apartmentid:s,ck:"{$Think.get.user}"},
+				dataType:'text',
+				url:"{:U('Ajax/aj_getmean')}",
+				success:function(res){
+					$("#mens").html(res);
+				}
+			});
+		}
+	});
+</script>

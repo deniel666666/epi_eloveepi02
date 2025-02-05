@@ -1,0 +1,677 @@
+<include file="Public:header2" />
+<head>
+  <style>
+    .selectActive{
+      border:	2px solid red !important;
+    }
+    .crm-header .bottom{display: none!important;}
+
+    .body_leave_blank{
+      height: 65px;
+    }
+  </style>
+</head>
+<section class="main">
+  <div class="right slide_content_r">
+    <div class="container mw1920">
+      <!-- 打卡按鈕 -->
+      <if condition="in_array(155, $use_function_top) && $my_salary_is_month_pay eq 1">
+        <div class="row mt-3 mb-3">
+          <div class="col-6">
+            <button type="button" class="btn addbtn w-100 p-2" onclick="handleAttendance('in')"><h4 class="mb-0">上班打卡</h4></button>
+          </div>
+          <div class="col-6">
+            <button type="button" class="btn addbtn w-100 p-2" onclick="handleAttendance('out')"><h4 class="mb-0">下班打卡</h4></button>
+          </div>
+        </div>
+      </if>
+
+      <if condition="count($commonmenu) gt 0">
+        <div class="top_menu row mb-4">
+          <div class="col-12">
+            <h3 class="casetitle">常用選單</h3>
+            <div class="content d-flex flex-wrap">
+              <volist name="commonmenu" id="vo" key="k">
+                <a href="{$vo[url]}" class="sub_btn" onclick="if(localStorage.getItem('pos'))localStorage.removeItem('pos');">
+                  <div class="topic-list">
+                    <h4>{$vo[title]}</h4>
+                    <if condition="$vo['read_ck'] neq 0">
+                      <text class="read_ck text-danger font-weight-bold">
+                        {$vo[read_ck]}
+                      </text>
+                    </if>
+                  </div>
+                </a>
+              </volist>
+            </div>
+          </div>
+        </div>
+      </if>
+    </div>
+  </div>
+</section>
+
+<!-- Start main -->
+<section class="d-block-ipad mt-3">
+  <div class="use-container">
+    <select class="form-control w-100 mb-3" id="selesearch" >
+      <option value="name">{$system_parameter["公司名稱"]}</option>
+      <if condition="$system_parameter['負責人'] || $system_parameter['聯絡人']">
+        <option value="bossname">人名</option>
+      </if>
+      <option value="bossphone">{$system_parameter["公司電話"]}</option>
+      <option value="bossmobile">{$system_parameter["公司手機"]}</option>
+      <option value="bossmail">{$system_parameter["公司MAIL"]}</option>
+      <if condition="$system_parameter['官方網站'] || $system_parameter['網群']">
+        <option value="url1">{$system_parameter["官方網站"]} {$system_parameter["網群"]}</option>
+      </if>
+      <option value="no">{$system_parameter["統編"]}</option>
+      <if condition="in_array(115, $use_function_top)">
+        <option value="industr">{$system_parameter["產業別"]}</option>
+      </if>
+    </select>
+    <div class="input-group mb-3">
+      <input id="searchtxt" type="text" class="form-control" placeholder="搜尋">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" id="searchBtn">搜尋</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="main" id="use-index">
+  <div class="right slide_content_r">
+    <div class="container mw1920 p-0">
+      <if condition="in_array(75, $use_function)">
+        <section class="d-block-ipad mt-3">
+          <div class="use-container">
+            <div class="row">
+              <div class="col-6">
+                <button type="button" class="btn btn-dark w-100" onclick="location.href='{:u('Custo/view')}';">{$system_parameter["客戶"]}</button>
+              </div>
+              <if condition="$system_parameter['小事'] neq ''">
+                <div class="col-6">
+                  <button type="button" class="btn btn-dark w-100" onclick="location.href='{:u('Custo/view')}?tab=tab5';">
+                    {$system_parameter["小事"]}
+                  </button>
+                </div>
+              </if>
+            </div>
+            <br>
+          </div>
+        </section>
+      </if>
+
+      <div class="right_col">
+        <div class="topic_box row">
+
+          <include file="Index:calendar" />
+
+          <if condition="$system_parameter['事件列表'] neq '' && in_array(18, $use_function)">
+            <!-- 事件簿區塊 -->
+            <div class="col-xl-6 co-12">
+              <!-- 處理的事件 -->
+              <div class="case-all">
+                <h3 class="casetitle">專案處理</h3>
+                <table class="w-100">
+                  <tr>
+                    <td style="width:30%">{$system_parameter["客戶"]}名稱</td>
+                    <td style="width:70%">事件主旨</td>
+                  </tr>
+                  <volist name="events" id="vo">
+                    <tr>
+                      <td class="case_item">
+                        <if condition="in_array(75, $use_function_top)">
+                          <a href="{:u('Custo/view_re', ['id'=>$vo['cum_id']])}" target="_blank">
+                        <else />
+                          <a href="{:u('Custo/addcrm')}?id={$vo['cum_id']}" target="_blank">
+                        </if>
+                          {$vo['show_name']}
+                        </a>
+                      </td>
+                      <td class="case_item">
+                        <a href="/index.php/Fig/view.html?id={$vo['id']}" target="_blank">
+                          {$vo['role_name']}-{$vo['es_content']}
+                        </a>
+                      </td>
+                    </tr>
+                  </volist>
+                </table>
+              </div>
+            </div>
+          </if>
+
+          <if condition="$system_parameter['小事'] neq '' && in_array(75, $use_function)">
+            <!-- 小事件列表(看跟你有關的客戶) -->
+            <div class="event-list col-xl-6 co-12" id="event_list">
+              <h4 class="casetitle">
+                {$system_parameter["小事"]}列表
+                <ul class="tabs-menu d-inline-flex flex-wrap bg-white m-0">
+                  <volist name="todlis2_group_names" id="group" key="index">
+                    <li class="nav-item p-0"><a href="#event_list-{$index}">{$group}</a></li>
+                  </volist>
+                  <li></li>
+                </ul>
+              </h4>
+              <div class="tabs">
+                <volist name="todlis2_group_names" id="group" key="index">
+                  <div id="event_list-{$index}">
+                    <ul class="event-head">
+                      <li>{$system_parameter["簡稱"]}</li>
+                      <li>建立日期</li>
+                      
+                      <li>訪談內容</li>
+                      <li>處理者</li>
+                      <li>操作</li>
+                    </ul>
+                    <volist name="todlis2_group[$group]" id="vo">
+                      <if condition="$vo['delay']">
+                        <ul class="text-danger">
+                      <else/>
+                        <ul class="">
+                      </if>
+                        <li>
+                          <if condition="in_array(75, $use_function_top)">
+                            <a href="{:u('Custo/view_re', ['id'=>$vo['id']])}" target="_blank">
+                          <else />
+                            <a href="{:u('Custo/addcrm')}?id={$vo['id']}" target="_blank">
+                          </if>
+                            {$vo['show_name']}
+                          </a>
+                        </li>
+                        <li>
+                          <if condition="$vo['dateline'] neq 0">
+                            {$vo['dateline_format']|mb_substr=###,0,16}
+                          </if>
+                        </li>
+                        
+                        <li>{$vo['content']}</li>
+                        <li>{$vo['douser_name']}</li>
+                        <li><a class="btn btn-done cursor_pointer doevt" cid="{$vo['chat_id']}">處理</a></li>
+                      </ul>
+                    </volist>
+                  </div>
+                </volist>
+              </div>
+            </div>
+          </if>
+
+          <if condition="$system_parameter['訪談紀錄'] neq '' && $my_access['crm_red']==1  && in_array(75, $use_function)">
+            <!-- 聯絡列表 -->
+            <div class="contact-list col-xl-6 co-12">
+              <h4 class="casetitle align-items-center flex-wrap">
+                聯絡列表
+                <input type="date" class="contact_date w_auto" value="<?php echo(date('Y-m-d'));?>" onchange="get_contact_list()">
+              </h4>
+              <ul class="contact-head">
+                <li>{$system_parameter["簡稱"]}</li>
+                <li>{$system_parameter["等級"]}</li>
+                <li>預約日期</li>
+                <li>聯繫人</li>
+                <li>訪談品質</li>
+                <li>內容</li>
+              </ul>
+              <div id="contact_list">
+                <include file="Index:contact_list" />
+              </div>
+            </div>
+          </if>
+        </div>
+      </div>
+
+      <div class="desk_menu left_col d-none-ipad">
+        <volist name="menu_arranged" id="tvo">
+          <div class="topic_box">
+            <div class="title">{$tvo[title]}</div>
+            <div class="content">
+              <volist name="tvo[sub_menu]" id="vo" key="k">	
+                <a href="{$vo[url]}" class="sub_btn" onclick="if(localStorage.getItem('pos'))localStorage.removeItem('pos');">
+                  <div class="topic-list">
+                    <h4>{$vo[title]}</h4>
+                    <if condition="$vo['read_ck'] neq 0">
+                      <text class="read_ck text-danger font-weight-bold">
+                        {$vo[read_ck]}
+                      </text>
+                    </if>
+                  </div>
+                </a>
+              </volist>
+            </div>
+          </div>
+        </volist>
+      </div>
+
+      <if condition="!$isMobile && $system_parameter['空間流量追蹤'] neq ''">
+        <iframe src="{:u('Index/flowspace')}" width="100%" height="435px" frameborder="0px" scrolling="auto"></iframe>
+      </if>
+    </div>
+  </div>
+</section>
+
+<if condition="in_array(75, $use_function)">
+  <section class="d-block-ipad mt-3">
+    <div class="use-container">
+      <div class="row">
+        <div class="col-6">
+          <button type="button" class="btn btn-dark w-100" onclick="location.href='{:u('Custo/view')}';">{$system_parameter["客戶"]}</button>
+        </div>
+        <if condition="$system_parameter['小事'] neq ''">
+          <div class="col-6">
+            <button type="button" class="btn btn-dark w-100" onclick="location.href='{:u('Custo/view')}?tab=tab5';">
+              {$system_parameter["小事"]}
+            </button>
+          </div>
+        </if>
+      </div>
+      <br>
+    </div>
+  </section>
+</if>
+
+<!-- Modal -->
+<a id="smallthing_response_btn" class="d-none" data-toggle="modal" data-target="#smallthing_response">小事處理回覆</a>
+<div class="modal fade big_modal" id="smallthing_response" tabindex="-1" role="dialog" aria-labelledby="smallthing_responseTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="smallthing_responseTitle">處理回覆</h5>
+            </div>
+            <div class="modal-body">
+                <textarea id="smallthing_response_input" class="form-control mb-2" rows="4"></textarea>
+                <div class="text-right">
+                    <button id="do_smallthing_btn" type="button" class="btn btn-primary">
+                        處理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<span id="addToHome_btn" class="invisible" data-toggle="modal" data-target="#addToHome">+</span>
+<!-- 跳出視窗：加入主畫面 -->
+<div class="modal fade shoppingCart" id="addToHome" tabindex="-1" role="dialog" aria-labelledby="addToHomeTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close position-absolute pr-3 pt-3" style="right:0px" 
+                    data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToHomeTitle">加入主畫面</h5>
+            </div>
+            <div class="modal-body">
+                在手機主畫面建立捷徑，讓{$eip_company['eip_name']}成為您工作的最好幫手~<br>
+                <button id="addToHomeBtn" class="btn btn-success">建立</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<include file="Public:footer" />
+
+<script>
+  function inti_calendar_event(){
+    /* 點擊月份 */
+    $('.month_select').click(function(){
+      $.ajax({
+        method:'post',
+        data:{
+          year:$(this).attr("year"),
+          month:$(this).attr("month"),
+          action:$(this).attr("action"),
+        },
+        url:"{:u('Index/month_select')}",
+        dataType:"text",
+        success:function(res){
+          html = $(res);
+          // console.log(html);
+
+          calendar_html = $(html[2]).find(".calendar_area").html();
+          $("#calendar").html(calendar_html);
+
+          date_info_html =  $(html[6]).find(".date_info_area").html();
+          $("#date_info").html(date_info_html);
+
+          inti_calendar_event();
+          inti_remove_activity();
+        }
+      });
+    });
+
+    /* 點擊日期 */
+    $('.date_select').click(function(){
+      $.ajax({
+        method:'post',
+        data:{
+          month:$(this).attr("month"),
+          date:$(this).attr("date"),
+          action:$(this).attr("action")
+        },
+        url:"{:u('Index/date_select')}",
+        dataType:"text",
+        success:function(res){
+          html = $(res);
+          // console.log(html);
+
+          calendar_html = $(html[2]).find(".calendar_area").html();
+          $("#calendar").html(calendar_html);
+
+          date_info_html =  $(html[6]).find(".date_info_area").html();
+          $("#date_info").html(date_info_html);
+
+          inti_calendar_event();
+          inti_remove_activity();
+        }
+      });
+    });
+
+    /* 加減日期 */
+    $(".date_change").click(function(){
+      $.ajax({
+        method:'post',
+        data:{
+          month:$(this).attr("month"),
+          date:$(this).attr("date"),
+          action:$(this).attr("action")
+        },
+        url:"{:u('Index/date_select')}",
+        dataType:"text",
+        success:function(res){
+          html = $(res);
+          // console.log(html);
+
+          calendar_html = $(html[2]).find(".calendar_area").html();
+          $("#calendar").html(calendar_html);
+
+          date_info_html =  $(html[6]).find(".date_info_area").html();
+          $("#date_info").html(date_info_html);
+
+          inti_calendar_event();
+          inti_remove_activity();
+        }
+      });
+    });
+  }
+  inti_calendar_event();
+  inti_remove_activity();
+
+  function inti_remove_activity(){
+    /*事件：刪除輸入活動*/
+    $(".trash_btn").off();
+    $(".trash_btn").click(function(){
+      myin=$(this)
+      $.ajax({
+        method:'post',
+        data:{id: myin.attr("mid")},
+        url:"{:u('Index/aj_delcale')}",
+        dataType:"json",
+        success:function(res){
+          if(res.status==1){
+            myin.parent('.stuff').remove();
+            bg_class =  "bg-success";
+          }else{
+            bg_class =  "bg-danger";
+          }
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        }
+      });
+    });
+  }
+
+  // 依日期訪談紀錄
+  function get_contact_list(){
+    $.ajax({
+      method:'post',
+      data:{conversation_type: '='+$('input.contact_date').val()},
+      url:"{:u('Index/contact_list')}",
+      dataType:"text",
+      success:function(res){
+        // html = $(res);
+        // console.log(html)
+        // calendar_html = $(html[2]).find(".calendar_area").html();
+        $("#contact_list").html(res);
+      }
+    });
+  }
+
+  //小事件列表：處理小事
+  $(".doevt").on("click", function(){
+    var myin=$(this);
+    $('#do_smallthing_btn').off();
+    $('#do_smallthing_btn').on("click", function(e){
+      do_smallthing(myin);
+    });
+    $('#smallthing_response_input').val("");
+    $('#smallthing_response_btn').click();
+  });
+  function do_smallthing(myin){
+    $.ajax({
+            method:'post',
+            data:{
+                teamid: 0,
+                dbname: 'crm_chats',
+                id: myin.attr('cid'),
+                column: 'do_response',
+                value: $('#smallthing_response_input').val(),
+            },
+            url:"{:u('Custo/ajax_save_one_value')}",
+            dataType:"json",
+            success:function(res){
+                if(res.status==1){
+          myin.parents("ul").remove();
+                    bg_class = "bg-success";
+                    $('#smallthing_response').modal('hide');
+                }else{
+                    bg_class = "bg-danger";
+                }
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+            },
+        });
+  }
+
+  /*搜尋*/
+  $('#searchBtn').on("click", function() {
+    if(''!='{$use_function|in_array=75, ###}'){
+      window.location = '/index.php/custo/view?'+'select_key='+ $('#selesearch').val() +'&'+'search_text='+ $('#searchtxt').val();
+        }else{
+      window.location = '/index.php/custo/index?searchname='+ $('#searchtxt').val();
+        }
+    });
+
+  // 上、下班打卡
+  function handleAttendance(type) {
+    if (navigator.geolocation){
+      $('#body_block').show()
+      Vue.toasted.show('請求定位中...', { duration: 1500, className: ["toasted-primary", 'bg-success'] });
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude, accuracy } = position.coords;
+          let postData = {
+            type     : type,
+            longitude: longitude,   // 經度
+            latitude : latitude,    // 緯度
+            accuracy : accuracy,    // 誤差值(公尺)
+          }
+          $.ajax({
+            method  : 'post',
+            dataType: "json",
+            url     : "{:u('AttendanceRecords/saveData_staff')}",
+            data    : postData,
+            success:function(res){
+              bg_class = res.status ? 'bg-success' : 'bg-danger';
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+              $('#body_block').hide();
+            },
+            error: function(e, msg){
+              Vue.toasted.show(msg, { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+              $('#body_block').hide();
+            },
+          });
+        },
+        error => {
+          alert(error.message)
+          $('#body_block').hide();
+        },
+        {
+          enableHighAccuracy: true,
+        }
+      );
+    }
+    else { 
+      alert('您的裝置或瀏覽器不支援定位功能');
+      return false;
+    }
+  }
+</script>
+
+<!-- PWA功能 -->
+<script type="text/javascript">
+    /*初始化PWA*/
+    if('serviceWorker' in navigator){
+        navigator.serviceWorker
+            .register('sw.js')
+            .then(function(){
+                console.log('Service Worker 註冊成功');
+            }).catch(function(error) {
+                console.log('Service worker 註冊失敗:', error);
+            })
+            .then(function(){
+                /*詢問訂閱*/
+                askForNotificationPermission()
+            });
+    } else {
+        console.log('瀏覽器不支援 serviceWorker');
+    }
+
+    /*加入主畫面-------------------------------*/
+    let deferredPrompt;
+    const addToHomeBtn = document.querySelector('#addToHomeBtn');
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI to notify the user they can add to home screen
+            $('#addToHome_btn').click()
+
+            addToHomeBtn.addEventListener('click', (e) => {
+                // hide our user interface that shows our A2HS button
+                $('#addToHome_btn .close').click();
+                // Show the prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the A2HS prompt');
+                    } else {
+                        console.log('User dismissed the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+    }
+
+
+    /*訂閱-------------------------------*/
+    /*編碼轉換(註冊用)*/
+    function urlBase64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+
+        var rawData = window.atob(base64);
+        var outputArray = new Uint8Array(rawData.length);
+
+        for (var i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+    /*詢問是否訂閱*/
+    function askForNotificationPermission() {
+        Notification.requestPermission(function(result) {
+            // 這裡result只會有兩種結果：一個是用戶允許(granted)，另一個是用戶封鎖(denied)
+            console.log('User Choice', result);
+            if(result !== 'granted') {
+                console.log('No notification permission granted!');
+            } else {
+                configurePushSub();
+                // displayConfirmNotification()
+            }
+        });
+    }
+    /*建立註冊資料(確認訂閱)*/
+    function configurePushSub() {
+        if(!('serviceWorker' in navigator)) {
+            return;
+        }
+        var reg;
+        navigator.serviceWorker.ready.then(function(swreg) {
+            reg = swreg;
+            return swreg.pushManager.getSubscription();
+        }).then(function(sub) {
+            if(sub === null) {
+                // Create a new subscription
+                var vapidPublicKey = '{$NOTIFICATION_PUBKEY}';
+                var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+                return reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedVapidPublicKey
+                    });
+            } else {
+                // We have a subscription
+                return sub
+            }
+        }).then(function(newSub) {
+          // console.log(JSON.stringify(newSub))
+          return $.ajax({
+            method:'POST',
+            data:{ newSub:JSON.stringify(newSub) },
+            url:"{:u('Index/subscripe')}",
+            dataType:"json",
+          });
+        }).then(function(res) {
+            // console.log(res)
+            if(res.status==1) {
+              displayConfirmNotification();
+            }
+        }).catch(function(err) {
+            // console.log(err);
+        })
+    }
+    /*顯示通知*/
+    function displayConfirmNotification() {
+      if('serviceWorker' in navigator) {
+        var options = {
+          body: '您的推播設定已完成!',
+          icon: '/Public/manifest/favicon.ico-144.png',
+          lang: 'zh-TW',   // BCP 47
+          vibrate: [100, 50, 200],
+          tag: 'confirm-notification',
+          renotify: true,
+          actions: [
+              { action: 'confirm', title: '收到' },
+              { action: 'cancel', title: '取消'}
+          ],
+        }
+        navigator.serviceWorker.ready.then(function(swreg) {
+          swreg.showNotification('操作成功!!', options);
+        });
+      }
+    }
+</script>
+<script>
+$( function() {
+  $( "#event_list" ).tabs();
+
+  console.log(JSON.parse('{$time_interval}'));
+} );
+</script>

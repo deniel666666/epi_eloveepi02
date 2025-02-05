@@ -1,0 +1,439 @@
+<include file="Public:header2" />
+    <section class="main ">
+      <div id="right">
+        <form name="search" id="searchform" action="{:u($CONTROLLER_NAME.'/index', $_GET, false)}" method="get" class="searchForm">
+          <div class="w100 d-flex align-items-start">
+            <div class="w100 d-flex flex-wrap">
+              <ol class="headerOl rightR">
+                <include file="Custo:search_setting_default" />
+                <include file="Alllist:search_setting_default" />
+                <!-- <li>
+                  <div class="search_bar">
+                    期數：
+                    <select name="m_cdate" class="mb-0">
+                      <option value="">月份</option>
+                      <foreach name="mdate" item="op">
+                        <if condition="$_GET['m_cdate'] == $op">
+                          <option selected="true">{$op}</option>
+                          <else />
+                          <option>{$op}</option>
+                        </if>
+                      </foreach>
+                    </select>
+                  </div>
+                </li> -->
+                <li>
+                  <div class="search_bar">
+                    <span class="custo-search-name d-block d-md-inline">發票日期區間:</span>
+                    <input id="ticketdate_start" type="date" class="text" name="ticketdate_start" value="{$_GET['ticketdate_start']??''}"  autocomplete="off"/>
+                    ~
+                    <input id="ticketdate_end" type="date" class="text" name="ticketdate_end" value="{$_GET['ticketdate_end']??''}" autocomplete="off"/>
+                  </div>
+                </li>
+                <li>
+                  <div class="search_bar">
+                    款項編號：
+                  </div>
+                  <div class="search_bar">
+                    <input class="text" type="text" name="m_cdate_code" value="{$_GET['m_cdate_code']??''}" 
+                           placeholder="{$system_parameter['合約']}編號-YYYY/mm-批" style="width: 225px;"/>
+                    <input class="submit" type="submit" value="" />
+                  </div>
+                </li>
+                <li>
+                  <div class="search_bar">
+                    <label for="" class="active"></label>
+                    <input class="text" type="text" name="money_user_name" value="{$_GET['money_user_name']??''}" placeholder="建立/審核者" style="width: 120px;">
+                    <input class="submit" type="submit" value="">
+                  </div>
+                  <input type="hidden" name="p" value="1">
+                </li>
+              </ol>
+              <div class="accordion" id="accordion_search">
+                <div id="collapseOne" class="collapse collapse" aria-labelledby="headingOne" data-parent="#accordion_search">
+                  <ol class="headerOl rightR">
+                    <include file="Custo:search_setting" />
+                  </ol>
+                </div>
+              </div>
+              <div class="search_bar">
+                <input type="submit" class="text text-center" readonly
+                       style="width: 80px; cursor: pointer; padding: 0px" type="submit" value="搜尋  ">
+                <input type="submit" value="" class="submit">
+              </div>
+              <div class="search_bar">
+                <a href="{:u($CONTROLLER_NAME.'/index')}">
+                  <input type="text" class="text text-center" readonly
+                         style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+                </a>
+              </div>
+            </div>
+            <button class="btn btn-link d-inline-block p-0" type="button" style="width: 100px;" 
+                    data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              進階搜尋
+            </button>
+          </div>
+        </form>
+        <div class="content-table">
+          <div class="navi1">
+            <div class="menu-sub-btn d-flex align-items-center">
+              <ol class="mr-2">
+                <li><a href="{:u($CONTROLLER_NAME.'/index', array_merge($_GET, ['cate'=>'', 'p'=>1,]), false)}" class="{$_GET['cate']|compare_return='', 'current'}">全部</a></li>
+                <foreach name="crm_cum_cat" item="vo">
+                  <if condition="$_GET['cate'] eq $vo['id']">
+                    <li><a href="{:u($CONTROLLER_NAME.'/index', array_merge($_GET, ['cate'=>$vo['id'], 'p'=>1,]), false)}" class="current">{$vo.name}</a></li>
+                  <else />
+                    <li><a href="{:u($CONTROLLER_NAME.'/index', array_merge($_GET, ['cate'=>$vo['id'], 'p'=>1,]), false)}">{$vo.name}</a></li>
+                  </if>
+                </foreach>
+              </ol>
+              <span class="prepaid_1_bg d-inline-block" style="width:1rem; height: 1rem;"></span>：{$預收}款
+            </div>
+            
+            <ol class="mb-2 mb-md-0">
+              <li><a href="{:u($CONTROLLER_NAME.'/index', array_merge($_GET, ['queryflag'=>-1, 'p'=>1,]), false)}" class="{$queryflag|compare_return='-1','current'}">全部</a>
+              </li>
+              <li><a href="{:u($CONTROLLER_NAME.'/index', array_merge($_GET, ['queryflag'=>1, 'p'=>1,]), false)}" class="{$queryflag|compare_return='1','current'}">核可</a>
+              </li>
+              <li><a href="{:u($CONTROLLER_NAME.'/index', array_merge($_GET, ['queryflag'=>0, 'p'=>1,]), false)}" class="{$queryflag|compare_return='0','current'}">未核可</a>
+              </li>
+              <li class="ml-2"><a href="{:u($CONTROLLER_NAME.'/excel', $_GET, false)}">匯出Excel</a></li>
+            </ol>
+          </div>
+          <div class="page justify-content-end">
+            {$show}
+          </div>
+
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1900px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 20px;" class="text-center" valign="middle">
+                    <input type="checkbox" class="seleall" name="all" id="all" />
+                  </th>
+                  <th style="width: 50px;" class="text-right">序號</th>
+                  <th style="width: 80px;" class="text-left">建立者</th>
+                  <th style="width: 80px;" class="text-left">審核者</th>
+                  <th style="width: 175px;" class="text-left">期數</th>
+                  <th style="width: 50px;" class="text-center">信封</th>
+                  <th style="width: 100px;" class="text-left">
+                    {$system_parameter["客戶"]}{$system_parameter["簡稱"]}
+                  </th>
+                  <th style="width: 150px;" class="text-left">
+                    {$system_parameter['合約']}號
+                  </th>
+                  <th style="width: 80px;">款項類型</th>
+                  <th style="width: 100px;" class="text-right">申請金額</th>
+                  <th style="width: 100px;" class="text-right">本期銷{$預收}</th>
+                  <th style="width: 100px;" class="text-right"><b>本期{$應收}</b></th>
+                  <th style="width: 50px;" class="text-left">發票</th>
+                  <th style="width: 100px;" class="text-right">稅金</th>
+                  <th style="width: 100px;" class="text-right">稅前金額</th>
+                  <th style="width: 80px;" class="text-right">帳款損益</th>
+                  <th style="width: 110px;">發票日期</th>
+                  <th style="width: 240px;" class="text-left">發票號碼</th>
+                  <th style="min-width: 150px;"class="text-left">備註</th>
+                  <th style="width: 150px;" class="text-left">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <foreach name="crm_contract" key="num" item="one">
+                  <tr id="{$one.id}" class="get_tr cate_{$one.flag}_color prepaid_{$one.prepaid}_bg">
+                    <td class="text-center" valign="middle">
+                      <input type="checkbox" class="seleck" value="{$one.cid}" name="sele"/>
+                    </td>
+                    <td class="text-right">{$num+1+$linit}</td>
+                    <td class="text-left" valign="middle">{$one.create_user_name}</td>
+                    <td class="text-left" valign="middle">{$one.audit_user_name}</td>
+                    <td>
+                      <a href="{:u($CONTROLLER_NAME.'/outer')}?caseid={$one.id}&moneyid={$one.mid}" target="_blank">
+                        {$one['qh_count']}
+                      </a>
+                      <a href="{:u($CONTROLLER_NAME.'/records')}?id={$one.id}" target="_blank" class="ml-2">
+                        (查單)
+                      </a>
+                    </td>
+                    <td class="text-center">
+                      <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+                        <if condition="$one['envelope'] eq 1">
+                          <input class="envelope button_content addbtn" type="button" value="已印" dbname="{$money_table}"
+                            row="envelope" myid="{$one.mid}" myval="0" />
+                        <else />
+                          <input class="envelope button_content btn" type="button" value="未印" dbname="{$money_table}"
+                            row="envelope" myid="{$one.mid}" myval="1" />
+                        </if>
+                      <else />
+                        <if condition="$one['envelope'] eq 1">
+                          已印
+                        <else />
+                          未印
+                        </if>
+                      </if>
+                    </td>
+                    <td>
+                      <if condition="in_array(75, $use_function_top)">
+                        <a class="cate_{$one.flag}_color" href="{:u('Custo/view_re')}?id={$one[cid]}" target="_blank">
+                      <else />
+                        <a class="cate_{$one.flag}_color" href="{:u('Custo/addcrm')}?id={$one[cid]}" target="_blank">
+                      </if>
+                        {$one['show_name']}
+                      </a>
+                    </td>
+                    <td>
+                      <a class="cate_{$one.flag}_color" href="{:u($AlllistController.'/view')}?id={$one[id]}" target="_blank">
+                        {$one.sn}
+                      </a>
+                    </td>
+                    <td>
+                      <if condition="$one['prepaid'] eq 1">
+                        {$預收}款
+                      <else />
+                        貨款
+                      </if>
+                    </td>
+                    <!--申請金額-->
+                    <td class="text-right">{$one.dqmoney|number_format}</td>
+                    <!--本期銷預收-->
+                    <td class="text-right">
+                      <if condition="$one['prepaid'] eq 1">
+                        -
+                      <else />
+                        {$one.xdj|number_format}
+                      </if>
+                    </td>
+                    <!--本期應收-->
+                    <td class="text-right"><b>{$one.earn|number_format=0}</b></td>
+                    <td class="text-left">{$one.invoice}</td>
+                    <td class="text-right">{$one.xqj_tax|number_format_sys=$control_money_input}</td>
+                    <td class="text-right">{$one.earn_pretax|number_format_sys=$control_money_input}</td>
+                    <td class="text-right">
+                      <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+                        <if condition="$one[queryflag] eq 1">
+                          <input style="color:gray;" disabled="true" type="number" value="{$one.tips}" size="8"
+                                 class="input_content op w100 text-right" dbname="{$money_table}" row="tips" myid="{$one.mid}" />
+                        <else />
+                          <input style="color:gray;" type="number" value="{$one.tips}" size="8"
+                                 class="input_content op w100 text-right" dbname="{$money_table}" row="tips" myid="{$one.mid}" />
+                        </if>
+                      <else />
+                        {$one.tips}
+                      </if>
+                    </td>
+                    <td class="text-center">
+                      <!-- 發票日期 -->
+                      <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1' && $control_ecpay_invoice neq '1'">
+                        <if condition="$one[queryflag] eq 0">
+                          <input type="text" class="Wdate input_content op w100" 
+                                 datev="{$one.ticketdate|date='Y-m-d',###}" dbname="{$money_table}" row="ticketdate"
+                                 myid="{$one.mid}" />
+                        <else />
+                          <input type="text" disabled="true" class="Wdate input_content op w100" 
+                                 datev="{$one.ticketdate|date='Y-m-d',###}" dbname="{$money_table}" row="ticketdate"
+                                 myid="{$one.mid}" />
+                        </if>
+                      <else />
+                        {$one.ticketdate|date='Y-m-d',###}
+                      </if>
+                    </td>
+                    <td>
+                      <!-- 發票號碼 -->
+                      <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1' && $control_ecpay_invoice neq '1'">
+                        <div class="row m-0">
+                          <if condition="$one[queryflag] eq 0">
+                            <input type="text" value="{$one.ticket}" class="input_content op col-7"
+                                   dbname="{$money_table}" row="ticket" myid="{$one.mid}" placeholder="發票號碼"/>
+                            <input type="text" value="{$one.ticket_rand}" class="input_content op col-5"
+                                   dbname="{$money_table}" row="ticket_rand" myid="{$one.mid}" placeholder="隨機碼"/>
+                          <else />
+                            <span class="mr-3">{$one.ticket}</span>
+                            <span>{$one.ticket_rand}</span>
+                          </if>
+                        </div>
+                      <else />
+                        <span class="mr-3">{$one.ticket}</span>
+                        <span>{$one.ticket_rand}</span>
+                      </if>
+                    </td>
+                    <td>
+                      <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+                        <textarea rows="1" cols="10" class="input_content" dbname="{$money_table}" row="zkbz"
+                                  myid="{$one.mid}">{$one.zkbz}</textarea>
+                      <else />
+                        {$one.zkbz}
+                      </if>
+                    </td>
+                    <td>
+                      <if condition="$access[strtolower($CONTROLLER_NAME).'_del'] eq '1'">
+                        <if condition="$one.queryflag eq 1">
+                          已核可<input type="button" value="重新核可" class="queryflag btn addbtn"
+                                      dbname="{$money_table}" row="queryflag" myid="{$one.mid}" myval="0" />
+                        <else />
+                          未核可<input type="button" value="核可" class="queryflag btn sendbtn"
+                                      dbname="{$money_table}" row="queryflag" myid="{$one.mid}" myval="1" />
+                        </if>
+                      <else />
+                        <if condition="$one.queryflag eq 1">
+                          已核可
+                        <else />
+                          未核可
+                        </if>
+                      </if>
+                    </td>
+                  </tr>
+                </foreach>
+                <tr>		
+                  <td colspan="9">分頁總計</td>
+                  <td class="text-right">{$all.dqmoney|number_format}</td>
+                  <td class="text-right">{$all.xdj|number_format}</td>
+                  <td class="text-right"><b>{$all.earn|number_format=0}</b></td>
+                  <td></td>
+                  <td class="text-right">{$all.xqj_tax|number_format_sys=$control_money_input}</td>
+                  <td class="text-right">{$all.earn_pretax|number_format_sys=$control_money_input}</td>
+                  <td class="text-right">{$all.tips|number_format}</td>
+                  <td colspan="4"></td>
+                </tr>
+                <tr>		
+                  <td colspan="9">搜尋總計</td>
+                  <td class="text-right">{$search_all.dqmoney|number_format}</td>
+                  <td class="text-right">{$search_all.xdj|number_format}</td>
+                  <td class="text-right"><b>{$search_all.earn|number_format=0}</b></td>
+                  <td></td>
+                  <td class="text-right">{$search_all.xqj_tax|number_format_sys=$control_money_input}</td>
+                  <td class="text-right">{$search_all.earn_pretax|number_format_sys=$control_money_input}</td>
+                  <td class="text-right">{$search_all.tips|number_format}</td>
+                  <td colspan="4"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="send">
+            <div class="page mb-2">
+              <input type="button" value="列印橫大信封" onclick="print_envelope('h_b')" />
+              <input type="button" value="列印橫小信封" onclick="print_envelope('h_s')" />
+              <input type="button" value="列印直小信封" onclick="print_envelope('v_s')" />
+
+              {$show}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <include file="Public:footer" />
+    
+    <include file="Custo:search_setting_js" />
+
+    <script language="javascript" type="text/javascript">
+      $("#wrapper").css("width","100%");
+
+      $(".Wdate").each(function(){
+        $(this).datepicker();
+        $(this).datepicker( "option", "dateFormat",'yy-mm-dd');
+        $(this).datepicker('setDate',$(this).attr("datev"));
+
+      });
+
+      //按下資料 存進資料庫
+      $("tr").on("click",".button_content",function(){ /*修改款項資料*/
+        var myin=$(this);
+        $.ajax({
+          method:'post',
+          data:{dbname:myin.attr("dbname"),row:myin.attr("row"),id:myin.attr("myid"),data:myin.attr("myval")},
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/aj_chcontent')}",
+          success:function(res){
+            if(res.status==1){
+              bg_class = "bg-success";
+            }else{
+              bg_class = "bg-danger";
+            }
+            Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      });
+      //按下資料 存進資料庫
+      $("tr").on("click",".queryflag",function(){ /*修改款項核可狀態*/
+        var myin=$(this);
+        $.ajax({
+          method:'post',
+          data:{dbname:myin.attr("dbname"),row:myin.attr("row"),id:myin.attr("myid"),data:myin.attr("myval")},
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/aj_money_queryflag')}",
+          success:function(res){
+            if(res.status==1){
+              bg_class = "bg-success";
+              window.location.reload();
+            }else{
+              bg_class = "bg-danger";
+            }
+            Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      });
+
+      $("tr").on("click",".envelope",function(){
+        if($(this).attr("myval")=="0"){
+          $(this).val("未印");
+          $(this).attr("myval","1");
+          }else{
+          $(this).val("已印");
+          $(this).attr("myval","0");
+        }
+      });
+
+      $("tr").on("change",".input_content",function(){
+        var myin=$(this);
+        var myid = myin.attr("myid");
+
+        if(myin.attr("row")=="xqj"){
+          var inserData = {};
+          inserData['xqj'] = parseFloat(myin.val().replace(/,/g,''));	/*應付金*/
+
+          $.ajax({
+            method:'post',
+            data:{dbname:myin.attr("dbname"), row:myin.attr("row"), id:myid, data:inserData},
+            dataType:'json',
+            url:"{:U($CONTROLLER_NAME.'/aj_chcontent')}",
+            success:function(res){
+              if(res.status==1){
+                $('#myxdj'+myid).attr('value', res.info.xdj);
+                Vue.toasted.show('更新成功', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                      }else{
+                        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                      }
+            }
+          });
+          return;
+        }
+        
+        $.ajax({
+          method:'post',
+          data:{dbname:myin.attr("dbname"), row:myin.attr("row"), id:myid, data:myin.val()},
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/aj_chcontent')}",
+          success:function(res){
+            if(res.status==1){
+                        bg_class = "bg-success";
+                    }else{
+                        bg_class = "bg-danger";
+                    }
+                    Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+          }
+
+        });
+      });
+
+      $(".act_but").click(function(){
+        $("#list_form").submit();
+      });
+
+      $(function(){
+        $('select[name="m_cdate"]').change(function(){
+          $('#searchform').submit();
+        });
+      });
+    </script>
+
+    <include file="Custo:print_js" />
+  </body>
+</html>

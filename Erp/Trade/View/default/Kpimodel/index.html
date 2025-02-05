@@ -1,0 +1,486 @@
+<include file="Public:header2" />
+
+<head>
+	<style type="text/css">
+		/* 淡藍 */
+		.table_out>tbody>tr th:nth-child(1){ background-color: #33B4ED; }
+		.table_out>tbody>tr:nth-child(even) td:nth-child(1){ background-color: #CCECFB; }
+		.table_out>tbody>tr:nth-child(odd) td:nth-child(1){ background-color: #7FD0F4; }
+
+		/* 綠 */
+		.table_out>tbody>tr th:nth-child(2){ background-color: #33AD69; }
+		.table_out>tbody>tr:nth-child(even) td:nth-child(2),
+		.table_out>tbody>tr:nth-child(even) td:nth-child(2).units_table tr td:nth-child(1){ background-color: #CCEBDA; }
+		.table_out>tbody>tr:nth-child(odd) td:nth-child(2),
+		.table_out>tbody>tr:nth-child(odd) td:nth-child(2).units_table tr td:nth-child(1){ background-color: #7FCCA1; }
+
+		/* 深藍 */
+		.table_out>tbody>tr th:nth-child(3){ background-color: #3E8BC6; }
+		.table_out>tbody>tr:nth-child(even) td:nth-child(3),
+		.table_out>tbody>tr:nth-child(even) td:nth-child(2).units_table tr td:nth-child(2){ background-color: #CFE2F1; }
+		.table_out>tbody>tr:nth-child(odd) td:nth-child(3),
+		.table_out>tbody>tr:nth-child(odd) td:nth-child(2).units_table tr td:nth-child(2){ background-color: #6EA8D4; }
+
+		.table tr th:nth-child(4){
+			background-color: #6b6b6b;
+		}
+		.table tr:nth-child(even) td:nth-child(4){
+			background-color: #d6d6d6;
+		}
+		.table tr:nth-child(odd) td:nth-child(4){
+			background-color: #9a9a9a;
+		}
+
+		.table tr th{
+			font-weight: 900;
+			color: #fff;
+		}
+		.table tr td.add_button{
+			color: #37b1e0;
+			background-color: #e6f5fb !important;
+		    cursor: pointer;
+		    padding: 5px 0px;
+		}
+		.table tr td.add_button:hover{
+			background-color: #37b1e0 !important;
+			color: #fff;
+		}
+		
+
+	
+
+	
+		.area_block{
+			height: 102%;
+			width: 100%;
+		    background: #00000055;
+		    position: absolute;
+		    z-index: 10;
+		    top: -10px;
+		}
+
+		td.trash{
+			vertical-align: middle;
+			cursor: pointer;
+		}
+		input[type=number] {
+		  text-align:right;
+		}
+	</style>
+</head>
+
+<section class="document main">
+	<div class="below">
+
+		<!-- 共用階層列表 -->
+		<label class="editmenu-open">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up"
+				viewBox="0 0 16 16">
+				<path fill-rule="evenodd"
+					d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+			</svg>
+			績效模組選單
+		</label>
+		<div class="left-file-menu">
+			<div class="list_layer">
+				<div class="menu_controll d-md-none justify-content-end">
+					<div class="close-below" for="left-file-menu">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle"
+							viewBox="0 0 16 16">
+							<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+							<path
+								d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+						</svg>
+					</div>	
+				</div>
+
+				<div class="upwards">
+					<div class="list_group">
+						<form id="del_form" action="{:U('kpimodel/delete')}" method="POST">
+							<input type="hidden" name="operate" value="delete" />
+	
+							<div class="layer_1_tab">
+								<a>績效模組設定</a>
+							</div>
+							<volist id="vo" name="glist" >
+								<div class="layer_1_tab access_tab">
+									
+									<label for="{$vo[id]}">
+										<input type='checkbox' name='id[]' value='{$vo[id]}'>{$vo[name]}
+									</label>
+									<a class='icon-edit' href="{:U('kpimodel/index')}?group={$vo[id]}"><i class="fas fa-pen"></i></a>
+	
+								</div>
+							</volist>
+	
+							<if condition="$access['kpimodel_del'] eq '1'">
+								<div class="layer_1_tab">
+									<div class="bt-list"><input type="button" class="delate btn m-2 typeBtn" id="del_btn" value="刪除所選" ></div>
+								</div>
+							</if>
+							<!--<li class="child"><a href="{:U('Mens/apart')}ljt">部門管理垃圾桶</a></li>//-->
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<if condition="$access['kpimodel_new'] eq '1'">
+				<form action="{:U('kpimodel/add')}" method="post">
+					<label class="smallText">新增模組：</label>
+					<input type="text" value="" name="name" placeholder="新增模組" >
+					<input type="submit" name="adddata" class="btn addbtn" value="新增" id="">
+				</form>
+			</if>
+			<div class="document_edit mt-2">
+				<h2 class="text-center">{$target['name']}</h2>
+
+				<if condition="$target['name']">
+					<form id="model_form" action="{:u('kpimodel/update')}" method="POST">
+						<input type="hidden" value="{$group}" name="id" />
+						<input type="hidden" value="{$target['name']}" name="name" />
+						
+						<!-- 主要設定區 -->
+						<div id="menu2" class="mt-2 menuTree">
+							<!-- 會計區塊 -->
+							<div class="parent">
+								<div class="main_check_btn">
+									<label class="mb-0" for="use_account">依會計入帳日 </label>
+									<input type="checkbox" name="use_account" id="use_account" v-model="use_account" value="1">
+								</div>
+
+								<div class="position-relative mt-2">
+									<div class="area_block" v-if="use_account==0"></div>
+									
+									<div class="count_method">
+										<if condition="in_array(121, $use_function_top)">
+											<span class="main_check_btn">
+												<label class="mb-0" for="use_account_sum0">分項{$system_parameter['合約']}列計達成</label>
+												<input type="radio" name="use_account_sum" value="0" id="use_account_sum0" v-model="use_account_sum">
+											</span>
+										</if>
+										<span class="main_check_btn">
+											<label class="mb-0" for="use_account_sum1">全部{$system_parameter['合約']}加總列計達成</label>
+											<input type="radio" name="use_account_sum" value="1" id="use_account_sum1" v-model="use_account_sum">
+										</span>
+									</div>
+									
+									<div class="second_block edit_form">
+										<table class="table table_out edit_table contract_tb" style="min-width: 992px;" v-show="use_account_sum==0">
+											<tbody>
+												<tr>
+													<th style="width:30%;">代號</th>
+													<th style="width:30%;">執行項目</th>
+													<th style="width:20%;" class="text-right">BV值</th>
+													<th style="width:20%;" class="text-right">PV值</th>
+												</tr>
+												<tr v-for="item in crm_contract_unit">
+													<td>{{item.number}}</td>
+													<td>
+														{{item.name}}
+														<span v-if="item.type">- {{item.type}}</span>
+													</td>
+													<td class="text-right">{{ parseFloat(item.profit).toFixed(2)}}</td>
+													<td class="text-right">
+														<input type="number" step="0.01" class="text-right"
+															   :name="'dividual_account['+item.u_id+']'" 
+															   v-model="dividual_account[item.u_id]">
+													</td>
+												</tr>
+											</tbody>
+											
+											
+										</table>
+										<table class="table table_out edit_table contract_tb" style="min-width: 992px;" v-show="use_account_sum==1">
+											<tbody>
+												<tr>
+													<th style="width:40%;">執行項目</th>
+													<th style="width:20%;" class="text-right">BV值</th>
+													<th style="width:40%;" class="text-right">PV值</th>
+												</tr>
+												<tr>
+													<td>全部執行項目</td>
+													<td class="text-right">1.00</td>
+													<td class="text-right">
+														<input class="text-right" type="number" step="0.01" 
+															   name="total_account" v-model="total_account">
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+									
+									<div class="second_block">
+										<div class="second_block_top">
+											<h4>獎金區間設定</h4>
+											<div class="bounus_method">
+												<span class="main_check_btn">
+													<label class="mb-0" for="account_pv_bonus">以PV值乘積比對獎金區間</label>
+													<input type="checkbox" name="account_pv_bonus" id="account_pv_bonus" v-model="account_pv_bonus">
+												</span>
+												<span class="main_check_btn">
+													<label class="mb-0" for="account_accum_bonus">累進獎金回饋(使用後計算方式同稅率)</label>
+													<input type="checkbox" name="account_accum_bonus" value="1" id="account_accum_bonus" v-model="account_accum_bonus">
+												</span>
+											</div>
+										</div>
+										
+										<div class="edit_form">
+											<table class="table table_out edit_table" style="min-width: 992px;">
+												<tbody>
+													<tr>
+														<th>達成金額區間</th>
+														<th>獎金&nbsp;%</th>
+														<th>達成單筆獎金</th>
+														<th>刪除</th>
+													</tr>
+													<tr v-for="(item,index) in account_bonus">
+														<td>
+															<input type="number" v-model="account_bonus[index]['from']" :name="'account_bonus['+index+']['+'from'+']'">&nbsp;元
+															~&nbsp;
+															<input type="number" v-model="account_bonus[index]['to']" :name="'account_bonus['+index+']['+'to'+']'">&nbsp;元
+														</td>
+														<td><input type="number" v-model="account_bonus[index]['percent']" :name="'account_bonus['+index+']['+'percent'+']'" step="0.01">&nbsp;%</td>
+														<td><input type="number" v-model="account_bonus[index]['amount']" :name="'account_bonus['+index+']['+'amount'+']'">&nbsp;元</td>
+														<td class="trash" @click="del_bounus('account_bonus',index)">
+															<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+															  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+															  <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+															</svg>
+														</td>
+													</tr>
+													<tr>
+														<td colspan="4" class="add_button" @click="add_bounus('account_bonus')">
+															<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-plus-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+															  <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4a.5.5 0 0 0-1 0v3.5H4a.5.5 0 0 0 0 1h3.5V12a.5.5 0 0 0 1 0V8.5H12a.5.5 0 0 0 0-1H8.5V4z"/>
+															</svg>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+										
+									</div>
+								</div>
+							</div>
+
+							<hr />
+
+							<!-- 事件部區塊 -->
+							<div class="parent">
+								<div class="main_check_btn">
+									<label class="mb-0" for="use_event">依事件簿完成後核可金額</label>
+									<input type="checkbox" name="use_event" id="use_event" v-model="use_event" value="1">
+								</div>
+
+								<div class="position-relative mt-2">
+									<div class="area_block" v-if="use_event==0"></div>
+
+									<div class="count_method">
+										<if condition="in_array(121, $use_function_top)">
+											<span class="main_check_btn">
+												<label class="mb-0" for="use_event_sum0">分項{$system_parameter['合約']}列計達成</label><input type="radio" name="use_event_sum" value="0" id="use_event_sum0" v-model="use_event_sum">
+											</span>
+										</if>
+										<span class="main_check_btn">
+											<label class="mb-0" for="use_event_sum1">全部{$system_parameter['合約']}加總列計達成</label><input type="radio" name="use_event_sum" value="1" id="use_event_sum1" v-model="use_event_sum">
+										</span>
+									</div>
+
+									<div class="second_block edit_form">
+										<table class="table table_out contract_tb edit_table" style="min-width: 992px;" v-show="use_event_sum==0">
+											<tr>
+												<th style="width:30%;">代號</th>
+												<th style="width:30%;">執行項目</th>
+												<th style="width:20%;" class="text-right">BV值</th>
+												<th style="width:20%;" class="text-right">PV值</th>
+											</tr>
+											<tr v-for="item in crm_contract_unit">
+												<td>{{item.number}}</td>
+												<td>
+													{{item.name}}
+													<span v-if="item.type">- {{item.type}}</span>
+												</td>
+												<td class="text-right">{{ parseFloat(item.profit).toFixed(2)}}</td>
+												<td class="text-right">
+													<input type="number" step="0.01" class="text-right"
+														   :name="'dividual_event['+item.u_id+']'" 
+														   v-model="dividual_event[item.u_id]">
+												</td>
+											</tr>
+										</table>
+										<table class="table table_out contract_tb edit_table" style="min-width: 992px;" v-show="use_event_sum==1">
+											<tr>
+												<th style="width:40%;">執行項目</th>
+												<th style="width:20%;" class="text-right">BV值</th>
+												<th style="width:40%;" class="text-right">PV值</th>
+											</tr>
+											<tr>
+												<td>全部執行項目</td>
+												<td class="text-right">1.00</td>
+												<td class="text-right">
+													<input class="text-right" type="number" step="0.01" 
+														   name="total_event" v-model="total_event">
+												</td>
+											</tr>
+										</table>
+									</div>
+
+									<div class="second_block">
+										<div class="second_block_top">
+											<h4>獎金區間設定</h4>
+											<div class="bounus_method">
+												<span class="main_check_btn">
+													<label class="mb-0" for="event_pv_bonus">以PV值乘積比對獎金區間</label>
+													<input type="checkbox" name="event_pv_bonus" id="event_pv_bonus" v-model="event_pv_bonus">
+												</span>
+												<span class="main_check_btn">
+													<label class="mb-0" for="event_accum_bonus">累進獎金回饋(使用後計算方式同稅率)</label>
+												<input type="checkbox" name="event_accum_bonus" value="1" id="event_accum_bonus" v-model="event_accum_bonus">
+												</span>
+											</div>
+										</div>
+										<div class="edit_form">
+											<table class="table table_out edit_table" style="min-width: 992px;">
+												<tbody>
+													<tr>
+														<th>達成金額區間</th>
+														<th>獎金&nbsp;%</th>
+														<th>達成單筆獎金</th>
+														<th>刪除</th>
+													</tr>
+													<tr v-for="(item,index) in event_bonus">
+														<td>
+															<input type="number" v-model="event_bonus[index]['from']" :name="'event_bonus['+index+']['+'from'+']'">&nbsp;元
+															~&nbsp;
+															<input type="number" v-model="event_bonus[index]['to']" :name="'event_bonus['+index+']['+'to'+']'">&nbsp;元
+														</td>
+														<td><input type="number" v-model="event_bonus[index]['percent']" :name="'event_bonus['+index+']['+'percent'+']'" step="0.01">&nbsp;%</td>
+														<td><input type="number" v-model="event_bonus[index]['amount']" :name="'event_bonus['+index+']['+'amount'+']'">&nbsp;元</td>
+														<td class="trash" @click="del_bounus('event_bonus',index)">
+															<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+															  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+															  <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+															</svg>
+														</td>
+													</tr>
+													<tr>
+														<td colspan="4" class="add_button" @click="add_bounus('event_bonus')">
+															<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-plus-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+															  <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4a.5.5 0 0 0-1 0v3.5H4a.5.5 0 0 0 0 1h3.5V12a.5.5 0 0 0 1 0V8.5H12a.5.5 0 0 0 0-1H8.5V4z"/>
+															</svg>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+										
+									</div>
+								</div>
+							</div>
+
+							<hr />
+
+							<!-- 目標區塊 -->
+							<div>
+								<p>目標設定</p>
+								目標金額：<input type="number" name="aim" v-model="aim">&nbsp;元
+							</div>
+						</div>
+
+						<div class="bt-list mt-4">
+							<input class="reset btn send-btn" type="reset" value="清除重填" @click="clear_all">
+
+							<if condition="$access['kpimodel_edi'] eq '1'">
+								<input type="submit" name="write" class="btn addbtn" value="確認送出">
+							</if>
+						</div>
+					</form>
+				</if>
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />
+<script type="text/javascript">
+	// 左選單
+	$(".editmenu-open").click(function (e) {
+		$(this).toggleClass('arrow');
+		$(".left-file-menu").toggleClass('on');
+
+	});
+	$(".close-below").click(function (e) {
+		$(".left-file-menu").removeClass('on');
+		$('.editmenu-open').removeClass('arrow');
+	});
+	// 刪除模組
+	$("#del_btn").click(function(){
+		if(confirm("確定刪除？")){
+			$('#del_form').submit();
+		}
+	});
+</script>
+
+<script type="text/javascript">
+	var dividual_account_json ='{$target["dividual_account"]}' ? '{$target["dividual_account"]}' : '{}';
+	var account_bonus_json ='{$target["account_bonus"]}' ? '{$target["account_bonus"]}' : '[]';
+
+	var dividual_event_json ='{$target["dividual_event"]}' ? '{$target["dividual_event"]}' : '{}';
+	var event_bonus_json ='{$target["event_bonus"]}' ? '{$target["event_bonus"]}' : '[]';
+	
+	var modeldata = {
+		use_account: {$target["use_account"]},
+		use_account_sum: {$target["use_account_sum"]},
+		dividual_account:JSON.parse(dividual_account_json),
+		total_account:{$target["total_account"]},
+		account_bonus: JSON.parse(account_bonus_json),
+		account_pv_bonus:{$target["account_pv_bonus"]},
+		account_accum_bonus:{$target["account_accum_bonus"]},
+
+		use_event: {$target["use_event"]},
+		use_event_sum: {$target["use_event_sum"]},
+		dividual_event:JSON.parse(dividual_event_json),
+		total_event:{$target["total_event"]},
+		event_bonus:JSON.parse(event_bonus_json),
+		event_pv_bonus:{$target["event_pv_bonus"]},
+		event_accum_bonus:{$target["event_accum_bonus"]},
+		aim:{$target["aim"]},
+		crm_contract_unit_json: '{$crm_contract_unit|json_encode}',
+	}
+
+    var model_form = new Vue({
+        el: '#model_form', 
+        data: modeldata,
+        computed: {
+        	crm_contract_unit : function () {
+        		return JSON.parse(this.crm_contract_unit_json);
+        	},
+        },
+        methods: {
+        	// 清除重填
+        	clear_all: function(){
+        		this.use_account = 0;
+        		this.use_account_sum = 0;
+        		this.account_bonus = [];
+
+        		this.use_event = 0;
+        		this.use_event_sum = 0;
+        		this.event_bonus = [];
+        	},
+        	add_bounus: function(type){
+        		this[type].push({'from':null, 'to':null, 'percent':null, 'amount':null});
+        	},
+        	del_bounus: function(type,index){
+        		this[type].splice(index, 1);
+        	},
+        }
+    });
+</script>
+
+<!-- Anything Slider -->
+<link href="tpl/css/anythingslider.css" rel="stylesheet">
+<!-- <script src="js/jquery.anythingslider.min.js"></script> -->

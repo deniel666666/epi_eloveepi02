@@ -1,0 +1,68 @@
+
+<div class="document_edit">
+	<!-- 輸入階層名稱 -->
+	<div class="layer_setting" >
+		<div class="name_layer">
+			<form id="reset">
+				<label for="">新增階層〈分類〉：</label>
+				<input class="sort text_input" type="text">
+			</form>
+		</div>
+		<input class="change_layer_send addbtn btn ml-md-2 mb-2 " type="submit" value="送出">
+	</div>
+	<!-- end -->
+	<div style="width:100%">
+		<table class="table">
+			<thead>
+				<tr class="gray">
+					<th>已有的階層〈分類〉</th>
+				</tr>
+			</thead>
+			<tbody>
+				<foreach name="sort" item="vo" key="vo_key">
+					<tr>
+						<td>
+							{$vo_key}
+						</td>
+					</tr>
+				</foreach>
+				<tr class="new"></tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+					
+<script>
+	function send_form(){
+		sort = $(".sort").val()
+		$.ajax({
+			method:'post',
+			data:{sort:$(".sort").val()},
+			dataType:'json',
+			url:"{:U('Filecate/add_sort')}",
+			success:function(res){
+				if(res.status==1){
+                    bg_class = "bg-success";
+					$(".new").before("<tr><td>"+sort+"</td></tr>");
+					document.getElementById("reset").reset();
+                }else{
+                    bg_class = "bg-danger";
+                }
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+			}
+		});
+	}
+	// 按送出
+	$(".change_layer_send").click(function(){
+		send_form();
+	});
+
+	// 對輸入欄位按enter
+	$('.text_input').on('keypress', function(e){
+		// console.log(e.keyCode)
+		if (e.keyCode === 13) { // enter
+			send_form();
+			e.preventDefault();
+		}
+	})
+</script>

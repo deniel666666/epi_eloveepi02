@@ -1,0 +1,253 @@
+<include file="Public:header2" />
+
+<section class="main ">
+	<!---->
+	<div id="right" >
+		<div class="right_cont">
+			<if condition="$page eq ''">
+				<form name="search" id="searchform" class="searchForm" action="{:u($controller.'/index')}" method="get"> 
+			<else /> 
+				<form name="search" id="searchform" class="searchForm" action="{:u($controller.'/index')}?p={$Think.get.p}" method="get">
+			</if>
+				<ol class="headerOl rightR">
+					<li>
+						<select name="{$prefix}_status">
+							<option value="%">全部</option>
+							<foreach name="eip_role_status" item="op">
+								<if condition="$op['name'] neq ''">
+									<if condition="$op['id'] eq $_GET[$prefix_status]">
+										<option value="{$op.id}" selected>{$op.name}</option>
+										<else />
+										<option value="{$op.id}">{$op.name}</option>
+									</if>
+								</if>
+							</foreach>
+						</select>
+						<select name="{$prefix}_company">
+							<if condition="$c_title eq '主機' or $c_title eq 'SSL'">
+								<option value="">存放{$c_title}名稱</option>
+							<elseif condition="$c_title eq '域名'" />
+								<option value="">域名廠商</option>
+							</if>
+							<foreach name="provider" item="op">
+								<if condition="$op['nick'] neq ''">
+									<if condition="$op['id'] eq $_GET[$prefix_company]">
+										<option value="{$op.id}" selected>{$op.nick}</option>
+										<else />
+										<option value="{$op.id}">{$op.nick}</option>
+									</if>
+								</if>
+							</foreach>
+						</select>
+						<select name="levelid">
+							<option  value="">客戶等級</option>
+							<foreach name="crm_cum_level" item="op">
+								<if condition="$op['id'] eq $_GET['levelid']">
+									<option value="{$op.id}" selected>{$op.name}</option>
+									<else />
+									<option value="{$op.id}">{$op.name}</option>
+								</if>
+							</foreach>
+						</select>
+					</li>
+					<li>
+						<select name="{$prefix}_endtime">
+							<option value="">月份</option>
+							<foreach name="mdate" item="op">
+								<if condition="$op eq $_GET[$prefix_endtime]">
+									<option selected>{$op}</option>
+									<else />
+									<option >{$op}</option>
+								</if>
+							</foreach>
+							
+						</select>
+					</li>
+					<li>
+						<select name="{$prefix}_givepaytype">
+							<option value="">付款方式</option>
+							<foreach name="eip_pay_type" item="type">
+								<if condition="$type.id neq ''">
+									<if condition="$type.id eq $_GET[$prefix_givepaytype]">
+										<option selected value="{$type.id}">{$type.name}</option>
+										<else />
+										<option value="{$type.id}">{$type.name}</option>
+									</if>
+								</if>
+							</foreach>
+							
+						</select>
+					</li>
+					<li>
+						<div class="search_bar">
+							<input class="text" type="text"  placeholder="請輸入客戶名、{$system_parameter['合約']}號、網址、帳號、備註" name="name" value="{$_GET[name]}" style="width: 350px;" />
+							<input class="submit" type="submit" value="" />
+						</div>
+
+						<div class="search_bar" onclick="location.href=`{:u($controller.'/index')}`">
+							<input class="text text-center" type="text" placeholder="清除搜尋" style="text-align: center; padding: 1px 10px; width: 90px; cursor: pointer;"/ readonly>
+						</div>
+					</li>
+				</ol>
+			</form>
+			<div class="page justify-content-end" >
+				{$show}
+			</div>
+			<!-- <div class="navi1">
+				<ol class="vRight">
+					<li><a href="{:u($controller.'/index',$_GET)}?date=0" class="current"><strong>到期</strong></a></li>
+					<li><a href="{:u($controller.'/index',$_GET)}?date=1" class="current"><strong>未到期</strong></a></li>
+				</ol>
+			</div> -->
+			<div class="content-table">
+				<form action="{:u($controller.'/patchupdate')}" method="post">
+					<div class="edit_form">
+						<table cellpadding="2" cellspacing="1" class="table edit_table">
+							<thead class="edit_table_thead">
+								<tr class="edit_table tr ">
+									<th style="width: 20px" class="text-center">
+										<input type="checkbox" class="seleall" name="all" id="all" />
+									</th>
+									<th style="width: 50px" class="text-right">序號</th>
+									<th style="width: 75px" class="text-left"><a
+											href="{:u($controller.'/index')}?order={$prefix}_status">狀態</a></th>
+									<th style="width: 100px" class="text-left"><a
+											href="{:u($controller.'/index')}?order=name">{$system_parameter["客戶"]}{$system_parameter["簡稱"]}</a>
+									</th>
+									<th style="width: 120px" class="text-left"><a href="{:u($controller.'/index')}?order=sn">{$system_parameter['合約']}號</a></th>
+									<th style="width: 150px" class="text-left"><a href="{:u($controller.'/index')}?order=h_url">設定網址</a></th>
+									<th style="width: 110px" class="text-left"><a href="{:u($controller.'/index')}?order={$prefix}_betime">{$c_title}開始日</a></th>
+									<th style="width: 110px"  class="text-left"><a href="{:u($controller.'/index')}?order={$prefix}_endtime">{$c_title}到期日</a>
+									</th>
+
+									<th style="width: 150px" class="text-left">
+										<if condition="$c_title eq '主機' or $c_title eq 'SSL'">
+											<a href="{:u($controller.'/index')}?order={$prefix}_company">存放{$c_title}名稱</a>
+										<elseif condition="$c_title eq '域名'" />
+											<a href="{:u($controller.'/index')}?order={$prefix}_company">域名廠商</a>
+										</if>
+									</th>
+
+									<th style="width: 150px" class="text-left">帳號</th>
+									<th style="width: 150px" class="text-left">密碼</th>
+									<th style="width: 100px" class="text-left"><a href="{:u($controller.'/index')}?order={$prefix}_givepaytype">繳費方式</a></th>
+									<th style="width: 75px" class="text-left"><a href="{:u($controller.'/index')}?order=eid">{$crm_cum_pri[0]['name']}</a></th>
+									<th style="width: 300px" class="text-left">備註</th>
+								</tr>
+							</thead>
+							<tbody>
+								<foreach name="data" key="num" item="one">
+									<tr id="{$one.id}">
+										<td class="text-center" t-data="核選方塊">
+											<input type="checkbox" class="seleck" value="{$one.hostid}" name="sele[]" />
+										</td>
+										<td class="text-right" t-data="序號">{$num+1+$linit}</td>
+										<td t-data="狀態">
+											<a target="_blank" href="{:u($controller.'/view')}?id={$one.hostid}">
+												{$eip_role_status[$one[$prefix_status]]['rname']}
+											</a>
+										</td>
+										<td>
+											<if condition="in_array(75, $use_function_top)">
+												<a t-data="{$system_parameter['簡稱']}" href="{:u('Custo/view_re')}?id={$one.cumid}" target="_blank">
+											<else />
+												<a t-data="{$system_parameter['簡稱']}" href="{:u('Custo/addcrm')}?id={$one.cumid}" target="_blank">
+											</if>
+												{$one.show_name}
+											</a>
+										</td>
+										<td t-data="{$system_parameter['合約']}號"><a target="_blank"
+												href="{:u('Alllist/view')}?id={$one.pid}">{$one.sn}</a>
+										</td>
+										<td class="text-left" t-data="網址">
+											<div class="copy" data-clipboard-text="{$one.h_url}">{$one.h_url}</div>
+										</td>
+										<td t-data="開始日期">
+											{$one[$prefix_betime]|date='Y-m-d',###}
+										</td>
+									
+										<if condition="$one.color eq 1">
+											<td t-data="結束日期-過期" style="color:red;">{$one[$prefix_endtime]|date='Y-m-d',###}</td>
+											<else />
+											<td t-data="結束日期">{$one[$prefix_endtime]|date='Y-m-d',###}</td>
+										</if>
+
+										<td t-data="{$c_title}位置"> 
+											<a href="{:u($provider_controller.'/view')}?id={$provider[$one[$prefix_company]]['id']}" target="_blank">
+												{$provider[$one[$prefix_company]]['rname']}
+											</a>
+										</td>
+
+										<if condition="$c_title neq 'SSL'">
+											<td  t-data="帳號">
+												<div class="copy" data-clipboard-text="{$one[$prefix_user]}">{$one[$prefix_user]}</div>
+											</td>
+											<td t-data="密碼">
+												<div class="copy" data-clipboard-text="{$one[$prefix_pwd]}">{$one[$prefix_pwd]}</div>
+											</td>
+										</if>
+										<if condition="$c_title eq 'SSL'">
+											<td t-data="帳號">
+												<div class="copy" data-clipboard-text="{$one['h_user']}">{$one['h_user']}</div>
+											</td>
+											<td t-data="密碼">
+												<div class="copy" data-clipboard-text="{$one['h_pwd']}">{$one['h_pwd']}</div>
+											</td>
+										</if>
+
+										<td t-data="付款方式">{$eip_pay_type[$one[$prefix_givepaytype]]['rname']} </td>
+										<td t-data="{$crm_cum_pri[0]['name']}">{$one['user_name']} </td>
+										<td t-data="備註"><textarea rows="1" readonly>{$one[$prefix_note]}</textarea></td>
+									</tr>
+								</foreach>
+							</tbody>
+						</table>
+					</div>
+
+					<if condition="$access[$controller_lower.'_edi'] eq '1'">
+						<select id="flag" class="flag" name="{$prefix}_status">
+							<foreach name="eip_role_status" item="op">
+								<if condition="$op['name'] neq ''">
+									<option value="{$op['id']}">{$op['name']}</option>
+								</if>
+							</foreach>
+						</select>
+						<input type="submit" value="確定修改" class="btn sendbtn" />
+					</if>
+
+					<div class="page">
+						{$show}
+					</div>
+				</form>
+			</div>
+		</div>
+		<!--right_cont end-->
+	</div>
+</section>
+<br>
+<include file="Public:footer" />
+
+<!--縮排-->
+<script src="__PUBLIC__/js/jquery.readmore.js"></script>
+
+<script language="javascript">
+	$(function(){
+		$('.seleall').click(function(){
+			if($(this).attr('checked'))
+			$('.seleck').attr('checked',true);
+			else
+			$('.seleck').attr('checked',false);
+		});
+		$('.list').hover(function(){
+			$(this).css('background','#eeeeee');
+			},function(){
+			$(this).css('background','#ffffff');
+		});
+		var clipboard = new Clipboard('.copy');
+		
+		$(".short").readmore({
+			substr_len: 20, 
+			more_link: '<a class="more">...</a>'
+		});
+	})
+</script>	

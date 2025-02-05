@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>{$eip_company['eip_name']}</title>
+
+        <!-- PWA 加入桌面-->
+        <link rel="manifest" href="/Public/manifest.json">
+        
+        <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0">
+        <link href="__PUBLIC__/css/reset.css" rel="stylesheet" type="text/css" />
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+        <!-- bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script> <!--輔助bootstrap rwd-->
+        <script src="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.js"></script>
+
+       
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/dnCalendar/css/dncalendar-skin.min.css">
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+    
+        <link href="__PUBLIC__/css/use2021.css?20240919-1" rel="stylesheet" type="text/css" /> 
+        
+        
+    
+        <!--提示視窗css -->
+        <link rel="Shortcut Icon" type="image/x-icon" href="__PUBLIC__/images/icon.png" />
+
+        <!-- Fontawesome kit(ICON) -->
+        <script src="__PUBLIC__/js/fontawesome.js" crossorigin="anonymous"></script>
+
+        <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+
+        <!-- Vue -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+        <script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+        <script>Vue.use(Toasted);</script>
+
+        <style>
+            * {
+                padding: 0;
+                margin: 0;
+                font-size: 16px;
+                text-decoration: none;
+                font-family: "微軟正黑體", Arial;
+            }
+
+            ul {
+                list-style: none;
+                padding-left: 0;
+                margin-bottom: 0;
+            }
+
+            .login-box {
+                background: url(/Public/qhand/images/login-bg.jpg) no-repeat center, var(--light_color);
+                width: 100%;
+                background-size: cover;
+                padding: 1rem;
+                min-height: 600px;
+            }
+
+            .logo {
+                width: 180px;
+                padding: 0.5rem;
+                margin: auto;
+            }
+
+            .login {
+                height: calc(100vh - 10vh - 2rem);
+                padding: 4rem auto;
+                max-height: 100vh;
+            }
+
+            .login_cont {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                box-shadow: 0 0 0 1px var(--gray_light);
+                margin: 1rem auto;
+                max-width: 400px;
+                width: 100%;
+                padding: 1.5rem;
+                background: var(--white);
+            }
+
+            .login_cont form {
+                width: 100%;
+            }
+
+            .login .title {
+                width: 100%;
+                display: block;
+                text-align: center;
+            }
+
+            .login_cont .form-group input {
+                width: 100%;
+                padding: 0.5rem 1rem;
+                border: 1px solid var(--gray_s_light);
+            }
+
+            .login_cont .submit {
+                background-color: var(--main_blue);
+                color: var(--white);
+                width: 100%;
+                padding: 0.5rem 1rem;
+            }
+
+            .login_cont .com {
+                font-size: 14px;
+                margin-top: 1rem;
+                text-align: center;
+                color: var(--sub_dark_color);
+            }
+
+            footer {
+                background: var(--light_color);
+                padding: 1rem 0;
+                min-height: 10vh;
+                font-size: 13px;
+            }
+
+            footer .web {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            footer .web p {
+                padding: 5px;
+                margin-bottom: 0;
+                color: var(--sub_dark_color);
+            }
+
+            footer .web p span {
+                display: block;
+            }
+
+            footer .web ul {
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            footer .web ul li a {
+                color: var(--sub_dark_color);
+                padding: 5px;
+            }
+
+            footer .web ul li:not(:last-child) a::after {
+                content: "/";
+            }
+
+            @media (min-width: 992px) {
+                .login-box {
+                    padding: 4rem;
+                }
+
+                .login_cont {
+                    max-width: 400px;
+                }
+
+                .login {
+                    height: calc(100vh - 10vh - 8rem);
+                }
+            }
+        </style>
+        <script language="javascript">
+            function login() {
+                if (document.getElementById("username").value == "") {
+                    alert("請輸入用戶名");
+                    return false;
+                }
+            }
+        </script>
+    </head>
+
+    <body onload="document.getElementById('username').focus()">
+        <div class="login-box">
+            <div id="login" class="login">
+                <div class="container">
+                    <div class="logo">
+                        <!-- <img src="/Public/qhand/images/logo.png" class="img-fluid"> -->
+                        <img src="/Uploads/parameter/1/{$eip_company['login_logo']}" class="img-fluid" />
+                    </div>
+                    <h3 class="title">{$eip_company['eip_name']}</h3>
+                    <div id="login_cont" class="login_cont">
+                        <form name="login_form" action="{:U('Public/dologin', '', '')}" method="post" onsubmit="return login();">
+                            <input type="hidden" value="{$jumpUri}" name="jumpUri"/>
+                            <div class="form-group"><label>帳號</label><input type="text" value="" name="username" id="username" class="inp" /></div>
+                            <div class="form-group"><label>密碼</label><input type="password" name="userpw" value="" class="inp" /></div>
+                            <!--<p>驗證碼：<input type="text" value="" size="6" name="verify" id="verify" class="inp"/>&nbsp;<img src="{'login/verify'|t_U}" style="vertical-align:bottom" id="ver"  alt="驗證碼" title="點擊刷新" onclick="getv()"/> </p>-->
+
+                            <div class="row m-0 justify-content-center">
+                                <div class="col-md-6 col-12 mb-2">
+                                    <input id="btn" type="submit" class="btn submit" value="後台管理登入" />
+                                </div>
+                                <if condition="in_array(155, $use_function_top)">
+                                    <div class="col-md-6 col-12 mb-2">
+                                        <button id="login_to_ScheduleDetail_index" class="btn submit">排班&打卡</button>
+                                    </div>
+                                </if>
+                            </div>
+                        </form>
+                        <div class="com w-100">
+                            <p>
+                                {$eip_company['name']} 版權所有<br />
+                                © 2021 {$eip_company['en_name']}. All Rights Reserved.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div class="container-fluid">
+                <div class="web">
+                    <div class="web-text">
+                        <p>網路行銷、關鍵字廣告首選傳訊光科技公司，您可信賴的網路廣告公司</p>
+                        <ul>
+                            <li><a target="_blank" class="text-photonic" href="http://shop.photonic.com.tw/">購物車</a></li>
+                            <li><a target="_blank" class="text-photonic" href="http://www.photonic.com.tw/">網頁設計</a></li>
+                            <li><a target="_blank" class="text-photonic" href="http://erp2000.com/">CRM</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-cont">
+                        <p><span>電話：{$eip_company['tel']} 傳真：{$eip_company['fax']} </span><span>地址：{$eip_company['addr']}</span></p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            $('#login_to_ScheduleDetail_index').on('click', function(e){
+                e.preventDefault();
+                $('[name="jumpUri"]').val('/index.php/ScheduleDetail/index');
+                $('[name="login_form"]').submit();
+            });                
+        </script>
+    </body>
+</html>

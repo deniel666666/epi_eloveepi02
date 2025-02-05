@@ -1,0 +1,12 @@
+	<div>
+		<br>
+		<span>請選擇本次以什麼腳色匯入：</span>
+		<foreach name="crm_cum_pri" item="role" key="index">
+			<span>
+				<input id="{$role.ename}" value="{$role.ename}" type="radio" name="coper_role" 
+					<if condition="$index==0">checked</if>
+				>
+				<label for="{$role.ename}">{$role.name}</label>&nbsp;&nbsp;&nbsp;
+			</span>
+		</foreach>
+	</div>

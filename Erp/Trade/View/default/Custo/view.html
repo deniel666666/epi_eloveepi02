@@ -1,0 +1,1584 @@
+<!DOCTYPE>
+<include file="Public:header2" />
+
+<head>
+  <style type="text/css">
+    .done_not_read{
+      min-width: 20px;
+      min-height: 20px;
+      background: #ffba00;
+      border-radius: 20px;
+      text-align: center;
+      top: -5px;
+    }
+  </style>
+</head>
+
+<input type="password" id="keypress_target" style="position:absolute; z-index: -3; top: 0"> <!--監聽按鍵用-->
+<section id="crm_vue" class="contant-box crm-contant-box mt-0">
+  <input type="checkbox" id="menu-operate" name="">
+  <div class="check-btn">
+    <label for="menu-operate" class="hb">
+      操作面板
+      <i class="fas fa-arrow-right"></i>
+      <i class="fas fa-arrow-left"></i>
+    </label>
+  </div>
+  <div class="container-fluid">
+    <div class="row justify-content-end">
+      <div class="left-content" for="menu-operate">
+        <div class="L-search-form">
+          <form @submit="search_by_input($event)">
+            <div class="form-group row justify-content-center">
+              <select class="selesearch mr-2" v-model="input_selesearch">
+                <option v-for="item in input_selesearch_option.filter(option => option.name.trim()!='')"
+                    :value="item.value" v-text="item.name">
+                </option>
+              </select>
+              <div class="search_form">
+                <input type="text" class="text bool" v-model="input_text" />
+                <button type="button" class="submit btn" @click="search_by_input($event)">
+                  <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+          <div class="lavel-form">
+            <div class="content_menu">
+              <!-- Nav tabs -->
+              <ul class="nav nav-tabs tabs-menu">
+                <li class="nav-item" onclick="crm_vueVM.search_by_typeid('1')">
+                  <a data-toggle="tab" href="#tab1">{$crm_cum_type_new}</a><!--新進-->
+                </li>
+                <li class="nav-item" onclick="crm_vueVM.search_by_typeid('2')">
+                  <a data-toggle="tab" href="#tab2">{$crm_cum_type_pot}</a><!--潛在-->
+                </li>
+                <li class="nav-item" onclick="crm_vueVM.search_by_conversation('#tab4')">
+                  <a data-toggle="tab" href="#tab4">預約</a>
+                </li>
+                <li class="nav-item" onclick="crm_vueVM.search_by_typeid('3')">
+                  <a data-toggle="tab" href="#tab3">{$crm_cum_type_cur}</a><!--成交-->
+                </li>
+                <if condition="$system_parameter['小事'] neq ''">
+                  <li class="nav-item" onclick="crm_vueVM.search_by_smallthings()">
+                    <a data-toggle="tab" href="#tab5">{$system_parameter['小事']}</a><!--(看你要處理的)-->
+                  </li>
+                </if>
+                <li class="nav-item" onclick="crm_vueVM.search_by_conversation_today('#tab6')">
+                  <a data-toggle="tab" href="#tab6">對話</a>
+                </li>
+                <li class="nav-item" onclick="crm_vueVM.search_by_input()">
+                  <a data-toggle="tab" href="#tab7">搜尋</a>
+                </li>
+                <if condition="$access['custo_new'] eq '1'">
+                  <li class="nav-item newcrm cursor_pointer">
+                    <a><i class="fas fa-plus-circle"></i></a>
+                  </li>
+                </if>
+              </ul>
+              <div class="level-menu">
+                <ul class="menu m-0">
+                  <li>
+                    <select class="mr-2" v-model="status_supplier" @change="renew_crm_list()">
+                      <option value="">廠商類型</option>
+                      <option value="1">客戶</option>
+                      <option value="2">供應商</option>
+                    </select>
+                  </li>
+                  <li v-for="(level, level_index) in crm_levels_count"
+                    :class="['item', {'active':search_level==level.id}]"
+                    @click="change_crm_list_level(level.id)"
+                  >
+                    <button type="button">
+                      <span v-text="level.name"></span>
+                      <span class="button_num" v-text="level.crm_count"></span>
+                    </button>
+                  </li>
+                  <li class="item d-none"><button type="button" id="lavel-9">計數</button></li>
+                </ul>
+                <a class="scroll_left"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+                <a class="scroll_right"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+              </div>
+
+              <!-- Tab panes -->
+              <!-- 新進 -->
+              <div class="tab-pane lavel-info active" id="tab1">
+                <crm_list_normal :datecount="true"></crm_list_normal>
+              </div>
+              <!-- 潛在 -->
+              <div class="tab-pane fade" id="tab2">
+                <crm_list_normal :datecount="false"></crm_list_normal>
+              </div>
+              <!-- 預約 -->
+              <div class="tab-pane fade" id="tab4">
+                <div class="level-content">
+                  <div class="date_select_all">
+                    <select class="date_select" v-model="conversation_type"
+                        @change="ajax_get_conversation">
+                      <option value="=">今天</option>
+                      <option value="<">逾期</option>
+                      <option value=">">預約</option>
+                      <option value="=7" class="d-none">預約</option>
+                    </select>
+                  </div>
+                  <crm_list_normal :datecount="false" :appmdate="true"></crm_list_normal>
+                </div>
+              </div>
+              <!-- 成交 -->
+              <div class="tab-pane fade" id="tab3">
+                <crm_list_normal :datecount="false"></crm_list_normal>
+              </div>
+
+              <if condition="$system_parameter['小事'] neq ''">
+                <!-- 小事(看你要處理的) -->
+                <div class="tab-pane fade" id="tab5">
+                  <crm_list_normal :datecount="false" :appmdate="true"></crm_list_normal>
+                </div>
+              </if>
+              <!-- 對話 -->
+              <div class="tab-pane fade" id="tab6">
+                <crm_list_normal :datecount="false" :appmdate="true"></crm_list_normal>
+              </div>
+              <!-- 搜尋 -->
+              <div class="tab-pane fade" id="tab7">
+                <crm_list_normal :datecount="false"></crm_list_normal>
+              </div>
+            </div>
+            <!-- 頁碼 -->
+            <div class="current-page">
+              <a href="###" v-if="crm_list_current_page>1"
+                 @click="change_crm_list_page(1)">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/><path d="M24 24H0V0h24v24z" fill="none"/></svg>
+              </a>
+              <a href="###" v-if="crm_list_current_page-1>=1"
+                 @click="change_crm_list_page(crm_list_current_page-1)">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+              <a href="###" v-for="page in crm_list_pages"
+                 @click="change_crm_list_page(page)" v-text="page"
+                 :class="{'current': page==crm_list_current_page}">
+              </a>
+              <a href="###" v-if="crm_list_current_page+1<=crm_list_total_page"
+                 @click="change_crm_list_page(crm_list_current_page+1)">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+              <a href="###" v-if="crm_list_current_page<crm_list_total_page"
+                 @click="change_crm_list_page(crm_list_total_page)">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
+              </a>
+            </div>
+
+            <!-- 送出選類別 -->
+            <div class="send-lavel">
+              <if condition="$system_parameter['類別']">
+                <select id="edit_typeid">
+                  <option value="-1">{$system_parameter['客戶']}{$system_parameter['類別']}</option>
+                  <option v-for="(type, type_index) in crm_types"
+                      v-if="['2','3','5','6'].indexOf(type.id)!=-1"
+                      :value="type.id" v-text="type.name">
+                  </option>
+                </select>
+              </if>
+              <select id="edit_levelid">
+                <option value="-1">{$system_parameter['客戶']}{$system_parameter['等級']}</option>
+                <option v-for="(level, level_index) in crm_levels"
+                    :value="level.id" v-text="level.name">
+                </option>
+              </select>
+              <input type="submit" class="update btn" value="確定修改" @click="update_crm_list">
+            </div>
+          </div>
+          <div class="form-lavel-container" v-if="Object.keys(crm_level_description).length !== 0">
+            <div class="form-group" v-for="key in ['A','B','C','D','E','F']">
+              <label class="lavel-class" :for="'lavel'+key" v-text="key"></label>
+              <input class="lavel-input" :id="'lavel'+key" type="text" v-model="crm_level_description[key.toLowerCase()]"
+                   @blur="save_one_value('custo_level'+search_typeid, {$top_adminid}, key, $event)">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 右邊CRM開始 -->
+      <div class="right-content p-3 h-100">
+        <!-- 右上公司資訊 -->
+        <div class="row">
+          <div class="col-xl-6 col-12 company-info">
+            <h3 class="company-title">
+              <if condition="$access['custo_edi'] eq '1'">
+                <a :href="'{:u('Custo/addcrm')}?id='+ crmId +'&teamid='+ teamid">
+                  <span class="people-icon edit-btn"><i class="fas fa-user-edit"></i></span>
+                </a>
+              </if>
+              <span class="copy color-copy" :data-clipboard-text="newbier.nick" v-text="newbier.nick"></span>
+            </h3>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['公司名稱']}</div>
+              <div class="col-md-9 col-8 title-content color-copy copy"
+                 :data-clipboard-text="newbier.name"
+                 v-text="newbier.name">
+              </div>
+            </div>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['統編']}</div>
+              <div class="col-md-9 col-8 title-content" v-text="newbier.no"></div>
+            </div>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['公司電話']}</div>
+              <div class="col-md-9 col-8 title-content">
+                <a :href="'tel:'+newbier.comphone" v-text="newbier.comphone" @click="phone_call(newbier.comphone, $event)"></a>
+              </div>
+            </div>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['公司手機']}</div>
+              <div class="col-md-9 col-8 title-content">
+                <a :href="'tel:'+newbier.commobile" v-text="newbier.commobile" @click="phone_call(newbier.commobile, $event)"></a>
+              </div>
+            </div>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['公司MAIL']}</div>
+              <div class="col-md-9 col-8 title-content">
+                <a :href="'mailto:'+newbier.commail" v-text="newbier.commail"></a>
+              </div>
+            </div>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['地址']}</div>
+              <div class="col-md-9 col-8 title-content color-copy">
+                <span class="copy"
+                    v-if="newbier.show_addr==newbier.addr"
+                    :data-clipboard-text="newbier.zip + newbier.show_addr"
+                    v-text="newbier.zip + newbier.show_addr"></span>
+                <span class="copy"
+                    v-if="newbier.show_addr!=newbier.addr"
+                    :data-clipboard-text="newbier.show_addr"
+                    v-text="newbier.show_addr"></span>
+
+                <a :href="'http://www.google.com.tw/maps/search/' + newbier.show_addr" target="_blank">
+                  <i class="fas fa-map-marked-alt"></i>
+                </a>
+              </div>
+            </div>
+            <if condition="$system_parameter['官方網站'] neq ''">
+              <div class="item">
+                <div class="col-md-3 col-4 title-name">{$system_parameter['官方網站']}</div>
+                <div class="col-md-9 col-8 title-content">
+                  <a :href="newbier.url1" target="_block" v-text="newbier.url1"></a>
+                </div>
+              </div>
+            </if>
+            <if condition="$system_parameter['品牌網站'] neq ''">
+              <div class="item">
+                <div class="col-md-3 col-4 title-name">{$system_parameter['品牌網站']}</div>
+                <div class="col-md-9 col-8 title-content">
+                  <a :href="newbier.url2" target="_block" v-text="newbier.url2"></a>
+                </div>
+              </div>
+            </if>
+            <div class="item">
+              <div class="col-md-3 col-4 title-name">{$system_parameter['傳真']}</div>
+              <div class="col-md-9 col-8 title-content" v-text="newbier.comfax"></div>
+            </div>
+            <if condition="$system_parameter['公司核准日'] neq ''">
+              <div class="item">
+                <div class="col-md-3 col-4 title-name">{$system_parameter['公司核准日']}</div>
+                <div class="col-md-9 col-8 title-content">
+                  <span v-text="newbier.hzrq"></span>
+                  <span v-if="newbier.hzrq" v-text="'('+newbier.hzrqcount+'歲)'"></span>
+                </div>
+              </div>
+            </if>
+            <if condition="$system_parameter['公司LINE_FB'] neq ''">
+              <div class="item">
+                <div class="col-md-3 col-4 title-name">{$system_parameter['公司LINE_FB']}</div>
+                <div class="col-md-9 col-8 title-content">
+                  <span v-text="newbier.comline"></span> /
+                  <span v-text="newbier.comfb"></span>
+                </div>
+              </div>
+            </if>
+          </div>
+          <div class="col-xl-6 col-12">
+            <div class="row">
+              <if condition="$system_parameter['負責人'] neq ''">
+                <div class="col-sm-6 col-12">
+                  <h4 class="lavel-title">
+                    <span class="people-icon"><i class="fas fa-user"></i></span> {$system_parameter['負責人']}
+                  </h4>
+                  <div class="company-info">
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人暱稱']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <span v-if="newbier.bossname" v-text="newbier.bossname"></span>
+                        <span v-if="newbier.bossposition" v-text="' '+newbier.bossposition"></span>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人電話']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <a v-if="newbier.bossextension"
+                        :href="'tel:'+newbier.bossphone+'#'+newbier.bossextension"
+                        @click="phone_call(newbier.bossphone+'#'+newbier.bossextension, $event)"
+                        v-text="newbier.bossphone+'#'+newbier.bossextension"></a>
+                        <a v-if="!newbier.bossextension"
+                        :href="'tel:'+newbier.bossphone"
+                        @click="phone_call(newbier.bossphone, $event)"
+                        v-text="newbier.bossphone"></a>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人手機']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <a :href="'tel:'+newbier.bossmobile" @click="phone_call(newbier.bossmobile, $event)"
+                        v-text="newbier.bossmobile"></a>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人MAIL']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <a :href="'mailto:'+newbier.bossmail" v-text="newbier.bossmail"></a>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人生日']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <span v-text="newbier.bossbirth"></span>
+                        <span v-if="newbier.bossbirth" v-text="'('+newbier.bossbirthcount+'歲)'"></span>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人LINE_FB']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <span v-text="newbier.bossline"></span> /
+                        <span v-text="newbier.bossfb"></span>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['負責人備註']}</div>
+                      <div class="col-md-9 col-8 title-content" v-text="newbier.bossmom"></div>
+                    </div>
+                  </div>
+                </div>
+              </if>
+              <if condition="$system_parameter['聯絡人'] neq ''">
+                <div class="col-sm-6 col-12">
+                  <h4 class="lavel-title">
+                    <span class="people-icon"><i class="fas fa-user"></i></span> {$system_parameter['聯絡人']}
+                  </h4>
+                  <div class="company-info">
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人暱稱']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <span v-if="crm_contact_top.cname" v-text="crm_contact_top.cname"></span>
+                        <span v-if="crm_contact_top.position" v-text="' '+crm_contact_top.position"></span>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人電話']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <a v-if="crm_contact_top.extension"
+                        :href="'tel:'+crm_contact_top.phone+'#'+crm_contact_top.extension"
+                        @click="phone_call(crm_contact_top.phone+'#'+crm_contact_top.extension, $event)"
+                        v-text="crm_contact_top.phone+'#'+crm_contact_top.extension"></a>
+                        <a v-if="!crm_contact_top.extension"
+                        :href="'tel:'+crm_contact_top.phone"
+                        @click="phone_call(crm_contact_top.phone, $event)"
+                        v-text="crm_contact_top.phone"></a>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人手機']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <a :href="'tel:'+crm_contact_top.mobile" @click="phone_call(crm_contact_top.mobile, $event)"
+                        v-text="crm_contact_top.mobile"></a>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人MAIL']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <a :href="'mailto:'+crm_contact_top.mail" v-text="crm_contact_top.mail"></a>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人生日']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <span v-text="crm_contact_top.birth"></span>
+                        <span v-if="crm_contact_top.birth" v-text="'('+crm_contact_top.birthcount+'歲)'"></span>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人LINE_FB']}</div>
+                      <div class="col-md-9 col-8 title-content">
+                        <span v-text="crm_contact_top.cline"></span> /
+                        <span v-text="crm_contact_top.cfb"></span>
+                      </div>
+                    </div>
+                    <div class="item">
+                      <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人備註']}</div>
+                      <div class="col-md-9 col-8 title-content" v-text="crm_contact_top.mom"></div>
+                    </div>
+                  </div>
+                </div>
+              </if>
+            </div>
+            <div class="company-gray flex-wrap d-lg-flex d-none">
+              <div class="row">
+                <if condition="$system_parameter['協同人員'] neq ''">
+                  <div class="col-12 d-flex flex-wrap">
+                    <h4 class="title">{$system_parameter['協同人員']}:</h4>
+                    <div class="title-content">
+                      <ul class="d-flex flex-wrap mb-0">
+                        <li v-for="crm_cum in crm_cum_pri" :class="['chat_record_'+crm_cum.ename]">
+                          <i v-text="crm_cum.name"></i>:<i v-text="crm_cum.user_name"></i>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </if>
+              </div>
+            </div>
+            <div class="company-gray flex-wrap d-lg-flex d-none">
+              <div class="row">
+                <if condition="$system_parameter['類別']">
+                  <div class="col-sm-4 col-12 d-flex flex-wrap">
+                    <h4 class="title">{$system_parameter['類別']}:</h4>
+                    <div class="title-content">
+                      <select name="typeid" v-model="newbier.typeid" @change="save_one_value('crm_crm', crmId, 'typeid', $event)">
+                        <option v-for="(type, type_index) in crm_types"
+                            :value="type.id" v-text="type.name">
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </if>
+                <if condition="$system_parameter['等級']">
+                  <div class="col-sm-8 col-12 d-flex flex-wrap">
+                    <h4 class="title">{$system_parameter['等級']}:</h4>
+                    <div class="title-content">
+                      <div class="form-check-all">
+                        <div class="custom-control custom-radio" v-for="(level, level_index) in crm_levels">
+                          <input class="custom-control-input cursor_pointer" type="radio" :id="'lavel_'+level.id" name="levelid" :value="level.id"
+                            v-model="newbier.levelid" @click="save_one_value('crm_crm', crmId, 'levelid', $event)">
+                          <label class="custom-control-label cursor_pointer" :for="'lavel_'+level.id" v-text="level.name">A</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </if>
+                <if condition="in_array(115, $use_function_top)">
+                  <div class="col-sm-4 col-12 d-flex flex-wrap">
+                    <h4 class="title">{$system_parameter['產業別']}:</h4>
+                    <div class="title-content">
+                      <span v-text="newbier.industr"></span>
+                      <span v-if="newbier.industr2" v-text="'- '+newbier.industr2"></span>
+                    </div>
+                  </div>
+                </if>
+                <if condition="in_array(151, $use_function_top)">
+                  <div class="col-sm-8 col-12 d-flex flex-wrap">
+                    <h4 class="title">{$system_parameter['請款週期']}:</h4>
+                    <div class="title-content">
+                      每月
+                      <input type="number" class="lavel-pay text-right" v-model="newbier.ask_money_date"
+                        @blur="save_one_value('crm_crm', crmId, 'ask_money_date', $event)">
+                      日請款(依人力請款)
+                    </div>
+                  </div>
+                </if>
+              </div>
+            </div>
+          </div>
+          <if condition="in_array(114, $use_function_top)">
+            <div class="col-12 company-manage d-lg-block d-none">
+              <h4 class="company-gray title">{$system_parameter['特性管理']}</h4>
+              <div class="title-content">
+                <div class="caption-box">
+                  <include file="Custo:crm_property" />
+                </div>
+              </div>
+            </div>
+          </if>
+        </div>
+        <!------ 右下選擇區 ----->
+        <div class="manageTabs m-0">
+          <div class="scroll_box">
+            <ul class="tabtitle nav nav-tabs">
+              <!-- 選項區 -->
+              <if condition="$system_parameter['訪談紀錄'] neq ''">
+                <li class="nav-item">
+                  <a class="right_lab" data-toggle="tab" href="#lab1" onclick="save_active_lab('#lab1')">{$system_parameter['訪談紀錄']}</a>
+                  <i v-if="smallthings_done_not_read>0" style="right: -5px; top: 0;"
+                     class="position-absolute d-inline-block done_not_read">
+                    <span v-text="smallthings_done_not_read" class="text-white"></span>
+                  </i>
+                </li>
+              </if>
+              <if condition="$system_parameter['小事'] neq ''">
+                <li class="nav-item">
+                  <a class="right_lab" data-toggle="tab" href="#lab2" onclick="save_active_lab('#lab2')">{$system_parameter['小事']}</a>
+                  <i v-if="smallthings_done_not_read>0" style="right: -5px; top: 0;"
+                     class="position-absolute d-inline-block done_not_read">
+                    <span v-text="smallthings_done_not_read" class="text-white"></span>
+                  </i>
+                </li>
+              </if>
+              <if condition="$system_parameter['綜合事項'] neq ''">
+                <li class="nav-item"><a class="right_lab" data-toggle="tab" href="#lab3" onclick="save_active_lab('#lab3')">{$system_parameter['綜合事項']}</a></li>
+              </if>
+              <if condition="$system_parameter['聯絡人'] neq ''">
+                <li class="nav-item"><a class="right_lab" data-toggle="tab" href="#lab4" onclick="save_active_lab('#lab4')">{$system_parameter['聯絡人']}</a></li>
+              </if>
+              <if condition="$system_parameter['收款合約'] neq '' && in_array('74', $use_function)">
+                <li class="nav-item">
+                  <a class="right_lab" data-toggle="tab" href="#lab5"
+                     onclick="save_active_lab('#lab5'); crm_vueVM.get_or_pay=0; crm_vueVM.ajax_get_contracts(1, -1)">{$system_parameter['收款合約']}</a>
+                </li>
+              </if>
+              <if condition="$system_parameter['付款合約'] neq '' && in_array('147', $use_function)">
+                <li class="nav-item">
+                  <a class="right_lab" data-toggle="tab" href="#lab5_1"
+                     onclick="save_active_lab('#lab5_1'); crm_vueVM.get_or_pay=1; crm_vueVM.ajax_get_contracts(1, -1)">{$system_parameter['付款合約']}</a>
+                </li>
+              </if>
+              <if condition="$system_parameter['事件列表'] neq '' && in_array('18', $use_function)">
+                <li class="nav-item">
+                  <a class="right_lab" data-toggle="tab" href="#lab6" onclick="save_active_lab('#lab6'); crm_vueVM.ajax_get_events()">{$system_parameter['事件列表']}</a>
+                </li>
+              </if>
+              <if condition="$system_parameter['公司資訊'] neq ''">
+                <li class="nav-item"><a class="right_lab" data-toggle="tab" href="#lab7" onclick="save_active_lab('#lab7')">{$system_parameter['公司資訊']}</a></li>
+              </if>
+              <if condition="$system_parameter['網群'] neq ''">
+                <li class="nav-item"><a class="right_lab" data-toggle="tab" href="#lab8" onclick="save_active_lab('#lab8')">{$system_parameter['網群']}</a></li>
+              </if>
+              <if condition="$system_parameter['提供服務'] neq ''">
+                <li class="nav-item" v-show="newbier.status_supplier==2">
+                  <a class="right_lab" data-toggle="tab" href="#lab9" onclick="save_active_lab('#lab9')">{$system_parameter['提供服務']}</a>
+                </li>
+              </if>
+            </ul>
+            <a class="slide_left"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+            <a class="slide_right"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="tab-content">
+            <if condition="$system_parameter['訪談紀錄'] neq ''">
+              <!-- 訪談紀錄 -->
+              <div class="tab-pane right_lab active" id="lab1">
+                <if condition="$access['crm_new'] eq '1'">
+                  <form action="" class="interview-form">
+                    <table class="interview-table rwd_table table">
+                      <thead>
+                        <tr class="tr-only-hide not_hover">
+                          <th>聯絡人</th>
+                          <th>訪談內容</th>
+                          <th>預約時間<span class="text-danger">(若有預約且為面談，會寄送通知給聯絡人)</span></th>
+                          <th>派發處理</th>
+                          <th>訪談品質</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="not_hover">
+                          <td data-th="聯絡人">
+                            <select class="input_interview chats" v-model="new_crm_chats.lxrid">
+                              <option value="0" v-text="newbier.show_contacter_name"></option>
+                              <option v-for="contact in crm_contact" :value="contact.id" v-text="contact.cname"></option>
+                            </select>
+
+                            <div class="form-check-all">
+                              <div class="custom-control custom-radio" v-for="key in Object.keys(chattype_option)">
+                                <input class="custom-control-input" type="radio" :id="'chattype_'+key" :value="key"
+                                     v-model="new_crm_chats.chattype">
+                                <label class="custom-control-label" :for="'chattype_'+key" v-text="chattype_option[key]"></label>
+                              </div>
+                            </div>
+                          </td>
+                          <td data-th="訪談內容">
+                            <textarea id="appmdate_content" name="content" class="chat_text chats chat_text bool" cols="90%" rows="2" v-model="new_crm_chats.content"></textarea>
+                          </td>
+                          <td data-th="預約時間(若有預約且為面談，會寄送通知給聯絡人)" class="be_w100">
+                            <input name="appmdate" type="datetime-local" class="chats time" id="appmdate">
+                            <div class="form-check-all">
+                              <div class="custom-control custom-radio" v-for="key in Object.keys(chattype2_option)">
+                                <input class="custom-control-input" type="radio" :id="'chattype2_'+key" :value="key"
+                                     v-model="new_crm_chats.chattype2">
+                                <label class="custom-control-label" :for="'chattype2_'+key" v-text="chattype2_option[key]"></label>
+                              </div>
+                            </div>
+                          </td>
+                          <td data-th="派發處理">
+                            <select class="person" v-model="new_crm_chats.doid">
+                              <option value="0">無</option>
+                              <option v-for="user in eip_user" :value="user.id" v-text="user.name"></option>
+                            </select>
+                          </td>
+                          <td data-th="訪談品質">
+                            <select class="chats" v-model="new_crm_chats.qulid" @change="add_new_chat">
+                              <option value="0">請選擇</option>
+                              <option v-for="qulity in crmChatqulity" :value="qulity.id" v-text="qulity.name"></option>
+                            </select>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </form>
+                </if>
+                <div class="contact-info">
+                  <form action="" class="interview-form-info h-100" @submit="search_chats($event)">
+                    <div class="search_form">
+                      <input id="searchtxt" type="text" class="text bool" placeholder="搜尋訪談/處理回覆" v-model="input_chats_text">
+                      <button type="button" class="submit btn" @click="search_chats($event)">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                    <div class="">
+                      <table class="table interview-form-info-table">
+                        <thead>
+                          <tr>
+                            <th>聯絡人</th>
+                            <th>訪談內容</th>
+                            <th>訪談時間</th>
+                            <th>預約時間</th>
+                            <th>建立者</th>
+                            <th>派發處理</th>
+                            <th>訪談品質</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(chat, chat_index) in crm_chats" @dblclick="set_chat_edit(chat_index)"
+                            :class="['chat_record', 'cursor_pointer', chat.color_class]" >
+                            <td class="customer-name">
+                              <div v-if="chat.edit!=1">
+                                <span v-if="chat.lxrid!=0" v-text="chat.cname"></span>
+                                <span v-if="chat.lxrid==0" v-text="newbier.show_contacter_name"></span>
+                              </div>
+                              <select v-if="chat.edit==1" class="input_interview chats mb-2" v-model="chat.lxrid"
+                                  @change="save_one_value('crm_chats', chat.id, 'lxrid', $event)">
+                                <option value="0" v-text="newbier.show_contacter_name"></option>
+                                <option v-for="contact in crm_contact" :value="contact.id" v-text="contact.cname"></option>
+                              </select>
+                            </td>
+                            <td class="customer-cont">
+                              <span v-if="chat.edit!=1 && chat.content"
+                                  v-html="chat.content.replaceAll('\n','<br>')"></span>
+                              <textarea v-if="chat.edit==1" class="chats chat_text bool" cols="90%" rows="3" v-text="chat.content"
+                                    @blur="save_one_value('crm_chats', chat.id, 'content', $event)">訪談內容</textarea>
+                            </td>
+                            <td class="customer-time">
+                              <span v-text="chat.dateline_format.slice(0,16)">訪談時間</span>
+                              <span v-if="chat.edit!=1" v-text="chattype_option[chat.chattype]">訪談方式</span>
+                              <select v-if="chat.edit==1" v-model="chat.chattype" @change="save_one_value('crm_chats', chat.id, 'chattype', $event)">
+                                <option v-for="key in Object.keys(chattype_option)" :value="key" v-text="chattype_option[key]"></option>
+                              </select>
+                            </td>
+                            <td class="customer-time">
+                              <div v-if="chat.edit!=1" >
+                                <span v-if="chat.appmdate!=0" v-text="chat.appmdate_format.slice(0,16)">預約時間</span>
+                                <span v-text="chattype2_option[chat.chattype2]">預約方式</span>
+                              </div>
+                              <div v-if="chat.edit==1" >
+                                <input type="datetime-local" class="chats time mb-2" value=""
+                                     @blur="save_one_value('crm_chats', chat.id, 'appmdate', $event)">
+                                <select v-model="chat.chattype2" @change="save_one_value('crm_chats', chat.id, 'chattype2', $event)">
+                                  <option v-for="key in Object.keys(chattype2_option)" :value="key" v-text="chattype2_option[key]"></option>
+                                </select>
+                              </div>
+                            </td>
+                            <td v-text="chat.user_name">建立者</td>
+                            <td>
+                              <span v-if="chat.edit!=1">
+                                <a v-if="chat.doevt==1" href="###" @click="show_smallthing_response(chat)">
+                                  <span v-text="chat.douser_name">派發處理</span>
+                                  <i v-if="!chat.do_review_time && chat.eid==eid"
+                                     class="position-absolute d-inline-block done_not_read">
+                                    <span class="text-white">1</span>
+                                  </i>
+                                <a v-else>
+                                  <span v-text="chat.douser_name">派發處理</span>
+                                </a>
+                              </span>
+                              <select v-if="chat.edit==1" class="input_interview chats mb-2" v-model="chat.doid"
+                                  @change="save_one_value('crm_chats', chat.id, 'doid', $event)">
+                                <option value="0">無</option>
+                                <option v-for="user in eip_user" :value="user.id" v-text="user.name"></option>
+                              </select>
+                            </td>
+                            <td>
+                              <span v-if="chat.edit!=1" v-text="chat.cq_name">訪談品質</span>
+                              <select v-if="chat.edit==1" class="chats" v-model="chat.qulid"
+                                  @change="save_one_value('crm_chats', chat.id, 'qulid', $event)">
+                                <option v-for="qulity in crmChatqulity" :value="qulity.id" v-text="qulity.name"></option>
+                              </select>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- 頁碼 -->
+                <div class="current-page">
+                  <a href="###" v-if="crm_chats_current_page>1"
+                     @click="change_crm_chats_page(1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/><path d="M24 24H0V0h24v24z" fill="none"/></svg>
+                  </a>
+                  <a href="###" v-if="crm_chats_current_page-1>=1"
+                     @click="change_crm_chats_page(crm_chats_current_page-1)">
+                    <i class="fas fa-chevron-left"></i>
+                  </a>
+                  <a href="###" v-for="page in crm_chats_pages"
+                     @click="change_crm_chats_page(page)" v-text="page"
+                     :class="{'current': page==crm_chats_current_page}">
+                  </a>
+                  <a href="###" v-if="crm_chats_current_page+1<=crm_chats_pages.length"
+                     @click="change_crm_chats_page(crm_chats_current_page+1)">
+                    <i class="fas fa-chevron-right"></i>
+                  </a>
+                  <a href="###" v-if="crm_chats_current_page<crm_chats_pages.length"
+                     @click="change_crm_chats_page(crm_chats_pages.length)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
+                  </a>
+                </div>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['小事'] neq ''">
+              <!-- 小事 -->
+              <div class="tab-pane right_lab fade" id="lab2">
+                <div class="execution level-menu">
+                  <ul class="p-0">
+                    <li>
+                      <ul class="nav nav-tabs">
+                        <li class="item">
+                          <a id="smallthings_undo" data-toggle="tab" href="#smallthings_undo"
+                             class="smallthings_change" @click="crm_vueVM.change_smallthings('smallthings_undo')">未處理</a>
+                        </li>
+                        <li class="item">
+                          <a id="smallthings_done" data-toggle="tab" href="#smallthings_done"
+                             class="smallthings_change" @click="crm_vueVM.change_smallthings('smallthings_done')">
+                            已處理
+                            <i v-if="smallthings_done_not_read>0"
+                               class="position-absolute d-inline-block done_not_read">
+                              <span v-text="smallthings_done_not_read" class="text-white"></span>
+                            </i>
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+                <table class="table interview-form-info-table">
+                  <thead>
+                    <tr>
+                      <th>訪談內容</th>
+                      <th>建立者</th>
+                      <th>派發處理</th>
+                      <th>建立日期</th>
+                      <th v-if="smallthing_type=='smallthings_done'">處理日期</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(chat, chat_index) in smallthings_show" :class="[{'text-danger': chat.delay && chat.doevt==0}]">
+                      <td class="customer-cont">
+                        <div v-if="chat.content" v-html="chat.content.replaceAll('\n','<br>')"></div>
+                      </td>
+                      <td v-text="chat.user_name">管理者</td>
+                      <td v-text="chat.douser_name">管理者</td>
+                      <td class="customer-time" v-text="chat.dateline_format.slice(0,16)">建立日期</td>
+                      <td class="customer-time" v-if="smallthing_type=='smallthings_done'">
+                        <span v-text="chat.do_time_format.slice(0,16)" v-if="chat.do_time">處理日期</span>
+                      </td>
+                      <td class="form_note_btn">
+                        <button v-if="chat.doevt==0" type="button" class="btn btn-primary" @click="show_smallthing_response(chat)">
+                          <i class="fas fa-check"></i>
+                        </button>
+                        <button v-if="chat.doevt==1" type="button" class="btn btn-primary" @click="show_smallthing_response(chat)">
+                          <i class="fas fa-eye"></i>
+                          <i v-if="!chat.do_review_time && chat.eid==eid"
+                             class="position-absolute d-inline-block done_not_read">
+                            <span class="text-white">1</span>
+                          </i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['綜合事項'] neq ''">
+              <!-- 綜合事項 -->
+              <div class="tab-pane right_lab fade" id="lab3">
+                <if condition="$access['crm_new'] eq '1'">
+                  <form id="chat_form_note" class="chat_form_note" action="" method="post">
+                    <table class="interview-table rwd_table table">
+                      <thead>
+                        <tr class="tr-only-hide not_hover">
+                          <th>事項內容</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="not_hover">
+                          <td data-th="事項內容">
+                            <textarea class="chats chat_text bool" cols="90%" rows="2"
+                                  v-model="new_crm_memo.content"></textarea>
+                          </td>
+                          <td data-th="">
+                            <input type="button" class="sendbtn btn" value="儲存" @click="add_new_item('crm_memo')">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </form>
+                </if>
+                <form action="" class="interview-form-info">
+                  <table class="table chat_form_note_cont">
+                    <thead>
+                      <tr>
+                        <th>事項內容</th>
+                        <th>建立者</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(memo, memo_index) in crm_memo" @dblclick="set_item_edit('crm_memo', memo_index)">
+                        <td class="form_note_cont">
+                          <span v-if="memo.edit!=1 && memo.content"
+                              v-html="memo.content.replaceAll('\n','<br>')">事項內容</span>
+                          <textarea v-if="memo.edit==1" class="chats chat_text bool w-100" rows="5"
+                                v-model="memo.content"
+                                @blur="save_one_value('crm_memo', memo.id, 'content', $event)"></textarea>
+                        </td>
+                        <td class="form_note_name" v-text="memo.user_name">建立者</td>
+                        <td class="form_note_btn">
+                          <button class="btn delate" type="button" @click="delete_item('crm_memo', memo.id)">
+                            <i class="far fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['聯絡人'] neq ''">
+              <!-- 聯絡人 -->
+              <div class="tab-pane right_lab fade" id="lab4">
+                <if condition="$access['crm_new'] eq '1'">
+                  <form action="" class="interview-form ">
+                    <table class="interview-table rwd_table table">
+                      <thead>
+                        <tr class="tr-only-hide not_hover">
+                          <th style="width: 15%">{$system_parameter['聯絡人暱稱']}</th>
+                          <th style="width: 20%">聯絡方式</th>
+                          <th style="width: 20%">{$system_parameter['聯絡人MAIL']}</th>
+                          <th style="width: 10%">{$system_parameter['聯絡人生日']}</th>
+                          <th style="width: 15%">{$system_parameter['聯絡人LINE_FB']}</th>
+                          <th style="width: 20%">{$system_parameter['聯絡人備註']}</th>
+                          <th style="width: 5%"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="not_hover">
+                          <td data-th="{$system_parameter['聯絡人暱稱']}" class="contact-name">
+                            <div class="d-flex">
+                              <input class="contact-control-input" type="text" v-model="new_crm_contact.cname" placeholder="{$system_parameter['名稱']}">
+                              <input class="contact-control-input" type="text" v-model="new_crm_contact.position" placeholder="{$system_parameter['職稱']}">
+                            </div>
+                          </td>
+                          <td data-th="聯絡方式" class="contact-phone" >
+                            <div class="d-flex mb-2">
+                              <input class="contact-control-input" style="width: 70%" type="text" v-model="new_crm_contact.phone" placeholder="{$system_parameter['聯絡人電話']}">
+                              #
+                              <input class="contact-control-input" style="width: 30%" type="text" v-model="new_crm_contact.extension" placeholder="分機">
+                            </div>
+                            <input class="contact-control-input" type="text" v-model="new_crm_contact.mobile" placeholder="{$system_parameter['聯絡人手機']}">
+                          </td>
+                          <td data-th="{$system_parameter['聯絡人MAIL']}" class="contact-mail">
+                            <input class="contact-control-input" type="text" v-model="new_crm_contact.mail">
+                          </td>
+                          <td data-th="{$system_parameter['聯絡人生日']}" class="">
+                            <input class="contact-control-input" type="text" v-model="new_crm_contact.birth">
+                          </td>
+                          <td data-th="{$system_parameter['聯絡人LINE_FB']}" class="contact-line">
+                            <input class="contact-control-input mb-2" type="text" v-model="new_crm_contact.cline">
+                            <input class="contact-control-input" type="text" v-model="new_crm_contact.cfb">
+                          </td>
+                          <td data-th="{$system_parameter['聯絡人備註']}" class="contact-remark">
+                            <textarea name="contact-remark" class="contact-control-input" cols="80%" rows="2"
+                                  v-model="new_crm_contact.mom"></textarea>
+                          </td>
+                          <td>
+                            <input type="button" value="儲存" class="sendbtn btn" @click="add_new_item('crm_contact')">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </form>
+                </if>
+                <form action="" class="interview-form-info">
+                  <table class="table interview-form-info-table contact-table-cont">
+                    <thead>
+                      <tr>
+                        <th style="width: 1%"></th>
+                        <th style="width: 15%">{$system_parameter['聯絡人暱稱']}</th>
+                        <th style="width: 20%">聯絡方式</th>
+                        <th style="width: 20%">{$system_parameter['聯絡人MAIL']}</th>
+                        <th style="width: 9%">{$system_parameter['聯絡人生日']}</th>
+                        <th style="width: 15%">{$system_parameter['聯絡人LINE_FB']}</th>
+                        <th style="width: 20%">{$system_parameter['聯絡人備註']}</th>
+                        <th style="width: 5%">建立者</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(contact, contact_index) in crm_contact" @dblclick="set_item_edit('crm_contact', contact_index)">
+                        <td>
+                          <input type="radio" name="top_contacter" v-model="crm_contact_top.id"
+                               :value="contact.id" @click="save_crm_contact_top(contact.id)">
+                        </td>
+                        <td class="contact-phone">
+                          <div v-if="contact.edit!=1" class="d-flex">
+                            <span v-text="contact.cname">{$system_parameter['聯絡人暱稱']}</span>&nbsp;<span v-text="contact.position">{$system_parameter['職稱']}</span>
+                          </div>
+                          <div v-if="contact.edit==1" class="d-flex">
+                            <input class="contact-control-input" type="text"
+                                 v-model="contact.cname" @blur="save_one_value('crm_contact', contact.id, 'cname', $event)"
+                                 placeholder="{$system_parameter['名稱']}">
+                            <input class="contact-control-input" type="text"
+                                 v-model="contact.position" @blur="save_one_value('crm_contact', contact.id, 'position', $event)"
+                                 placeholder="{$system_parameter['職稱']}">
+                          </div>
+                        </td>
+                        <td class="contact-phone">
+                          <div v-if="contact.edit!=1">
+                            {$system_parameter['聯絡人電話']}:
+                            <a v-if="contact.extension" v-text="contact.phone+'#'+contact.extension"
+                               :href="'tel:'+contact.phone+'#'+contact.extension"
+                               @click="phone_call(contact.phone+'#'+contact.extension, $event)">{$system_parameter['聯絡人電話']}</a>
+                            <a v-if="!contact.extension" v-text="contact.phone"
+                               :href="'tel:'+contact.phone"
+                               @click="phone_call(contact.phone, $event)">{$system_parameter['聯絡人電話']}</a>
+                            <br>
+                            {$system_parameter['聯絡人手機']}:
+                            <a v-if="contact.edit!=1" v-text="contact.mobile"
+                              :href="'tel:'+contact.mobile"
+                              @click="phone_call(contact.mobile, $event)">{$system_parameter['聯絡人手機']}</a>
+                          </div>
+                          <div v-if="contact.edit==1">
+                            <div class="d-flex mb-2">
+                              <input class="contact-control-input" type="text" style="width: 70%" placeholder="{$system_parameter['聯絡人電話']}"
+                                   v-model="contact.phone" @blur="save_one_value('crm_contact', contact.id, 'phone', $event)">
+                              #
+                              <input class="contact-control-input" style="width: 30%" type="text" placeholder="分機"
+                                   v-model="contact.extension" @blur="save_one_value('crm_contact', contact.id, 'extension', $event)">
+                            </div>
+                            <input class="contact-control-input" type="text" placeholder="{$system_parameter['聯絡人手機']}"
+                                 v-model="contact.mobile" @blur="save_one_value('crm_contact', contact.id, 'mobile', $event)">
+                          </div>
+                        </td>
+                        <td class="contact-mail">
+                          <span v-if="contact.edit!=1" v-text="contact.mail">{$system_parameter['聯絡人MAIL']}</span>
+                          <input v-if="contact.edit==1" class="contact-control-input" type="text"
+                               v-model="contact.mail" @blur="save_one_value('crm_contact', contact.id, 'mail', $event)">
+                        </td>
+                        <td class="contact-line">
+                          <span v-if="contact.edit!=1" v-text="contact.birth">{$system_parameter['聯絡人生日']}</span>
+                          <input v-if="contact.edit==1" class="contact-control-input" type="text"
+                               v-model="contact.birth" @blur="save_one_value('crm_contact', contact.id, 'birth', $event)">
+                        </td>
+                        <td class="contact-line">
+                          <div v-if="contact.edit!=1">
+                            {$system_parameter['聯絡人LINE']}:<span v-if="contact.edit!=1" v-text="contact.cline" class="mb-2">{$system_parameter['聯絡人LINE']}</span><br>
+                            {$system_parameter['聯絡人FB']}:<span v-if="contact.edit!=1" v-text="contact.cfb">{$system_parameter['聯絡人FB']}</span>
+                          </div>
+                          <div v-if="contact.edit==1">
+                            <input class="contact-control-input mb-2" type="text" v-model="contact.cline"
+                                 @blur="save_one_value('crm_contact', contact.id, 'cline', $event)" placeholder="{$system_parameter['聯絡人LINE']}">
+                            <input class="contact-control-input" type="text" v-model="contact.cfb"
+                                 @blur="save_one_value('crm_contact', contact.id, 'cfb', $event)"  placeholder="{$system_parameter['聯絡人FB']}">
+                          </div>
+                        </td>
+                        <td class="contact-remark">
+                          <span v-if="contact.edit!=1 && contact.mom"
+                              v-html="contact.mom.replaceAll('\n','<br>')">備註</span>
+                          <textarea v-if="contact.edit==1" class="contact-control-input" cols="80%" rows="2"
+                                v-model="contact.mom"
+                                @blur="save_one_value('crm_contact', contact.id, 'mom', $event)"></textarea>
+                        </td>
+                        <td v-text="contact.user_name">建立者</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['收款合約'] neq '' && in_array('74', $use_function)">
+              <!-- 收款合約 -->
+              <div class="tab-pane right_lab fade" id="lab5">
+                <div class="execution level-menu">
+                  <ul class="p-0">
+                    <li>
+                      <ul class="nav nav-tabs">
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag2==1}]" @click="crm_vueVM.ajax_get_contracts(1)">執行區</a>
+                        </li>
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag2==2}]" @click="crm_vueVM.ajax_get_contracts(2)">結案區</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <ul class="nav nav-tabs">
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag==-1}]"
+                             @click="crm_vueVM.ajax_get_contracts(false, -1)">全部</a>
+                        </li>
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag==0}]"
+                             @click="crm_vueVM.ajax_get_contracts(false, 0)">提案</a>
+                        </li>
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag==1}]"
+                             @click="crm_vueVM.ajax_get_contracts(false, 1)">已簽約</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <ul class="nav nav-tabs contract_cate">
+                        <li class="item" v-for="(cate,cate_index) in contracts_cates">
+                          <a :class="[{'first_contract':cate_index==0}]"
+                             data-toggle="tab" :href="'#catepanel'+cate.id"
+                             @click="change_contracts_cate(cate.id)"
+                             v-text="cate.name">{$system_parameter['合約']}類別</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="newcontract cursor_pointer" v-show="newbier.typeid==3 || newbier.typeid==2">
+                      <i aria-hidden="true" class="fas fa-plus-circle"></i>
+                    </li>
+                  </ul>
+                  <div class="tab-content">
+                    <div class="execution-cont">
+                      <crm_right_contract get_or_pay='0'></crm_right_contract>
+                    </div>
+                  </div>
+
+                  <!-- 頁碼 -->
+                  <div class="execution-cont">
+                    <div class="current-page">
+                      <a href="###" v-if="contracts_current_page>1"
+                         @click="change_contracts_page(1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/><path d="M24 24H0V0h24v24z" fill="none"/></svg>
+                      </a>
+                      <a href="###" v-if="contracts_current_page-1>=1"
+                         @click="change_contracts_page(contracts_current_page-1)">
+                        <i class="fas fa-chevron-left"></i>
+                      </a>
+                      <a href="###" v-for="page in contracts_pages"
+                         @click="change_contracts_page(page)" v-text="page"
+                         :class="{'current': page==contracts_current_page}">
+                      </a>
+                      <a href="###" v-if="contracts_current_page+1<=contracts_total_page"
+                         @click="change_contracts_page(contracts_current_page+1)">
+                        <i class="fas fa-chevron-right"></i>
+                      </a>
+                      <a href="###" v-if="contracts_current_page<contracts_total_page"
+                         @click="change_contracts_page(contracts_total_page)">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </if>
+            <if condition="$system_parameter['付款合約'] neq '' && in_array('147', $use_function)">
+              <!-- 付款合約 -->
+              <div class="tab-pane right_lab fade" id="lab5_1">
+                <div class="execution level-menu">
+                  <ul class="p-0">
+                    <li>
+                      <ul class="nav nav-tabs">
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag2==1}]" @click="crm_vueVM.ajax_get_contracts(1)">執行區</a>
+                        </li>
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag2==2}]" @click="crm_vueVM.ajax_get_contracts(2)">結案區</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <ul class="nav nav-tabs">
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag==-1}]"
+                             @click="crm_vueVM.ajax_get_contracts(false, -1)">全部</a>
+                        </li>
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag==0}]"
+                             @click="crm_vueVM.ajax_get_contracts(false, 0)">提案</a>
+                        </li>
+                        <li class="item">
+                          <a data-toggle="tab" href="#"
+                             :class="[{'active':contracts_flag==1}]"
+                             @click="crm_vueVM.ajax_get_contracts(false, 1)">已簽約</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <ul class="nav nav-tabs contract_cate">
+                        <li class="item" v-for="(cate,cate_index) in contracts_cates_pay">
+                          <a :class="[{'first_contract':cate_index==0}]"
+                             data-toggle="tab" :href="'#catepanel'+cate.id"
+                             @click="change_contracts_cate(cate.id)"
+                             v-text="cate.name">{$system_parameter['合約']}類別</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="newcontract_pay cursor_pointer" v-show="newbier.typeid==3 || newbier.typeid==2">
+                      <i aria-hidden="true" class="fas fa-plus-circle"></i>
+                    </li>
+                  </ul>
+                  <div class="tab-content">
+                    <div class="execution-cont">
+                      <crm_right_contract get_or_pay='1'></crm_right_contract>
+                    </div>
+                  </div>
+
+                  <!-- 頁碼 -->
+                  <div class="execution-cont">
+                    <div class="current-page">
+                      <a href="###" v-if="contracts_current_page>1"
+                         @click="change_contracts_page(1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/><path d="M24 24H0V0h24v24z" fill="none"/></svg>
+                      </a>
+                      <a href="###" v-if="contracts_current_page-1>=1"
+                         @click="change_contracts_page(contracts_current_page-1)">
+                        <i class="fas fa-chevron-left"></i>
+                      </a>
+                      <a href="###" v-for="page in contracts_pages"
+                         @click="change_contracts_page(page)" v-text="page"
+                         :class="{'current': page==contracts_current_page}">
+                      </a>
+                      <a href="###" v-if="contracts_current_page+1<=contracts_total_page"
+                         @click="change_contracts_page(contracts_current_page+1)">
+                        <i class="fas fa-chevron-right"></i>
+                      </a>
+                      <a href="###" v-if="contracts_current_page<contracts_total_page"
+                         @click="change_contracts_page(contracts_total_page)">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['事件列表'] neq '' && in_array('18', $use_function)">
+              <!-- 事件列表 -->
+              <div class="tab-pane right_lab fade" id="lab6">
+                <div class="event-menu level-menu">
+                  <ul class="nav nav-tabs">
+                    <li class="item">
+                      <a data-toggle="tab" href="#event1"
+                         :class="[{'active':eve_type=='index'}]" @click="change_eve_type('index')">執行區</a>
+                    </li>
+                    <li class="item">
+                      <a data-toggle="tab" href="#event2"
+                         :class="[{'active':eve_type=='file'}]" @click="change_eve_type('file')">歸檔區</a>
+                    </li>
+                    <li class="newevent cursor_pointer">
+                      <i aria-hidden="true" class="fas fa-plus-circle"></i>
+                    </li>
+                  </ul>
+                  <div class="tab-content">
+                    <div class="tab-pane active" id="event1">
+                      <crm_right_event></crm_right_event>
+                    </div>
+                    <div class="tab-pane fade" id="event2">
+                      <crm_right_event></crm_right_event>
+                    </div>
+                  </div>
+
+                  <!-- 頁碼 -->
+                  <div class="event-cont">
+                    <div class="current-page">
+                      <a href="###" v-if="events_current_page>1"
+                         @click="change_events_page(1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/><path d="M24 24H0V0h24v24z" fill="none"/></svg>
+                      </a>
+                      <a href="###" v-if="events_current_page-1>=1"
+                         @click="change_events_page(events_current_page-1)">
+                        <i class="fas fa-chevron-left"></i>
+                      </a>
+                      <a href="###" v-for="page in events_pages"
+                         @click="change_events_page(page)" v-text="page"
+                         :class="{'current': page==events_current_page}">
+                      </a>
+                      <a href="###" v-if="events_current_page+1<=events_total_page"
+                         @click="change_events_page(events_current_page+1)">
+                        <i class="fas fa-chevron-right"></i>
+                      </a>
+                      <a href="###" v-if="events_current_page<events_total_page"
+                         @click="change_events_page(events_total_page)">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5a5a5a"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['公司資訊'] neq ''">
+              <!-- 公司資訊 -->
+              <div class="tab-pane right_lab company-event fade" id="lab7">
+                <ul>
+                  <if condition="in_array(51, $use_function_top)">
+                    <li>
+                      <div class="name">{$system_parameter['起算日期']}:</div>
+                      <div class="content" v-text="newbier.newclient_date"></div>
+                    </li>
+                  </if>
+                  <li>
+                    <div class="name">{$system_parameter['廠商類型']}：</div>
+                    <div class="content">
+                      <template v-if="newbier.status_supplier==1">客戶</template>
+                      <template v-if="newbier.status_supplier==2">供應商</template>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['公司備註']}:</div>
+                    <div class="content" v-text="newbier.mom"></div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['來源']}:</div>
+                    <div class="content" v-text="newbier.sourse_name"></div>
+                  </li>
+                  <!-- <li>
+                    <div class="name">{$system_parameter['公司核准日']}:</div>
+                    <div class="content">
+                      <span v-text="newbier.hzrq"></span>
+                      <span v-if="newbier.hzrq" v-text="'('+newbier.hzrqcount+'歲)'"></span>
+                    </div>
+                  </li> -->
+                  <li>
+                    <div class="name">{$system_parameter['資本額']}:</div>
+                    <div class="content">
+                      <template v-if="newbier.zbe">
+                        <span v-text="Number(newbier.zbe).toLocaleString('en-US')"></span>
+                      </template>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['關係企業']}:</div>
+                    <div class="content">
+                      <span v-text="newbier.affiliates1"></span>
+                      <span v-if="newbier.affiliates2">, <span v-text="newbier.affiliates2"></span></span>
+                      <span v-if="newbier.affiliates3">, <span v-text="newbier.affiliates3"></span></span>
+                      <span v-if="newbier.affiliates4">, <span v-text="newbier.affiliates4"></span></span>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['業務分析']}:</div>
+                    <div class="content" v-if="newbier.busanalysis" v-html="newbier.busanalysis.replaceAll('\n','<br>')"></div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['特別說明']}:</div>
+                    <div class="content" v-if="newbier.explan" v-html="newbier.explan.replaceAll('\n','<br>')"></div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['拜訪地址']}:</div>
+                    <div class="content">
+                      <input type="text" class="w100" v-model="newbier.addr"
+                           @blur="save_one_value('crm_crm', crmId, 'addr', $event)">
+                      <div class="form-check-all content-box">
+                        <div class="form-check d-inline-flex">
+                          <input type="checkbox" class="form-check-input cursor_pointer" id="accounting_addr"
+                               :checked="newbier.accounting_addr==1"
+                               @click="save_multil_addr('accounting_addr', $event)">
+                          <label class="form-check-label cursor_pointer" for="accounting_addr">{$system_parameter['會計地址']}</label>
+                        </div>
+                        <div class="form-check d-inline-flex">
+                          <input type="checkbox" class="form-check-input cursor_pointer" id="shipment_addr"
+                               :checked="newbier.shipment_addr==1"
+                               @click="save_multil_addr('shipment_addr', $event)">
+                          <label class="form-check-label cursor_pointer" for="shipment_addr">{$system_parameter['出貨地址']}</label>
+                        </div>
+                        <div class="form-check d-inline-flex">
+                          <input type="checkbox" class="form-check-input cursor_pointer" id="factory_addr"
+                               :checked="newbier.factory_addr==1"
+                               @click="save_multil_addr('factory_addr', $event)">
+                          <label class="form-check-label cursor_pointer" for="factory_addr">{$system_parameter['工廠地址']}</label>
+                        </div>
+                        <div class="form-check d-inline-flex">
+                          <input type="checkbox" class="form-check-input cursor_pointer" id="register_addr"
+                               :checked="newbier.register_addr==1"
+                               @click="save_multil_addr('register_addr', $event)">
+                          <label class="form-check-label cursor_pointer" for="register_addr">{$system_parameter['登記地址']}</label>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['會計地址']}:</div>
+                    <div class="content">
+                      <input v-if="newbier.accounting_addr==1" type="text" size="50" class="w100" disabled="">
+                      <input v-if="newbier.accounting_addr!=1" type="text" size="50" class="w100" v-model="newbier.accounting_addr"
+                             @blur="save_one_value('crm_crm', crmId, 'accounting_addr', $event)">
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['出貨地址']}:</div>
+                    <div class="content">
+                      <input v-if="newbier.shipment_addr==1" type="text" size="50" class="w100" disabled="">
+                      <input v-if="newbier.shipment_addr!=1" type="text" size="50" class="w100" v-model="newbier.shipment_addr"
+                             @blur="save_one_value('crm_crm', crmId, 'shipment_addr', $event)">
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['工廠地址']}:</div>
+                    <div class="content">
+                      <input v-if="newbier.factory_addr==1" type="text" size="50" class="w100" disabled="">
+                      <input v-if="newbier.factory_addr!=1" type="text" size="50" class="w100" v-model="newbier.factory_addr"
+                             @blur="save_one_value('crm_crm', crmId, 'factory_addr', $event)">
+                    </div>
+                  </li>
+                  <li>
+                    <div class="name">{$system_parameter['登記地址']}:</div>
+                    <div class="content">
+                      <input v-if="newbier.register_addr==1" type="text" size="50" class="w100" disabled="">
+                      <input v-if="newbier.register_addr!=1" type="text" size="50" class="w100" v-model="newbier.register_addr"
+                             @blur="save_one_value('crm_crm', crmId, 'register_addr', $event)">
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['網群'] neq ''">
+              <!-- 網群 -->
+              <div class="tab-pane right_lab fade" id="lab8">
+                <if condition="$access['crm_new'] eq '1'">
+                  <form class="chat_form_note">
+                    <table class="interview-table rwd_table table">
+                      <thead>
+                        <tr class="tr-only-hide not_hover">
+                          <th>網站名稱</th>
+                          <th>網址</th>
+                          <th>帳號</th>
+                          <th>密碼</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="not_hover">
+                          <td data-th="網站名稱">
+                            <input class="contact-control-input" type="text" placeholder="請輸入網站名稱"
+                                   v-model="new_crm_website.website">
+                          </td>
+                          <td data-th="網址">
+                            <input class="contact-control-input" type="text" placeholder="請輸入網址"
+                                   v-model="new_crm_website.url">
+                          </td>
+                          <td data-th="帳號">
+                            <input class="contact-control-input" type="text" placeholder="請輸入帳號"
+                                   v-model="new_crm_website.website_acc">
+                          </td>
+                          <td data-th="密碼">
+                            <input class="contact-control-input" type="text" placeholder="請輸入密碼"
+                                   v-model="new_crm_website.website_pw">
+                          </td>
+                          <td data-th="">
+                            <input type="button" value="儲存" class="sendbtn btn ml-2" @click="add_new_item('crm_website')">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </form>
+                </if>
+                <div class="interview-form-info">
+                  <table class="table interview-form-info-table">
+                    <thead>
+                      <tr>
+                        <th>網站名稱</th>
+                        <th>網址</th>
+                        <th>帳號</th>
+                        <th>密碼</th>
+                        <!-- <th>建立者</th> -->
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(website, website_index) in crm_website" @dblclick="set_item_edit('crm_website', website_index)">
+                        <td class="web-name">
+                          <span v-if="website.edit!=1" v-text="website.website">網站名稱</span>
+                          <input v-if="website.edit==1" class="contact-control-input" type="text"
+                                 v-model="website.website" @blur="save_one_value('crm_website', website.id, 'website', $event)">
+                        </td>
+                        <td class="web-site">
+                          <span v-if="website.edit!=1" v-text="website.url">網址</span>
+                          <input v-if="website.edit==1" class="contact-control-input" type="text"
+                                 v-model="website.url" @blur="save_one_value('crm_website', website.id, 'url', $event)">
+                        </td>
+                        <td class="web-account">
+                          <span v-if="website.edit!=1" v-text="website.website_acc">帳號</span>
+                          <input v-if="website.edit==1" class="contact-control-input" type="text"
+                                 v-model="website.website_acc" @blur="save_one_value('crm_website', website.id, 'website_acc', $event)">
+                        </td>
+                        <td class="web-password">
+                          <span v-if="website.edit!=1" v-text="website.website_pw">密碼</span>
+                          <input v-if="website.edit==1" class="contact-control-input" type="text"
+                                 v-model="website.website_pw" @blur="save_one_value('crm_website', website.id, 'website_pw', $event)">
+                        </td>
+                        <!-- <td v-text="website.user_name">建立者</td> -->
+                        <td class="form_note_btn">
+                          <button class="btn delate" type="button" @click="delete_item('crm_website', website.id)">
+                            <i class="far fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </if>
+
+            <if condition="$system_parameter['提供服務'] neq ''">
+              <!-- 提供服務 -->
+              <div class="tab-pane right_lab fade" id="lab9" v-show="newbier.status_supplier==2">
+                <div class="interview-form-info">
+                  <crm_cum_cat_unit_selector
+                    ref="crm_cum_cat_unit_selector_provided"
+                    :do_select="do_delete_crm_cum_cat_unit_crm"
+                    :columns="columns_out"
+                    :crm_id="crmId"
+                    :crm_provide="1"
+                    :get_or_pay="1"
+                  >
+                    <template v-slot:add_btn_html>
+                      <if condition="$access['crm_new'] eq '1'">
+                        <a href="###" data-toggle="modal" data-target="#crm_cum_cat_unit_crm">
+                          <button class="btn btn-primary"><i aria-hidden="true" class="fas fa-plus"></i></button>
+                        </a>
+                      </if>
+                    </template>
+                    <template v-slot:operate_btn>
+                      <button type="button" class="btn delate"><i aria-hidden="true" class="far fa-trash-alt"></i></button>
+                    </template>
+                    <template v-slot:operate_batch_btn>
+                      <button class="btn delate">批次刪除</button>
+                    </template>
+                  </crm_cum_cat_unit_selector>
+                </div>
+              </div>
+            </if>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <a id="smallthing_response_btn" class="d-none" data-toggle="modal" data-target="#smallthing_response">小事處理回覆</a>
+  <div class="modal fade big_modal" id="smallthing_response" tabindex="-1" role="dialog" aria-labelledby="smallthing_responseTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="modal-header align-items-center">
+          <h5 class="modal-title" id="smallthing_responseTitle">處理回覆</h5>
+          <template v-if="edit_smallthing.do_time">
+            <span class="mr-4">
+              處理時間：
+              <span v-text="edit_smallthing.do_time_format.slice(0, 16)"></span>
+            </span>
+          </template>
+        </div>
+        <div class="modal-body">
+          <textarea class="form-control mb-2" rows="8" v-model="edit_smallthing.do_response" :readonly="edit_smallthing.doevt==1"></textarea>
+          <div class="text-right">
+            <button v-if="edit_smallthing.doevt==0" type="button" class="btn btn-primary" @click="do_smallthing()">
+              處理
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <iframe id="dialog_contentFrame" name="dialog_contentFrame" frameborder="0" height="0" width="0" hspace="0" vspace="0" marginheight="0" marginwidth="0" scrolling="no"></iframe>
+
+  <div class="modal fade large_modal" id="crm_cum_cat_unit_crm" tabindex="-1" role="dialog"
+       aria-labelledby="crm_cum_cat_unit_crmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="modal-header">
+          <h5 class="modal-title" id="crm_cum_cat_unit_crmTitle">選擇項目</h5>
+        </div>
+        <div class="modal-body">
+          <crm_cum_cat_unit_selector
+            ref="crm_cum_cat_unit_selector_unprovided"
+            :do_select="do_select_crm_cum_cat_unit_crm"
+            :columns="columns_out"
+            :crm_id="crmId"
+            :crm_provide="0"
+            :get_or_pay="1"
+          ></crm_cum_cat_unit_selector>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--換頁元件-->
+<script src="__PUBLIC__/js/vue_components/crm_cum_cat_unit_selector.js?1"></script> <!--合約項目選擇元件-->
+<script>
+  var columns_out = [
+    {name:'分類', key:'category_name'},
+    {name:'商品代號', key:'number'},
+    {name:'品名', key:'name'},
+    {name:'規格', key:'type'},
+    {name:'{$system_parameter[商品網路價]}', key:'list_price'},
+    {name:'{$system_parameter[商品售價]}', key:'sale_price'},
+  ];
+</script>
+<!-- CRM詳細內容js -->
+<include file="Custo:view_js" />
+<script type="text/javascript">
+  setTimeout(async function(){
+    $('#body_block').show();
+    await crm_vueVM.init_crm_right_data();
+    await crm_vueVM.get_crm_data(crmId); /*載入預設資料*/
+    init_view_html();
+    $('#body_block').hide();
+  }, 0);
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      console.log('This page was restored from the bfcache.');
+      setTimeout(async function(){
+        $('#body_block').show();
+        await crm_vueVM.init_crm_right_data();
+        await crm_vueVM.get_crm_data(crmId); /*載入預設資料*/
+        init_view_html();
+        $('#body_block').hide();
+      }, 100);
+    } else {
+      console.log('This page was loaded normally.');
+    }
+  });
+</script>

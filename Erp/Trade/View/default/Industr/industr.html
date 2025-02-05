@@ -1,0 +1,129 @@
+<include file="Public:header2" />
+<div class="container mw1920 p-4">
+    <div class="mb-2">
+        <form action="{:u('Industr/industr_add')}" method="post">
+            新增大項：
+            <input type="text" name="industr" maxlength="4">
+            &nbsp;<input type="submit" class="btn addbtn" value="新增" />
+        </form>
+        <form action="{:u('Industr/industr_add')}" method="post">
+            <label class="mr-2">請選擇增加的{$system_parameter['產業別']}：</label>
+            <select name="industr" list="industr" style="width:20%" />
+                <option value="">{$system_parameter['產業別']}大項</option> 
+                <foreach name="industr" item="op">
+                    <option value="{$op['industr']}" 
+                            {$industr_selected|compare_return=$op['industr'], 'selected'}>
+                        {$op['industr']}
+                    </option> 
+                </foreach>
+            </select>
+            <input type="text" name="industr2" id="industr2" maxlength="4" value="" />
+            &nbsp;<input type="submit" class="btn addbtn" value="新增" />
+        </form>
+    </div>
+    <form>
+        <div style="overflow-x:auto;">
+            <table class="table edit_table mb-2" style="min-width: 1000px;">
+                <thead>
+                    <tr>
+                        <th width="6%">{$system_parameter['客戶']}數</th>
+                        <th width="14%">大項</th>
+                        <th width="80%">次項</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <foreach name="industr" key="key" item="vo">
+                        <tr>
+                            <td width="6%">{$vo.count}</td>
+                            <td width="14%">
+                                <input class="industr" value="{$vo.industr}" industr_ori="{$vo.industr}" />
+                            </td>
+                            <td width="80%">
+                                <foreach name="industr[$key]['industr2']" item="v">
+                                    <if condition="$v['industr2']">
+                                        <span class="edit_industr2 industr2" industr2="{$v.id}">
+                                            {$v.industr2}
+                                        </span>
+                                        &nbsp;,{$v.count}個&nbsp;&nbsp;
+                                    </if>
+                                </foreach>
+                            </td>
+                        </tr>
+                    </foreach>
+                </tbody>
+            </table>
+        </div>
+        <div class="vRight">
+            <input id="complete" class="btn sendbtn" type="submit" value="修改完成">
+        </div>
+        </form>
+    <div class="page">{$page}</div>
+</div>
+<include file="Public:footer" />
+<script type="text/javascript">
+    $("tr").on("click",".edit_industr2",function(){
+        $(this).html("<input type='text' \
+                             value='"+$(this).html().trim()+"' \
+                             industr2='"+$(this).attr("industr2")+"' \
+                             class='input_industr2' \
+                             maxlength='4' style='width: 80px'/>");
+        $(this).removeClass("edit_industr2").addClass("input_industr2");
+        $(".input_industr2").focus();
+    });
+	var i_times = 0;
+    $("td").on("change",".input_industr2",function(){
+        var myin=$(this);
+        if(i_times == 0){
+            $.ajax({
+                method:'post',
+                dataType:'json',
+                url:"{:U('Industr/industr_change')}",
+                data:{id:$(this).attr("industr2"),industr2:myin.val()},
+                success:function(res){
+                    if(res.status==1){
+                        bg_class = "bg-success";
+                    }else{
+                        bg_class = "bg-danger";
+                    }
+                    Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                }
+            });
+			i_times=1;
+        }else{
+			i_times=0;
+		}
+    });
+
+    var industr_ori ="";
+    $("input.industr").on("focus", function(){
+        var myin = $(this);
+        industr_ori = myin.attr('industr_ori');
+
+        myin.on("blur", function(){
+            industr = myin.val();
+
+            if(industr_ori != industr){
+                $.ajax({
+                    method:'post',
+                    dataType:'json',
+                    url:"{:U('Industr/industr_main_change')}",
+                    data:{ 
+                        industr: industr, 
+                        industr_ori: myin.attr('industr_ori'),
+                    },
+                    success:function(res){
+                        if(res.status==1){
+                            bg_class = "bg-success";
+                            setTimeout(function(){
+                                location.reload();
+                            }, 500);
+                        }else{
+                            bg_class = "bg-danger";
+                        }
+                        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                    }
+                });
+            }
+        });
+    });
+</script>

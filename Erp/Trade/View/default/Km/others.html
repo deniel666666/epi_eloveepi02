@@ -1,0 +1,122 @@
+
+<include file="Public:header2" />
+
+  <!-- Start document_template -->
+  <section class="main document">
+    <!-- 共用路徑 -->
+    <include file="Km:public_myfile_btn" />
+
+    <div class="below">
+      <!-- 共用階層列表 -->
+      <include file="Km:leftlist" />
+      <!-- END 共用階層列表 -->
+
+      <div class="right">
+        <div class="document_edit">
+          <div class="document-mode">
+            <form action="{:U('Km/others', ['type'=>$fileCode])}" method="get">
+              <div class="d-flex flex-wrap">
+                <label for="">搜尋文章：</label>
+                <div class="search_bar" style="width:250px">
+                  <input class="text" type="text" name="title" value="{$_GET['title']}" placeholder="請輸入文章/階層標題或內容"
+                         style="width: 250px;">
+                  <input class="submit submit_button" type="submit" value="">
+                </div>
+              </div>
+            </form>
+            
+            <include file="Km:public_file_location_btn"/>
+          </div>
+          <!-- //////////////////////////// 搜尋頁 ////////////////////////// -->
+          <table class="document_list table">
+            <tr>
+              <th class="document_head">主標題</th>
+              <th class="document_time">公告日期</th>
+              <th class="document_pub">發佈者</th>
+            </tr>
+            <foreach name="file" item="vo">
+              <tr id="del{$vo.id}">
+                <td>
+                  <a href="{:U('Km/edit', ['type'=>$fileCode])}?id={$vo.id}">
+                    {$vo['title']}
+                  </a>
+                </td>
+                <if condition="$vo.showtime eq 'stop'">
+                  <td>暫停發佈</td>
+                  <else />
+                  <td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+                </if>
+                <td>{$vo.name}</td>
+              </tr>
+            </foreach>
+          </table>
+        </div>
+
+        <!-- 換頁按鈕 -->
+        <div class="page">
+          {$show}
+        </div>
+
+        <script>
+          // 離開頁面時是否檢確認離開
+          var check_renew = false;
+          
+          $( document ).ready(function() {
+            // 使用搜尋
+            $('input.submit_button').on('click', function(e){
+              var title = $('input[name="title"]').val();
+              url = "{:U('Km/others', ['type'=>$fileCode])}?title="+title;
+              history.pushState({}, "", url);
+              $.ajax({
+                method:'get',
+                dataType:'text',
+                url:url,
+                success:function(res){
+                  ajax_change_right(res) //定義在Km/js.html
+                }
+              });
+              e.preventDefault();
+            })
+            
+            // 點擊文章連結 || 分頁連結
+            $('.document_list a, .page a').on('click', function(e){
+                  url = $(e.currentTarget).attr('href');
+                  if(url !='' && url !='#'){
+                    history.pushState({}, "", url);
+                    $.ajax({
+                      method:'get',
+                      dataType:'text',
+                      url:url,
+                      success:function(res){
+                        ajax_change_right(res) //定義在Km/js.html
+                      }
+                    });
+                  }
+                  e.preventDefault();
+              })
+
+              //修改路徑
+              if($('.breadcrumbs_add').length>0){
+                $('.breadcrumbs_add a').html('暫停或未發佈');
+              }else{
+                $('.breadcrumbs').append(`
+                  <li class="breadcrumbs_add"><a class="Km_auto_no pathBtn" href="{:U('Km/others', ['type'=>$fileCode])}">暫停或未發佈</a></li>
+                `);
+              }
+            // $('#mainPath').html(`
+            // 	<span>></span><a class="Km_auto_no pathBtn" href="{:U('Km/others', ['type'=>$fileCode])}">暫停或未發佈</a>
+            // `)
+            // $('#secondPath').html(``)
+            // $('#thirdPath').html(``)
+
+            //調整狀態按鈕
+            $('.on_btn').show();
+            $('.trash_btn').show();
+            $('.others_btn').hide();
+          });
+        </script>
+        <include file="Km:js" />
+      </div right_end>
+
+    </div>
+  </section>

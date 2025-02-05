@@ -1,0 +1,407 @@
+<?php/* <include file="Public:header" />*/?>
+<!DOCTYPE>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>{$page_model}>{$page_title}</title>
+
+        <!-- PWA 加入桌面-->
+        <link rel="manifest" href="/Public/manifest.json">
+        
+        <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0">
+        <link href="__PUBLIC__/css/reset.css" rel="stylesheet" type="text/css" />
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/dnCalendar/css/dncalendar-skin.min.css">
+        <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+        <link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/css/style-medium.css" media="only screen and (min-width: 1281px) and (max-width: 1500px)" />
+        <link rel="stylesheet" type="text/css" href="__PUBLIC__/css/style-small.css" media="only screen and (min-width: 0px) and (max-width: 1280px)" />
+        <link href="__PUBLIC__/css/jquery-ui.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="__PUBLIC__/css/alert.css">
+        <link href="__PUBLIC__/css/old.css" rel="stylesheet" type="text/css" />
+        <link href="__PUBLIC__/css/use-phone.css" rel="stylesheet" type="text/css" />
+        <link href="__PUBLIC__/css/use2021.css?20240919-1" rel="stylesheet" type="text/css" />
+        <link href="__PUBLIC__/css/body_block.css?123" rel="stylesheet" type="text/css" />
+        
+        <!-- <link href="__PUBLIC__/css/all.css" rel="stylesheet" type="text/css" /> -->
+        <!--提示視窗css -->
+        <link rel="Shortcut Icon" type="image/x-icon" href="__PUBLIC__/images/icon.png" />
+
+        <!-- Fontawesome kit(ICON) -->
+        <script src="https://kit.fontawesome.com/9a2047a60f.js" crossorigin="anonymous"></script>
+
+        <!-- Vue -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+        <script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+        <script>Vue.use(Toasted);</script>
+
+        <style type="text/css">
+            .chat_record_wid{color: #{$crm_cum_pri[0]['color']};}
+            .chat_record_did{color: #{$crm_cum_pri[1]['color']};}
+            .chat_record_sid{color: #{$crm_cum_pri[2]['color']};}
+            .chat_record_hid1{color: #{$crm_cum_pri[3]['color']};}
+            .chat_record_hid2{color: #{$crm_cum_pri[4]['color']};}
+            .chat_record_hid3{color: #{$crm_cum_pri[5]['color']};}
+        </style>
+    </head>
+    <body>
+        <include file="Public:header_nav" />
+
+
+    <!-- Start main -->
+    <section class="document">
+        <div class="right slide_content_r">
+            <div class="container">
+                <div class="below">
+                    <div class="eventsContainer">
+                        <div class="cardContainer">
+                            <h3 class="eventsHead">過期關鍵字</h3>
+                            <form action="{:u('Alllist/do_moveseo')}" method="post">
+                                <table width="739" align="center" cellspacing="1" bordercolor="#333333" style="font-size:12px">
+                                    <tr bgcolor="#E8F1F7">
+                                        <th width="45" height="26" align="center" ><input type="checkbox"    class="seleall" name="all" id="all"  /></th>
+                                        <th width="49" align="center" >關鍵字</th>
+                                        <th width="82" align="center" >搜索引擎</th>
+                                        <th width="130" align="center" >排名網址</th>
+                                        <th width="63" align="center" >排名區間</th>
+                                        <th width="103" align="center" >月單價(實收)</th>
+                                        <th width="82" align="center" >所屬{$system_parameter['合約']}</th>
+                                    </tr>
+                                    <foreach name="j_seo_key" key="num" item="list">
+                                        <tr>
+                                            <td align="center">
+                                                <input type="checkbox" name="case[]" value="{$list.id}" />
+                                            </td>
+                                            <td align="center">{$list.key_name}</td>
+                                            <td align="center">{$list.engine}</td>
+                                            <td align="center">{$list.url1}</td>
+                                            <td align="center">
+                                                <switch name="list[starts]">
+                                                    <case value="1">1-10</case>
+                                                    <case value="12">1~20</case>
+                                                    <case value="2">1~30</case>
+                                                    <case value="3">1~3</case>
+                                                    <case value="4">1~5</case>
+                                                    <case value="5">4~10</case>
+                                                    <case value="6">6~10</case>
+                                                    <default />default
+                                                </switch>
+                                            </td>
+                                            <td align="center">{$list.price|number_format=0}</td>
+                                            <td align="center">{$list.sn}</td>
+                                        </tr>
+                                    </foreach>
+                                </table>
+                                <input type="hidden" name="id" value="{$_GET[id]}" />
+                                <input type="submit" value="加入此{$system_parameter['合約']}" />
+                                <input type="button" value="刪除" onclick="delete_checked()"/>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="below">
+                    <div class="eventsContainer">
+                        <div class="cardContainer">
+                            <h3 class="eventsHead">{$system_parameter['合約']}關鍵字</h3>
+                            <p>{$system_parameter['合約']}　<strong>{$crm_contract.sn}</strong>　當前字組：</p>
+                            <form action="{:u('Alllist/do_someno')}" method="post">
+                                <table width="739" align="center" cellspacing="1" bordercolor="#333333" style="font-size:12px;" class="needborder">
+                                    <tr style="background: #E8F1F7">
+                                        <td width="45" height="26" align="center" >編號</td>
+                                        <td width="49" align="center" >選擇</td>
+                                        <td  align="center">類別</td>
+                                        <td width="91" align="center" > 關鍵字</td>
+                                        <td width="82" align="center" >搜索引擎</td>
+                                        <td width="130" align="center" >排名網址</td>
+                                        <td width="63" align="center" >排名區間</td>
+                                        <td width="64" align="center" >甲~丁類</td>
+                                        <td width="103" align="center" >月單價(實收)</td>
+                                        <td width="82" align="center" >操作</td>
+                                    </tr>
+                                    <foreach name="s_seo_key" key="num" item="list">
+                                        <tr style="background-color: {$s_color[$list[someno]]}">
+                                            <td align="center">{$list.id}</td>
+                                            <td width="10%" align="center" valign="middle">
+                                                <span>
+                                                <input type="checkbox" value="{$list.id}" name="kids[]">
+                                            </span>
+                                            </td>
+                                            <td>{$list[someno]}</td>
+                                            <td align="center" class="edit_content" dbname="crm_seo_key" row="key_name" myid="{$list.id}">{$list.key_name}</td>
+                                            <td align="center">
+                                                <select name="engine" class="input_content" dbname="crm_seo_key" row="engine" myid="{$list.id}">
+                                                    <option>yahoo(台灣)</option>
+                                                    <if condition="$list[engine] eq 'google(台灣)'">
+                                                        <option selected>google(台灣)</option>
+                                                        <else />
+                                                        <option>google(台灣)</option>
+                                                    </if>
+                                                </select>
+                                            </td>
+                                            <td align="center" class="edit_content" dbname="crm_seo_key" row="url1" myid="{$list.id}">{$list.url1}</td>
+                                            <td align="center">
+                                                <select name="starts" class="input_content" dbname="crm_seo_key" row="starts" myid="{$list.id}">
+                                                    <foreach name="starts" item="vo" key="key">
+                                                        <if condition="$list[starts] eq $key">
+                                                            <option value="{$key}" selected>{$vo}</option>
+                                                            <else />
+                                                            <option value="{$key}">{$vo}</option>
+                                                        </if>
+                                                    </foreach>
+                                                </select>
+                                            </td>
+                                            <td align="center">
+                                                <span>
+                                                    <select name="gcs" class="input_content" dbname="crm_seo_key" row="gcsele" myid="{$list.id}">
+                                                        <foreach name="gcs" item="vo" key="key">
+                                                            <if condition="$list[gcsele] eq $key">
+                                                                <option value="{$key}" selected>{$vo}</option>
+                                                                <else />
+                                                                <option value="{$key}">{$vo}</option>
+                                                            </if>
+                                                        </foreach>
+                                                    </select>
+                                                </span>
+                                            </td>
+                                            <td align="center" class="edit_content" dbname="crm_seo_key" row="price" myid="{$list.id}">{$list.price|number_format}</td>
+                                            <td align="center">
+                                                <a href="javascript:void(0)" class="delkey" title="從該{$system_parameter['合約']}中刪除此關鍵字" kid="{$list.id}">
+                                                    <input type="button" class="delete" did="{$list.id}" value="刪除" />
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </foreach>
+                                </table>
+                                選中項:
+                                <input type="submit" value="對比字組" />
+                                <input type="hidden" name="id" value="{$_GET[id]}" />
+                            </form>
+                            新增字組:
+                            <form action="{:u('Alllist/do_addseokey')}" method="post" id="seo_form">
+                                <input type="hidden" name="caseid" value="{$_GET['id']}" />
+                                <input type="hidden" name="customers_id" value="{$crm_contract['cid']}" />
+                                <table width="743" border="0" align="center" cellpadding="0" cellspacing="1" id="table_box" style="font-size:12px">
+                                    <tr style="background: #E8F1F7">
+                                        <td >類別</td>
+                                        <td width="30%" height="27" align="center" >網址</td>
+                                        <td width="25%" align="center" >字組</td>
+                                        <!--    <td width="84" align="center" >屬性:</td>-->
+                                        <td width="10%" align="center" >工程 </td>
+                                        <td width="15%" align="center" >搜索引擎</td>
+                                        <td width="10%" align="center" >排名區間</td>
+                                        <td width="10%" align="center" >月價格(實收)</td>
+                                    </tr>
+                                    <tr id="tr_bar" value='1'>
+                                        <td>
+                                            <select name="box[type][]" id="">
+                                                <option value="0">普通自組</option>
+                                                <option value="1">對比自組</option>
+                                            </select>
+                                        </td>
+                                        <td align="center">
+                                            <input type="text" placeholder="輸入網址..." name="box[url][]" class="steps check" style="width:100%" />
+                                        </td>
+                                        <td align="center">
+                                            <input type="text" placeholder="輸入字組..." name="box[key_name][]" style="width:100%" class="check" />
+                                        </td>
+                                        <td align="center">
+                                            <select name="box[gcs][]" dbname="crm_seo_key" row="gcsele" myid="{$list.id}">
+                                                <foreach name="gcs" item="vo" key="key">
+                                                    <option value="{$key}">{$vo}</option>
+                                                </foreach>
+                                            </select>
+                                        </td>
+                                        <td align="center">
+                                            <select name="box[engine][]" dbname="crm_seo_key" row="engine" myid="{$list.id}">
+                                                <option>yahoo(台灣)</option>
+                                                <option>google(台灣)</option>
+                                            </select>
+                                        </td>
+                                        <td align="center">
+                                            <select name="box[starts][]" dbname="crm_seo_key" row="starts" myid="{$list.id}">
+                                                <foreach name="starts" item="vo" key="key">
+                                                    <if condition="$list[starts] eq $key">
+                                                        <option value="{$key}" selected>{$vo}</option>
+                                                        <else />
+                                                        <option value="{$key}">{$vo}</option>
+                                                    </if>
+                                                </foreach>
+                                            </select>
+                                        </td>
+                                        <td align="center">
+                                            <input type="text" value="0" name="box[price][]" class="check" />
+                                        </td>
+                                    </tr>
+                                </table>
+                                <input type="submit" style="float:right" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <include file="Public:footer" />
+    <script language="javascript" type="text/javascript">
+        $("tr").on("change", ".input_content", function() {
+            var myin = $(this);
+            $.ajax({
+                method: 'post',
+                data: {
+                    dbname: myin.attr("dbname"),
+                    row: myin.attr("row"),
+                    id: myin.attr("myid"),
+                    data: myin.val()
+                },
+                dataType:'json',
+                url: "{:U('Alllist/aj_chcontent')}",
+                success: function(res){
+                    if(res.status==1){
+                        bg_class = "bg-success";
+                    }else{
+                        bg_class = "bg-danger";
+                    }
+                    Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+                }
+            });
+        });
+
+        $("tr").on("click", ".delete", function() {
+            var myin = $(this);
+            $.ajax({
+                method: 'post',
+                data: {
+                    id: myin.attr("did")
+                },
+                dataType:'json',
+                url: "{:U('Alllist/aj_delseo')}",
+                success: function(res) {
+                    if(res.status==1){
+                        bg_class = "bg-success";
+                        myin.parents("tr").remove();
+                    }else{
+                        bg_class = "bg-danger";
+                    }
+                    Vue.toasted.show(res.info+':'+myin.attr("did"), { duration: 1500, className: ["toasted-primary", bg_class] });
+                }
+            });
+        });
+
+        $("tr").on("click", ".edit_content", function() {
+            $(this).html("<input type='text' value='" + $(this).html() + "' class='input_back' style='width:100%' />");
+            $(this).removeClass("edit_content");
+        });
+
+        $("tr").on("change", ".input_back", function() {
+            var myin = $(this);
+            if (myin.val().trim() != "") {
+                $.ajax({
+                    method: 'post',
+                    data: {
+                        dbname: $(this).parents("td").attr("dbname"),
+                        row: $(this).parents("td").attr("row"),
+                        id: $(this).parents("td").attr("myid"),
+                        data: myin.val()
+                    },
+                    dataType:'json',
+                    url: "{:U('Alllist/aj_chcontent')}",
+                    success: function(res) {
+                        if(res.status==1){
+                            bg_class = "bg-success";
+                            myin.parent("td").addClass("edit_content");
+                            myin.parent("td").html(myin.val());
+                        }else{
+                            bg_class = "bg-danger";
+                        }
+                        Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+                    }
+                });
+            }
+        });
+
+        var ste = 1;
+        $(document).on('change', '.steps', function() {
+            if ($(this).val() == '') {
+                $(this).parents("tr").remove();
+            } else {
+                if ($(this).parents("tr").attr("value") == ste) {
+                    ste++;
+                    $('#table_box').append("<tr style='opacity:0.5' value='" + ste + "'>" + $(this).parents('tr').html() + "</tr>");
+                    $(this).parents("tr").css("opacity", "1");
+                }
+            }
+        });
+    
+        $("#seo_form").submit(function() {
+            var x = 0;
+            $(".check").each(function() {
+                if ($(this).val() == "") {
+                    x++;
+                }
+            });
+            $(".check").each(function() {
+                if ($(this).val() == "0") {
+                    x++;
+                }
+            });
+            if (x > 3) {
+                $.toaster({
+                    message: '資料不能為空',
+                    priority: 'danger'
+                });
+                return false;
+            }
+        });
+
+        function delete_checked(){
+            checkboxs = $('form[action="/index.php/Alllist/do_moveseo.html"] input[type="checkbox"]');
+            target = [];
+            for(var i=1; i<checkboxs.length;i++){
+                if(checkboxs[i].checked == true)
+                    target.push(checkboxs[i].value)
+            }
+
+            if(target.length ==0){
+                alert('請選擇關鍵字');
+                return;
+            }else{
+                var r=confirm("確認刪除關鍵字？");
+            }
+
+            if(r){
+                data = {
+                    'id':'{$_GET[id]}',
+                    'case':target
+                }
+                console.log(data);
+                $.ajax({
+                    type: 'POST',
+                    dataType:'json',
+                    url: "{:u('Alllist/do_deleseo')}",
+                    data: data,
+                    success: function(res){
+                        if(res.status==1){
+                            bg_class = "bg-success";
+                        }else{
+                            bg_class = "bg-danger";
+                        }
+                        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                        
+                        if(res.status==1){
+                            setTimeout(function(){
+                                window.location.reload();
+                            }, 500);
+                        }
+                    }
+                });
+            }
+        }
+    </script>

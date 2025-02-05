@@ -1,0 +1,149 @@
+<include file="Public:header2" />
+
+<section class="main document">
+	<div class="below">
+
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<div class="document_edit">
+				<p class="norText">
+					匯入說明：<br />
+					本匯入程式功能可將其他名單匯入至您的資料庫，匯入檔案格式為excel檔(副檔名.xls或.xlsx或.xlsm)，文件請依照下面欄位格式製作。然後點及下方選擇檔案鈕上傳檔案即可。
+				</p>
+				<p class="norText">注意：<br />
+					1. 上傳檔案前請先將隱藏語法及空格刪除，避免系統重複判定有誤<br />
+					2. 上傳前可先簡單檢查資料有無重複，可事先處理，匯入流程會較為順暢<br />
+					3. 因為安全考量，您可能無法執行範本中的功能，如有需要，請依此篇說明解除鎖定：<a href="https://reurl.cc/AO2LEQ" target="_blank">https://reurl.cc/AO2LEQ</a><br />
+					4. 匯入檔案後請確保執行完匯入流程或點選放棄本次匯入，下一位人員才能進入匯入操作<br />
+					5. 匯入範本內有小工具可以方便操作<br />
+					<span style="color:red;">
+						6. 請注意資本額的格式，資本額請以<b>萬元</b>為單位，且無需千分位分隔<br />
+						7. 請注意建立時間的格式，年份為西元年，月、日需兩碼，以短線(-)分隔年月日<br />
+						8.檔案第1、2欄輸入顯示空白既可，請不要放資料也勿刪除欄位<br />
+					</span>
+				</p>
+				<a href='/Uploads/Events/Import_customer_list.xlsm' download='匯入範本.xlsm'><img src='/Public/qhand/images/save.png' /> 匯入範本</a><br><br>
+				<!-- <a href='/Uploads/Events/Import_customer_list.xlsx' download='匯入範本.xlsx'><img src='/Public/qhand/images/save.png' />匯入範本</a><br><br> -->
+				<form method="post" action="{:u('Imcrm/step1','','')}" enctype="multipart/form-data">
+					<h3 class="excel bgBlue"><img src="__PUBLIC__/images/icon_doc.png" /> 匯入名單(Execl欄位規定要與EIP系統範例欄位一致</h3>
+					<input type="file" name="file1" id="fileField" style="width:160px;" />
+					<input  type="submit" class="btn btn-primary" name="submit" onclick="showWait()" value="匯入並前進至下一步" />
+					<p class="importwait" hidden="true">資料匯入中請稍候...</p>
+					<br />
+	
+					<hr style="margin-top: 5px; color: #000; width: 100%;">
+					<br />
+					<p style="font-size:14px;">※請參照下列 excel 匯入之格式來排版並匯入檔案：</p>
+				</form>
+				<div class="edit_form">
+					<table class="edit_table table"  cellpadding="0" cellspacing="0" id="edm-table" style="min-width: 1900px;">
+						<tbody>
+							<tr style="background:#DDD">
+								<td align="center">A</td>
+								<td align="center">B</td>
+								<td align="center">C</td>
+								<td align="center">D</td>
+								<td align="center">E</td>
+								<td align="center">F</td>
+								<td align="center">G</td>
+								<td align="center">H</td>
+								<td align="center">I</td>
+								<td align="center">J</td>
+								<td align="center">K</td>
+								<td align="center">L</td>
+								<td align="center">M</td>
+								<td align="center">N</td>
+								<td align="center">O</td>
+								<td align="center">P</td>
+								<td align="center">Q</td>
+								<td align="center">R</td>
+								<td align="center">S</td>
+								<td align="center">T</td>
+								<td align="center">U</td>
+								<td align="center">V</td>
+								<td align="center">W</td>
+								<td align="center">X</td>
+								<td align="center">Y</td>
+							</tr>
+							<tr class="gray">
+								<td align="center">{$system_parameter["廠商類型"]}<br>(客戶or供應商)</td>
+								<td align="center">{$system_parameter["公司名稱"]}</td>
+								<td align="center">{$system_parameter["統編"]}</td>
+								<td align="center">郵遞區號</td>
+								<td align="center">{$system_parameter["地址"]}</td>
+								<td align="center">{$system_parameter["公司電話"]}</td>
+								<td align="center">{$system_parameter["公司手機"]}</td>
+								<td align="center">{$system_parameter["公司MAIL"]}</td>
+								<td align="center">{$system_parameter["官方網站"]}</td>
+								<td align="center">{$system_parameter["傳真"]}</td>
+								<td align="center">
+									<if condition="in_array(115, $use_function_top)">
+										{$system_parameter["產業別"]}
+									</if>
+								</td>
+								<td align="center">{$system_parameter["負責人"]}{$system_parameter["名稱"]}</td>
+								<td align="center">{$system_parameter["負責人"]}{$system_parameter["負責人電話"]}</td>
+								<td align="center">{$system_parameter["負責人"]}{$system_parameter["負責人手機"]}</td>
+								<td align="center">{$system_parameter["負責人"]}{$system_parameter["負責人MAIL"]}</td>
+								<td align="center">{$system_parameter["聯絡人"]}{$system_parameter["名稱"]}</th>
+								<td align="center">{$system_parameter["聯絡人"]}{$system_parameter["聯絡人電話"]}</td>
+								<td align="center">{$system_parameter["聯絡人"]}{$system_parameter["聯絡人手機"]}</td>
+								<td align="center">{$system_parameter["聯絡人"]}{$system_parameter["聯絡人MAIL"]}</td>
+								<td align="center">{$system_parameter["資本額"]}<br>(元)</td>
+								<td align="center">{$system_parameter["公司核准日"]}<br>(YYYY-mm-dd)</td>
+								<td align="center">{$system_parameter["公司備註"]}</td>
+								<td align="center">員工人數</td>
+								<td align="center">{$system_parameter["客戶"]}來源</td>
+								<td align="center">訪談內容<br>(限一則)</td>
+							</tr>
+							<tr>
+								<td align="center">客戶</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">1000000</td>
+								<td align="center">1970-01-01</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+							</tr>
+							<tr>
+								<td colspan="25" align="center" class="nonBorder">&nbsp;</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+
+<include file="Public:footer" />
+<script language="javascript">
+	function showWait()
+	{
+		$('.importwait').show();
+	}
+	</script>

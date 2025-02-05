@@ -1,0 +1,137 @@
+header .bottom h2{
+	display: none;
+}
+header .bottom .scroll_box{
+	max-width: 100%;
+}
+header .bottom{
+	padding: 0px;
+}
+header .top{
+	height: 55px;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+header .top h1{
+	height: 42px;
+	margin-top: 7px;
+	width: 240px;
+}
+header .top .right{
+	margin-top: 20px;
+}
+header .top .right li a:hover{
+	text-decoration: none;
+}
+header .bottom .scroll_box{
+	padding-left: 20px;
+}
+header .bottom .slide_left{
+	left: 0px;
+}
+.main{
+	padding-top: 100px;
+	display: block;
+	justify-content: initial;
+}
+.main .right{
+	display: block;
+}
+.main .right .container .left_col{
+	display: block;
+	vertical-align: top;
+	height: 100%;
+	width: 100%;
+	padding: 20px;
+	padding-bottom: 0px;
+}
+.main .right .container .right_col{
+	display: block;
+	vertical-align: top;
+	height: 100%;
+	width: 100%;
+	padding: 20px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+.main .right .container{
+	display: block;
+	border: 0;
+}
+/******* 共用--主題框 *******/
+.main .right .container .topic_box .title_bar{
+	padding-left: 10px;
+}
+.main .right .container .topic_box .content{
+	padding: 10px;
+}
+/****** 共用--子項目按鈕 ******/
+.main .right .container .to_do_box .list_group .to_do_item .stuff{
+	width: 70vw;
+}
+
+
+
+@media screen and (max-width: 800px){
+	header .top .rwd_setting{
+		float: right;
+		display: inline-block;
+		height: 25px;
+		width: 25px;
+		margin-top: 15px;
+		background: url(../images/common/tuggle.svg) no-repeat;
+		background-position: center;
+		background-size: cover;
+	}
+	header .top .right{
+		display: none;
+		position: absolute;
+		width: 100%;
+		right: 0;
+		top: 55px;
+		z-index: 10;
+		margin-top: 0px;
+		background: url(../images/common/header_top_bg.png);
+		border: 1px solid grey;
+	}
+	header .top .right li{
+		float: none;
+		display: block;
+		padding: 0px;
+		color: #999;
+		font-size: 16px;
+		margin-top: 0px;
+		border: 0px;
+		text-align: center;
+		height: 44px;
+		line-height: 44px;
+	}
+	header .top .right li.welcome_user{
+		display: none;
+	}
+	header .top .right select{
+		display: none;
+	}
+	/****** 共用--子項目按鈕 ******/
+	.main .right .container .sub_btn{
+		display: inline-block;
+		height: 35px;
+		min-width: 31%;
+		margin: 10px 1% 10px 1%;
+	}
+	.main .right .container .sub_btn:hover{
+		background: #fff;
+	}
+	.main .right .container .to_do_box .list_group .to_do_item .stuff{
+		width: 50vw;
+	}
+	.main .right .container .to_do_box .list_group .to_do_item .stuff .things_set{
+		width: 100%;
+	}
+	/******************************** footer **********************************/
+	footer ul li a{
+		display: block;
+		text-decoration: none;
+		color: black;
+	}
+}

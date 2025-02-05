@@ -1,0 +1,432 @@
+<include file="Public:header2" />
+<style>
+	td, th {
+	    width: 100px;
+		min-width:100px;
+		text-align: right;
+	}
+
+	.groups_block{
+		width: 400px;
+		min-width:400px;
+		padding: 0px;
+		background: unset;
+	}
+</style>
+
+<section class="main" id="perform">
+	<div id="right">
+		<div>
+			<br>
+			<form name="search" id="searchform" action="{:u('Performance/index',$_GET)}" method="get">
+				<input type="hidden" name="cate" value="{$_GET['cate']}" />
+				<ol class="headerOl rightR">
+					<li>
+						<select name="year" v-model="year" @change="search">
+							<option value="">年份</option>
+							<foreach name="years" item="op">
+								<option>{$op}</option>
+							</foreach>
+						</select>
+					</li>
+					<li>
+						<select name="month" v-model="month" @change="search">
+							<option value="">月份</option>
+							<foreach name="months" item="op">
+								<option >{$op}</option>
+							</foreach>
+						</select>
+					</li>
+					<li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
+				</ol>
+				<ol style="display: flex;flex-direction: column;">
+					<li>
+	                    <div>
+	                        <span>請選擇群組：</span>
+	                        <span v-for="item in groups">
+	                            <input type="checkbox" :id="'group_'+item.id" :value="item" v-model="groups_selected"  @click="save_group(item)">
+	                            <label :for="'group_'+item.id">{{item.name}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+	                        </span>
+	                    </div>
+	                </li>
+	                <!-- <li>
+	                    <div>
+	                        <span>請選擇人員：</span>
+	                        <span v-for="item in user">
+	                            <input type="checkbox" :id="'member'+item.id" :value="item" v-model="user_selected"  @click="save_user(item)">
+	                            <label :for="'member'+item.id">{{item.name}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+	                        </span>
+	                    </div>
+	                </li> -->
+				</ol>
+			</form>
+			<div class="navi1">
+				<ol>
+					<li><a :class="type == 'depart'	? 'current' : ''" :href="'/index.php/Performance/index?year='+year+'&month='+month+'&type=depart'"><strong>依部門查看</strong></a></li>
+					<li><a :class="type == 'team'	? 'current' : ''" :href="'/index.php/Performance/index?year='+year+'&month='+month+'&type=team'"><strong>依組別查看</strong></a></li>
+					<!-- <li><a :class="type == 'depart'	? 'current' : ''" href="javascript:void(0)" @click="change_type('depart')"><strong>依部門查看</strong></a></li> -->
+					<!-- <li><a :class="type == 'team'	? 'current' : ''" href="javascript:void(0)" @click="change_type('team')"><strong>依組別查看</strong></a></li> -->
+					<!-- <li><a href="{:u('Performance/excel',$_GET)}"><strong>匯出績效表</strong></a></li> -->
+				</ol>
+			</div>	
+		</div>
+		<div class="content-table">
+			<h3>&nbsp;&nbsp;<span v-text="year"></span>&nbsp;年度<span v-if="month">&nbsp;<span v-text="month"></span>&nbsp;月</span></h3>
+			<div class="edit_form">
+				<table cellpadding="2" cellspacing="1" class="table edit_table" style="width: auto; min-width: unset;">
+					<thead class="edit_table_thead">
+						<tr>
+							<th>年度/月</th>
+							<th>月總目標</th>
+
+							<!-- 月加總 -->
+							<th>月總達成</th>
+							<th>月總外單</th>
+							<th>月總內單</th>
+							<th>月總獎金</th>
+
+							<!-- 各部門/組別 -->
+							<th colspan="4" v-for="group in groups_selected" class="groups_block" style="padding: 5px 0px 0px 0px;">
+								<div class="text-center" v-text="group.name"></div>
+								<table>
+									<tr style="background-color: unset;">
+										<th class="border-bottom-0">目標</th>
+										<th class="border-bottom-0">達成</th>
+										<th class="border-bottom-0">外單</th>
+										<th class="border-bottom-0">內單</th>
+										<th class="border-bottom-0">獎金</th>
+									</tr>
+								</table>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(month_data, month) in performance[year]" style="border-bottom:1px solid gray">
+							<td :colspan="6 + groups_selected.length*4" style="padding: 0px;border-bottom: 1px solid #c7c7c7a6;">
+								<table>
+									<tr>
+										<!-- 月統計 -->
+										<td data-th="年度/月">{{ year }}/{{ month }}</td>
+										<td data-th="月總目標">{{ month_perform(year, month, 'aim') }}</td>
+										<td data-th="月總達成" :style="checkaim(month_perform(year, month, 'complete') ,month_perform(year, month, 'aim'))">
+											{{ month_perform(year, month, 'complete') }}<br>
+											{{ month_perform_rate(year, month, 'complete') }}
+										</td>
+										<td data-th="月總外單">
+											{{ month_perform(year, month, 'out') }}<br>
+											{{ month_perform_rate(year, month, 'out') }}
+										</td>
+										<td data-th="月總內單">
+											{{ month_perform(year, month, 'in') }}<br>
+											{{ month_perform_rate(year, month, 'in') }}
+										</td>
+										<td data-th="月總獎金">{{ month_perform(year, month, 'bonus') }}</td>
+
+										<!-- 月各部門/組別 -->
+										<td colspan="4" v-for="group in groups_selected" class="groups_block cursor_pointer" @dblclick="openpage(group.id, type, year, month)">
+											<table>
+												<!-- 統計 -->
+												<tr style="background-color:unset">
+													<td data-th="月各部門/組別目標">
+														{{ month_group_perform(year, month, group.group_member, 'aim') }}
+													</td>
+													<td data-th="月各部門/組別達成" :style="checkaim(month_group_perform(year, month, group.group_member, 'complete') ,month_group_perform(year, month, group.group_member, 'aim'))">
+														{{ month_group_perform(year, month, group.group_member, 'complete') }}<br>
+														{{ month_group_perform_rate(year, month, group.group_member, 'complete') }}
+													</td>
+													<td data-th="月各部門/組別外單">
+														{{ month_group_perform(year, month, group.group_member, 'out') }}<br>
+														{{ month_group_perform_rate(year, month, group.group_member, 'out') }}
+													</td>
+													<td data-th="月各部門/組別內單">
+														{{ month_group_perform(year, month, group.group_member, 'in') }}<br>
+														{{ month_group_perform_rate(year, month, group.group_member, 'in') }}
+													</td>
+													<td data-th="月各部門/組別獎金">
+														{{ month_group_perform(year, month, group.group_member, 'bonus') }}
+													</td>
+												</tr>
+											</table>
+										</td>
+									<tr>
+								</table>
+							</td>
+						</tr>
+
+						<tr style="background-color: var(--light-color);">
+							<td :colspan="6 + groups_selected.length*4"></td>
+						</tr>
+
+						<tr>
+							<td :colspan="6 + groups_selected.length*4" class="p-0">
+								<table>
+									<tr>
+										<td style="background-color: var(--light-color);">
+											年度總計：
+										</td>
+										<!-- 年統計 -->
+										<td data-th="年度目標">{{ year_perform(year, 'aim') }}</td>
+										<td data-th="年度總達成">
+											{{ year_perform(year, 'complete') }}<br>
+											{{ year_perform_rate(year, 'complete') }}
+										</td>
+										<td data-th="年度總外單">
+											{{ year_perform(year, 'out') }}<br>
+											{{ year_perform_rate(year, 'out') }}
+										</td>
+										<td data-th="年度總內單">
+											{{ year_perform(year, 'in') }}<br>
+											{{ year_perform_rate(year, 'in') }}
+										</td>
+										<td data-th="年度總獎金">{{ year_perform(year, 'bonus') }}</td>
+
+										<!-- 年度各部門/組別 -->
+										<td colspan="4" v-for="group in groups_selected" class="groups_block">
+											<table>
+												<!-- 統計 -->
+												<tr style="background-color:unset">
+													<td data-th="年度各部門/組別目標">{{ year_group_perform(year, group.group_member, 'aim') }}</td>
+													<td data-th="年度各部門/組別達成">
+														{{ year_group_perform(year, group.group_member, 'complete') }}<br>
+														{{ year_group_perform_rate(year, group.group_member, 'complete') }}
+													</td>
+													<td data-th="年度各部門/組別外單">
+														{{ year_group_perform(year, group.group_member, 'out') }}<br>
+														{{ year_group_perform_rate(year, group.group_member, 'out') }}
+													</td>
+													<td data-th="年度各部門/組別內單">
+														{{ year_group_perform(year, group.group_member, 'in') }}<br>
+														{{ year_group_perform_rate(year, group.group_member, 'in') }}
+													</td>
+													<td data-th="年度各部門/組別獎金">{{ year_group_perform(year, group.group_member, 'bonus') }}</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</td>
+</section>
+
+<include file="Public:footer" />
+<script src="__PUBLIC__/js/dk-tw-citySelector/dk-tw-citySelector.js"></script>
+
+<script language="javascript" type="text/javascript">
+	$(".Wdate").each(function(){
+		$(this).datepicker({
+			firstDay : 0,
+			defaultDate : "-7d"
+		});
+		$(this).datepicker( "option", "dateFormat",'yy-mm-dd');
+		if(typeof($(this).attr("datev")) != 'undefine'){
+			$(this).datepicker('setDate',$(this).attr("datev"));
+		}
+	});
+
+	// 取得網址參數
+	var searchlist = location.search.substring(1).split('&');
+	var searchDict = {};
+	for(var i=0; i < searchlist.length; i++){
+		item = searchlist[i].split('=');
+		searchDict[item[0]] = item[1];
+	}
+	// console.log(searchDict);
+
+    vuedata = {
+        year:null,
+        month:null,
+        type:null,
+        performance:[],
+        groups:[],
+        groups_selected:[],
+        user:[],
+        user_selected:[],
+    };
+    var perform = new Vue({
+        el: '#perform', 
+        data: vuedata,
+        computed: {
+        	user_selected_id_array :function(){
+        		id_array = [];
+        		for (var i = 0; i < this.user_selected.length; i++) {
+        			id_array.push(this.user_selected[i]['id']);
+        		}
+        		return id_array;
+        	},
+        },
+        methods: {
+        	search: function(renew_all=false){
+        		if(this.year){
+        			renew_vue(this.year, this.month, this.type, renew_all);
+        		}else{
+        			Vue.toasted.show('請選擇年份', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+        		}
+        	},
+        	change_type: function(type){
+        		if(type != this.type){
+        			this.type = type;
+        			this.search(true);
+        		}
+        	},
+        	save_group: function(item){
+        	},
+        	openpage: function(group_id, type, year, month){
+        		var url = '/index.php/Performance/group?group_id='+group_id+'&type='+type+'&year='+year+'&month='+month;
+				window.open(url, '_blank');
+        	},
+        	month_group_perform: function(year, month, group_member, anay){
+        		user_data = this.performance[year][month];
+        		count = 0;
+    			for(var u = 0; u < group_member.length; u++){
+    				user_id = group_member[u];
+    				if(user_data[user_id] && this.user_selected_id_array.includes(user_id)){
+    					if(anay=='aim'){
+    						count += user_data[user_id][anay]; // 目標
+    					}else{
+    						count += user_data[user_id]['account'][anay] + user_data[user_id]['event'][anay]; // 其他
+    					}
+    				}
+    			}
+        		return addCommas(count);
+        	},
+        	month_perform: function(year,month, anay){
+        		count = 0;
+        		for (var i = 0; i < this.groups_selected.length; i++) {
+        			group_member = this.groups_selected[i]['group_member'];
+        			count += removeCommas(this.month_group_perform(year, month, group_member, anay));
+        		}
+        		return addCommas(count);
+        	},
+        	month_group_perform_rate: function(year, month, group_member, anay){
+        		aim = removeCommas(this.month_group_perform(year, month, group_member, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.month_group_perform(year, month, group_member, anay));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	month_perform_rate: function(year, month, anay){
+        		aim = removeCommas(this.month_perform(year, month, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.month_perform(year, month, anay));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	year_group_perform: function(year, group_member, anay){
+        		count = 0;
+        		if(this.performance[year]){
+	        		months = Object.keys(this.performance[year]);
+	    			for (var i = 0; i < months.length; i++) {
+	    				count += removeCommas(this.month_group_perform(year, months[i], group_member, anay));
+	    			}
+	    		}
+    			return addCommas(count);
+        	},
+        	year_perform: function(year, anay){
+        		count = 0;
+        		if(this.performance[year]){
+	        		months = Object.keys(this.performance[year]);
+	    			for (var i = 0; i < months.length; i++) {
+	    				count += removeCommas(this.month_perform(year, months[i], anay));
+	    			}
+	    		}
+    			return addCommas(count);
+        		
+        	},
+        	year_group_perform_rate:function(year, group_member, anay){
+        		aim = removeCommas(this.year_group_perform(year, group_member, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.year_group_perform(year, group_member, anay));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	year_perform_rate: function(year, anay){
+        		aim = removeCommas(this.year_perform(year, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.year_perform(year, anay));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	checkaim: function(num, aim){
+        		num = removeCommas(num);
+        		aim = removeCommas(aim);
+            	var rgb = (num>=aim) ? 'color: rgb(0,150,0)' : 'color: rgb(225,0,0)';
+                return rgb;
+            },
+        }
+    });
+
+    // 初始化資料
+	var year = searchDict['year'] ? searchDict['year'] : new Date().getFullYear();
+	var month = searchDict['month'] ? searchDict['month'] : '';
+	var type = searchDict['type'] ? searchDict['type'] : 'depart';
+	var perform_data = null;
+	var vuedata = {};
+
+	function renew_vue(year, month, type, renew=true){
+		$.ajax({
+			method:'get',
+			dataType:'json',
+			url:"{:U('Performance/get_perform_data')}?year="+year+"&month="+month+"&type="+type,
+			async:false,
+			success:function(res){
+				// console.log(res);
+				perform.year = year;
+				perform.month = month;
+		        perform.type = type;
+		        perform.performance = res['performance'];
+
+		        if(renew){
+		        	perform.groups = res['groups'];
+		        	perform.groups_selected = [];
+
+					perform.user = res['users'];
+					perform.user_selected = res['users'];
+			    }
+			    Vue.toasted.show('資料已更新', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			}
+		});
+	}
+	renew_vue(year, month, type);
+
+	// 數字每千位加入逗號
+	function addCommas(nStr){
+	    nStr += '';
+	    x = nStr.split('.');
+	    x1 = x[0];
+	    x2 = x.length > 1 ? '.' + x[1] : '';
+	    var rgx = /(\d+)(\d{3})/;
+	    while (rgx.test(x1)) {
+	        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	    }
+	    return x1 + x2;
+	}
+
+	// 數字取消逗號
+	function removeCommas(nStr){
+		var rgx = /,/;
+		while (rgx.test(nStr)) {
+	    	nStr = nStr.replace(',', '');
+	    }
+	    return parseInt(nStr);
+	}
+</script>
+
+</body>
+</html>

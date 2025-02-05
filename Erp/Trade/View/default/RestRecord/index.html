@@ -1,0 +1,518 @@
+
+<include file="Public:header2" />
+
+<section class="right" id="right">
+  <div class="document_read document_edit" id="print_div">
+    <button class="btn sendbtn mb-3" @click="open_panel()">建立申請</button>
+    <div class="navi1">
+      <div class="menu-sub-btn">
+        <div class="d-inline-flex flex-wrap align-items-center">
+          <h6 class="m-0">我需處理：</h6>
+          <ol class="mr-3">
+            <li><a href="###" :class="[ tab=='job_agent' ? 'current' : '']" @click="set_tab('job_agent')">職代審核</a></li>
+            <li><a href="###" :class="[ tab=='examiner' ? 'current' : '']" @click="set_tab('examiner')">部審核</a></li>
+            <li><a href="###" :class="[ tab=='examiner_top' ? 'current' : '']" @click="set_tab('examiner_top')">公司審核</a></li>
+          </ol>
+        </div>
+        <div class="d-inline-flex flex-wrap align-items-center">
+          <h6 class="m-0">查詢：</h6>
+          <ol class="mr-3">
+            <li><a href="###" :class="[ tab=='apply_uncompleted' ? 'current' : '']" @click="set_tab('apply_uncompleted')">處理中的申請</a></li>
+            <li><a href="###" :class="[ tab=='apply_completed' ? 'current' : '']" @click="set_tab('apply_completed')">已通過的申請</a></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="search_bar mt-2" v-if="['apply_uncompleted', 'apply_completed'].indexOf(tab)!=-1">
+      <div class="search_bar d-inline-block">
+        申請人
+        <select v-model="search_user_id">
+          <option value="">請選擇</option>
+          <volist name="eip_user_options_working" id="vo">
+            <option value="{$vo.id}">{$vo.name}</option>
+          </volist>
+        </select>
+      </div>
+      <div class="search_bar d-inline-block">
+        職代人
+        <select v-model="search_job_agent_id">
+          <option value="">請選擇</option>
+          <volist name="eip_user_options_working" id="vo">
+            <option value="{$vo.id}">{$vo.name}</option>
+          </volist>
+        </select>
+      </div>
+      <div class="search_bar d-inline-block">
+        開始日期區間
+        <input type="date" v-model="rest_day_s_s">~
+        <input type="date" v-model="rest_day_s_e">
+      </div>
+      <div class="search_bar d-inline-block" @click="load_rest_records">
+        <input type="submit" readonly="readonly" value="搜尋  " class="text text-center" style="width: 80px; cursor: pointer; padding: 0px;">
+        <input type="submit" value="" class="submit">
+      </div>
+      <div class="search_bar d-inline-block">
+        <a :href="'{:u('RestRecord/index')}?tab='+tab">
+          <input type="text" readonly="readonly" placeholder="清除搜尋" class="text text-center" style="width: 80px; cursor: pointer; padding: 0px;">
+        </a>
+      </div>
+    </div>
+    <div class="edit_form">
+      <table class="table edit_table" style="min-width: unset">
+        <thead>
+          <tr>
+            <th style="min-width: 100px;">申請人</th>
+            <th style="min-width: 100px;">勤務 / 假別</th>
+            <th style="min-width: 80px;">申請狀態</th>
+            <th style="min-width: 300px;">期間(1日為8小時)</th>
+            <th style="min-width: 200px;">事由</th>
+            <th style="min-width: 100px;">相關證明</th>
+            <th style="min-width: 100px;">職務代理人</th>
+            <th style="min-width: 80px;">部審核</th>
+            <th style="min-width: 80px;">公司審核</th>
+            <th style="min-width: 100px;">審核說明</th>
+            <th style="min-width: 60px;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="record in rest_records" v-if="!record[tab+'_check']">
+            <td data-th="申請人" v-text="record.user_name"></td>
+            <td data-th="勤務 / 假別" v-text="record.rt_name"></td>
+            <td data-th="申請狀態">
+              <template v-if="record.apply_status==0">通過</template>
+              <template v-else-if="record.apply_status==1">
+                <a href="###" @click="open_panel(record)">待送審</a>
+              </template>
+              <template v-else-if="record.apply_status==2">職代審</template>
+              <template v-else-if="record.apply_status==3">部審</template>
+              <template v-else-if="record.apply_status==4">公司審</template>
+            </td>
+            <td data-th="期間">
+              <span v-text="record.rest_day_s"></span>~
+              <span v-text="record.rest_day_e"></span>
+              (<span v-text="record.hours.split('.')[0]"></span>小時<span v-text="record.hours.split('.')[1]*60/1000"></span>分)
+            </td>
+            <td data-th="事由" v-text="record.reason"></td>
+            <td data-th="相關證明">
+              <a href="###" @click="download_file(record.id, record.prove_file)" v-text="record.prove_file_name"></a>
+            </td>
+            <td data-th="職務代理人" v-text="record.job_agent_name"></td>
+            <td data-th="部審核" v-text="record.examiner_name"></td>
+            <td data-th="公司審核" v-text="record.examiner_top_name"></td>
+            <td data-th="審核說明">
+              <template v-if="['apply_uncompleted', 'apply_completed'].indexOf(tab)==-1">
+                <input type="text" class="form-control" v-model="record.reply_note2">
+              </template>
+              <template v-else><div v-text="record.reply_note"></template>
+            </td>
+            <td data-th="操作">
+              <template v-if="['apply_uncompleted', 'apply_completed'].indexOf(tab)==-1">
+                <button type="button" class="btn delate d-inline" @click="reject_record(record.id, record.reply_note2)">
+                  <i aria-hidden="true" class="fa fa-times-circle-o"></i>
+                </button>
+                <button type="button" class="btn sendbtn d-inline" @click="comfirm_record(record.id, record.reply_note2)">
+                  <i aria-hidden="true" class="fa fa-check-circle-o"></i>
+                </button>
+              </template>
+              <button type="button" class="btn delate d-inline" @click="delete_record(record.id)">
+                <i aria-hidden="true" class="far fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Modal -->
+<a id="rest_record_modal_btn" class="d-none" data-toggle="modal" data-target="#rest_record_modal"></a>
+<div class="modal fade" id="rest_record_modal" tabindex="-1" role="dialog" aria-labelledby="rest_record_modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="rest_record_modalTitle">申請內容</h5>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="p-2 col-4">
+            勤務 / 假別
+            <select name="rest_type_id" v-model="new_record.rest_type_id" class="w100">
+              <volist name="rest_type" id="vo">
+                <option value="{$vo.id}">{$vo.name}</option>
+              </volist>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <if condition="$access['mens_edi'] eq '1'">
+            <div class="p-2 col-4">
+              申請人篩選
+              <select class="w100" v-model="apartmentid" @change="get_eip_user_options('eip_user_options')">
+                <option value="">請選部門</option>
+                <volist name="eip_apart_options" id="vo">
+                  <option value="{$vo.id}">{$vo.name}</option>
+                </volist>
+              </select>
+            </div>
+            <div class="p-2 col-4">
+              <br>
+              <input class="w100" v-model="searchtext" placeholder="姓名/手機/信箱" @keypress.enter="get_eip_user_options('eip_user_options')">
+            </div>
+            <div class="p-2 col-4">
+              申請人
+              <select name="user_id" v-model="new_record.user_id" class="w100" @change="change_user_id">
+                <option value="">請選擇</option>
+                <template v-for="vo in eip_user_options">
+                  <option :value="vo.id" v-text="vo.name"></option>
+                </template>
+              </select>
+            </div>
+          <else />
+            <input type="hidden" name="user_id" v-model="new_record.user_id">
+          </if>
+        </div>
+        <div class="row">
+          <div class="p-2 col-12">
+            期間<br>
+            <input type="date" name="rest_day_s" v-model="new_record.rest_day_s" style="width: 128px;">~
+            <input type="date" name="rest_day_e" v-model="new_record.rest_day_e" style="width: 128px;">
+            (<input type="number" name="hours" v-model="new_record.hours" style="width: 100px;" min="1" step="1" class="text-center">小時)
+            <span class="d-inline-block text-danger">申請15分鐘請輸入0.25小時</span>
+          </div>
+          <div class="p-2 col-12">
+            事由
+            <input type="text" name="reason" v-model="new_record.reason" class="w100">
+          </div>
+          <div class="p-2 col-12">
+            相關證明
+            <template v-if="new_record.prove_file_name">
+              (<a href="###" @click="download_file(new_record.id, new_record.prove_file_name)" v-text="new_record.prove_file_name"></a>)
+            </template>
+            <input type="file" name="prove_file" ref="prove_file" class="w100">
+          </div>
+        </div>
+        <div class="row">
+          <div class="p-2 col-4">
+            職務代理人篩選
+            <select class="w100" v-model="apartmentid_all" @change="get_eip_user_options('eip_user_options_all')">
+              <option value="">請選部門</option>
+              <volist name="eip_apart_options" id="vo">
+                <option value="{$vo.id}">{$vo.name}</option>
+              </volist>
+            </select>
+          </div>
+          <div class="p-2 col-4">
+            <br>
+            <input class="w100" v-model="searchtext_all" placeholder="姓名/手機/信箱" @keypress.enter="get_eip_user_options('eip_user_options_all')">
+          </div>
+          <div class="p-2 col-4">
+            職務代理人
+            <select name="job_agent" v-model="new_record.job_agent" class="w100">
+              <option value="0">無</option>
+              <template v-for="vo in eip_user_options_all">
+                <option :value="vo.id" v-text="vo.name"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="p-2 col-4">
+            部審核人員
+            <select name="examiner" v-model="new_record.examiner" class="w100">
+              <option value="">請選擇</option>
+              <template v-for="vo in eip_user_apart_options">
+                <option :value="vo.id" v-text="vo.name"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="p-2 col-4">
+            公司審核人員
+            <select name="examiner_top" v-model="new_record.examiner_top" class="w100">
+              <option value="">請選擇</option>
+              <volist name="eip_top_examiner_options" id="vo">
+                <option value="{$vo.id}">{$vo.name}</option>
+              </volist>
+            </select>
+          </div>
+          <div class="p-2 col-12" v-if="new_record.id!=0">
+            審核備註：
+            <div v-text="new_record.reply_note"></div>
+          </div>
+          <div class="p-2 col-12 text-center">
+            <button class="sendbtn btn" @click="set_record">申請</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const user_id = "{$_SESSION['eid']??0}";
+  const tab = "{$_GET['tab']?? 'job_agent'}";
+  const search_user_id = "{$_GET['search_user_id']?? ''}";
+</script>
+<script type="text/javascript">
+  /*假勤資訊*/
+  const new_rest_record_empty = {
+    id: 0,
+    user_id: user_id,
+    job_agent: '0',
+    examiner: '',
+    examiner_top: '',
+    prove_file: '',
+    prove_file_name: '',
+  }
+  const print_div_data = {
+    user_id: user_id,
+    tab: tab,
+
+    search_user_id: search_user_id,
+    search_job_agent_id: '',
+    rest_day_s_s: '',
+    rest_day_s_e: '',
+    rest_records: [],
+
+    new_record: JSON.parse(JSON.stringify(new_rest_record_empty)),
+
+    apartmentid: '',
+    searchtext: '',
+    apartmentid_all: '',
+    searchtext_all: '',
+    eip_user_options: [],       /*申請人選項*/
+    eip_user_options_all:[],    /*職代人選項*/
+    eip_user_apart_options: [], /*部審人選項*/
+  };
+  const print_divVM = new Vue({
+    el: '#print_div',
+    data: print_div_data,
+    methods: {
+      open_panel(record=null){
+        record = record ? record : new_rest_record_empty;
+        this.new_record = JSON.parse(JSON.stringify(record));
+        
+        this.apartmentid = '';
+        this.apartmentid_all = '';
+        rest_record_modalVM.get_eip_user_options();
+        rest_record_modalVM.get_eip_user_apart_options();
+        $('#rest_record_modal_btn').click();
+      },
+      download_file(id, path){
+        href = "{:U('RestRecord/download_file')}?id="+id+"&file_path="+encodeURIComponent(path);
+        window.open(href);
+      },
+      async delete_record(id){
+        if(!confirm('確定刪除?')){ return; };
+        $('#body_block').show();
+        res = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('RestRecord/delete_rest_records')}",
+          data: {id, id},
+        });
+        if(res.status){
+          this.get_rest_records();
+          bg_class = 'bg-success';
+        }else{
+          bg_class = 'bg-danger';
+        }
+        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        $('#body_block').hide();
+      },
+
+      set_tab(tab){
+        if(this.tab != tab){
+          this.tab = tab;
+          this.load_rest_records();
+        }
+      },
+      async load_rest_records(){
+        $('#body_block').show();
+        await this.get_rest_records();
+        $('#body_block').hide();
+      },
+      async get_rest_records(){
+        this.rest_records = [];
+
+        data = {};
+        data[this.tab] = this.user_id;
+        if(this.tab=='job_agent'){
+          data.apply_status = 2;
+        }
+        else if(this.tab=='examiner'){
+          data.apply_status = 3;
+        }
+        else if(this.tab=='examiner_top'){
+          data.apply_status = 4;
+        }
+        else{
+          data.user_id = this.search_user_id;
+          data.job_agent = this.search_job_agent_id;
+          data.rest_day_s_s = this.rest_day_s_s;
+          data.rest_day_s_e = this.rest_day_s_e;
+          if(this.tab=='apply_uncompleted'){
+            data.apply_status = -1;
+          }else if(this.tab=='apply_completed'){
+            data.apply_status = 0;
+          }
+        }
+        res = await $.ajax({
+          type: 'GET',
+          dataType:'json',
+          url: "{:u('RestRecord/get_rest_records')}",
+          data: data,
+        });
+        this.rest_records = res.rest_records;
+      },
+
+      reject_record(id, reply_note2){
+        if(!confirm('確定拒絕?')){ return; };
+        data = { id: id, reply_note: reply_note2, value:0, };
+        this.reply_rest_record(data);
+      },
+      comfirm_record(id, reply_note2){
+        if(!confirm('確定同意?')){ return; };
+        data = { id: id, reply_note: reply_note2, value:1, };
+        this.reply_rest_record(data);
+      },
+      async reply_rest_record(data){
+        if(this.tab=='job_agent'){
+          data.apply_status = 2;
+        }
+        else if(this.tab=='examiner'){
+          data.apply_status = 3;
+        }
+        else if(this.tab=='examiner_top'){
+          data.apply_status = 4;
+        }
+        $('#body_block').show();
+        res = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('RestRecord/reply_rest_record')}",
+          data: data,
+        });
+        if(res.status){
+          this.get_rest_records();
+          bg_class = 'bg-success';
+        }else{
+          bg_class = 'bg-danger';
+        }
+        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        $('#body_block').hide();
+      },
+    },
+  });
+  const rest_record_modalVM = new Vue({
+    el: '#rest_record_modal',
+    data: print_div_data,
+    methods: {
+      async get_eip_user_options(get_target=''){
+        /*設定篩選參數*/
+        let apartmentid = this.apartmentid;
+        let searchtext = this.searchtext;
+        if(get_target=='eip_user_options'){ /*更換申請人選項*/
+          /*重置表單*/
+          this.new_record.user_id = '';
+          this.new_record.examiner = '';
+          this.eip_user_apart_options = [];
+        }
+        else if(get_target=='eip_user_options_all'){ /*更職務代理人選項*/
+          /*重置表單*/
+          this.new_record.job_agent = '0';
+
+          /*調整篩選參數*/
+          apartmentid = this.apartmentid_all;
+          searchtext = this.searchtext_all;
+        }
+        
+        $('#body_block').show();
+        
+        res = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('RestRecord/get_eip_user_options')}",
+          data: {
+            apartmentid: apartmentid,
+            searchtext: searchtext,
+          },
+        });
+        // console.log(res);
+        if(get_target==''){
+          this.eip_user_options = res.eip_user_options;
+          this.eip_user_options_all = res.eip_user_options;
+        }else if(get_target=='eip_user_options'){
+          this.eip_user_options = res.eip_user_options;
+        }else if(get_target=='eip_user_options_all'){
+          this.eip_user_options_all = res.eip_user_options;
+        }
+        $('#body_block').hide();
+      },
+      async get_eip_user_apart_options(){
+        $('#body_block').show();
+        res = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('RestRecord/get_eip_user_apart_options')}",
+          data: {
+            user_id: this.new_record.user_id
+          },
+        });
+        // console.log(res);
+        this.eip_user_apart_options = res.eip_user_apart_options;
+        $('#body_block').hide();
+      },
+      async change_user_id(){
+        this.get_eip_user_apart_options();
+      },
+
+      download_file(id, path){
+        href = "{:U('RestRecord/download_file')}?id="+id+"&file_path="+encodeURIComponent(path);
+        window.open(href);
+      },
+      async set_record(e){
+        data = JSON.parse(JSON.stringify(print_divVM.new_record));
+        let files = this.$refs.prove_file.files;
+        if(files.length>0){
+          result = await new Promise((resolve, _) => {
+            const fr = new FileReader();
+            fr.onloadend = () => resolve(fr.result);
+            fr.readAsDataURL(files[0]);
+          });
+          data.prove_file = result;
+          data.prove_file_name = files[0].name;
+        }else{
+          delete data.prove_file;
+          delete data.prove_file_name;
+        }
+        // console.log(data);return;
+        $('#body_block').show();
+        res = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('RestRecord/set_rest_records')}",
+          data: data,
+        });
+        if(res.status){
+          print_divVM.load_rest_records();
+          print_divVM.new_record = JSON.parse(JSON.stringify(new_rest_record_empty));
+          $(this.$refs.prove_file).val('');
+          bg_class = 'bg-success';
+          $('#rest_record_modal').modal('hide');
+        }else{
+          bg_class = 'bg-danger';
+        }
+        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        $('#body_block').hide();
+      },
+    },
+  });
+  print_divVM.load_rest_records();
+</script>

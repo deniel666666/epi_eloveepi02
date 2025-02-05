@@ -1,0 +1,69 @@
+
+
+                                <div class="item" v-for="(property, property_index) in crm_property">
+                                    <label class="caption-name">
+                                    	<span class="smallText" v-text="property.title+'：'">標題</span>
+                                    	<span class="smallText" v-if="property.required==1">必填</span>
+                                    </label>
+
+                                    <!-- 輸入設定 -->
+                                	<input class="lavel-input content-box" v-if="['text', 'number', 'date'].indexOf(property.type)!=-1"
+                                		   :type="property.type" 
+                                		   :id="'field_id_'+property.id"
+                                		   :name="'field_id_'+property.id" 
+                                		   v-model="property.ans"
+                                           @blur="save_crm_property">
+                                	<textarea class="form-control content-box" v-if="['textarea'].indexOf(property.type)!=-1"
+                                			  :id="'field_id_'+property.id" 
+                                			  :name="'field_id_'+property.id" 
+                                			  :data="property.title" 
+                                			  v-model="property.ans"
+                                              @blur="save_crm_property"></textarea>
+                                    <div class="form-check-all content-box" v-if="['radio'].indexOf(property.type)!=-1">
+                                        <div class="form-check form-check-inline" v-for="(option, option_index) in property.options">
+                                            <input class="form-check-input" type="radio" 
+                                            	   v-model="property.ans"
+                                            	   :name="'field_id_'+property.id"
+                                            	   :id="'field_id_'+property.id+'_'+option_index"
+                                            	   :value="option"
+                                                   @click="save_crm_property">
+                                            <label class="form-check-label" :for="'field_id_'+property.id+'_'+option_index" v-text="option">選項</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-check-all content-box" v-if="['checkbox'].indexOf(property.type)!=-1">
+                                        <div class="form-check form-check-inline" v-for="(option, option_index) in property.options">
+                                            <input class="form-check-input" type="checkbox" 
+                                            	   v-model="property.ans"
+                                            	   :name="'field_id_'+property.id"
+                                            	   :id="'field_id_'+property.id+'_'+option_index"
+                                            	   :value="option"
+                                                   @click="save_crm_property">
+                                            <label class="form-check-label" :for="'field_id_'+property.id+'_'+option_index" v-text="option">選項</label>
+                                        </div>
+                                    </div>
+                                	<select class="lavel-input content-box" v-if="['select'].indexOf(property.type)!=-1"
+                                	        :id="'field_id_'+property.id" 
+                                	        :name="'field_id_'+property.id"
+                                	        v-model="property.ans"
+                                            @change="save_crm_property">
+                                        <option value="">請選擇</option>
+                                        <option v-for="(option, option_index) in property.options" :value="option" v-text="option">選項</option>
+                                    </select>
+                                    <div class="p-0 content-box" v-if="['file'].indexOf(property.type)!=-1">
+                                        <input class="custom-file-input form-control mb-2" 
+                                        	   :type="property.type"
+                                        	   :id="'field_id_'+property.id" 
+                                        	   :name="'field_id_'+property.id" 
+                                        	   :data="property.title"
+                                        	   :accept="property.limit"
+                                        	   @change="select_file(property_index, $event)">
+                                        <label class="custom-file-label" 
+                                        	   :for="'field_id_'+property.id" data-browse="上傳">選擇檔案</label>
+
+                                        <label class="caption-name" v-if="property.ans.file_name">
+                                        	已上傳檔案：
+                                        	<a target="_blank" :href="property.ans.data" v-text="property.ans.file_name">檔案名稱</a>
+                                        </label>
+                                        <a class="btn btn-danger" href="###" @click="cancel_file(property_index)">取消上傳</a>
+                                    </div>
+                                </div>                            

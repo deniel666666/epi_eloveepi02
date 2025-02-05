@@ -1,0 +1,128 @@
+<head>
+    <style type="text/css">
+        .btn.btn_rounded{
+            line-height: 32px !important;
+        }
+    </style>
+</head>
+
+<include file="Public:header2" />
+<section class="document main">
+    <div id="right">
+        <div class="content-table">
+            <div class="eventsContainer">
+                <include file="Fig:top_menu" />
+                <div class="cardContainer">
+                    
+                    <div class="d-flex flex-wrap align-items-center mt-4 mb-2">
+                        <h3 class="casesubtitle mr-2" style="display: inline-block;">模組設定</h3>
+                        <div class="btn_bar">
+                            <if condition="$access['events_new'] eq '1'">
+                                <a href="{:u('Events/editevents')}" class="btn addbtn btn_rounded"><i class="fas fa-plus"></i> 新增模組</a>
+                            </if>
+                        </div>
+                    </div>
+                    
+                    <form action="{:U('Events/index')}" method="get" enctype="multipart/form-data" class="searchform">
+                        <ol class="headerOl rightR">
+                            <li class="mr-2">
+                                <label  class="name mb-0">模組名稱：</label>
+                                <input type="text" name="name" value="{$search_name}"/>
+                            </li>
+                            <li>
+                                <select id="model_builder" name="user_id" class="mb-0">
+                                    <option value="">建模人員</option>
+                                    <foreach name="model_builder" key="num" item="vo">
+                                        <option value="{$vo.id}">{$vo.name}</option>
+                                    </foreach>
+                                </select>
+                            </li>
+                            <li><input class="mr-2 btn addbtn" type="submit" value="查詢">
+                                <input class="mr-2 btn sendbtn" type="button" value="清除查詢" onclick="location.href=`{:U('Events/index')}`;"/></li>
+                           
+                        </ol>
+                    
+                    </form>
+                    <div class="edit_form">
+                        <form action="{:U('Events/delevents')}" method="post">
+                            <table cellpadding="2" cellspacing="1" class="myFormTheme table edit_table" style="min-width: 1000px;">
+                                <thead>
+                                    <tr class="gray">
+                                        <th style="width: 4%;" class="text-center">
+                                            <input type="checkbox" class="seleall" />
+                                        </th>
+                                        <th style="width: 10%;">序號</th>
+                                        <th style="width: 6%;">指派人員</th>
+                                        <th style="width: 15%;">名稱</th>
+                                        <th style="width: 15%;">預設表單</th>
+                                        <th style="width: 4%;">操作</th>
+                                        <!--th align="center">匯出</th-->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <foreach name="processes" key="key" item="em">
+                                        <tr class="list" id="{$em.id}">
+                                            <td style="width: 4%;" class="text-center">
+                                                <input type="checkbox" class="seleck" name="ids[]" value="{$em.id}" />
+                                            </td>
+                                            <td style="width: 10%;">{$key+1}</td>
+                                            <td style="width: 6%;">{$em.user_name}</td>
+                                            <td class="no" style="width: 15%;">{$em.name}</td>
+                                            <td class="no" style="width: 15%;">{$em.html|strip_tags|htmlspecialchars|mb_substr=0,30,'utf-8'}</td>
+                                            <td style="width: 4%;">
+                                                <a href="{:u('Events/editevents')}?id={$em.id}" class="mr-2">
+                                                    <input class="chooseBtn sendbtn btn" type="button" value="修改" />
+                                                </a>
+                                                <a href="{:u('Events/copy')}?id={$em.id}" class="mr-2">
+                                                    <input class="chooseBtn sendbtn btn bg-warning" type="button" value="複製" />
+                                                </a>
+                                            </td>
+                                            <!--td align="center">
+                                                <a href="{:u('Events/output')}?id={$em.id}">
+                                                    <input class="chooseBtn" type="button" value="匯出" />
+                                                </a>
+                                            </td-->
+                                        </tr>
+                                    </foreach>
+                                </tbody>
+                                
+                                
+                            </table>
+                            <input type="submit" value="刪除" class="delete btn delate mt-2" />
+                        </form>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<include file="Public:footer" />
+<script language="javascript">
+$(function() {
+    $('.seleall').click(function() {
+        if ($(this).attr('checked'))
+            $('.seleck').attr('checked', true);
+        else
+            $('.seleck').attr('checked', false);
+    })
+    $('.list').hover(function() {
+        $(this).css('background', '#eeeeee');
+    }, function() {
+        $(this).css('background', '#ffffff');
+    });
+    $("#indata").click(function() {
+        $("#infile").click();
+    });
+    $("#infile").change(function() {
+        if ($(this).val() != "") {
+
+            $("#inform").submit();
+        }
+
+    });
+
+    // 預設勾選人員
+    $('#model_builder option[value="{$search_userid}"]').attr('selected', 'selected');
+})
+</script>

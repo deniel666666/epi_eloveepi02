@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>款項明細</title>
+		<style type="text/css">
+			.down_border {
+			border-bottom-width: 1px;
+			border-bottom-style: solid;
+			border-bottom-color: #CCC;
+			}
+			td {
+			padding: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<table border="0" align="center" cellpadding="0" cellspacing="1" bgcolor="#e9e9e9" style="font-size:12px;" id="table2excel">
+			<tr class="noExl">
+			<td  style="text-align:center" colspan="10">
+				<input type="button" value="匯出款項明細列表">
+			</td>
+			</tr>
+			<tr>
+				<td align="center" bgcolor="#CCCCCC" colspan="2">{$system_parameter["公司名稱"]}</td>
+				<td align="center" bgcolor="#CCCCCC">{$system_parameter['合約']}號</td>
+				<td align="center" bgcolor="#CCCCCC">{$system_parameter['合約']}金額</td>
+				<td align="center" bgcolor="#CCCCCC">{$system_parameter['合約']}訂金</td>
+				<td colspan="5" bgcolor="#CCCCCC">(以下金額皆為未稅)</td>
+			</tr>
+			<tr>
+				<td align="center" colspan="2">{$crm_contract['show_name']}</td>
+				<td align="center">{$crm_contract['sn']}</td>
+				<td align="center">{$crm_contract['allmoney']|number_format=0}</td>
+				<td align="center">{$crm_contract['money']|number_format=0}</td>
+				<td colspan="5"></td>
+			</tr>
+			<tr>
+				<td align="center" bgcolor="#CCCCCC">期號</td>
+				<td align="center" bgcolor="#CCCCCC">申請金額</td>
+				<td align="center" bgcolor="#CCCCCC">申請類型</td>
+				<td align="center" bgcolor="#CCCCCC">銷{$預收}款</td>
+				<td align="center" bgcolor="#CCCCCC">銷期金</td>
+				<td align="center" bgcolor="#CCCCCC">{$應收}金額</td>
+				<td align="center" bgcolor="#CCCCCC">到付日期</td>
+				<td align="center" bgcolor="#CCCCCC">帳款益損</td>
+				<td align="center" bgcolor="#CCCCCC">{$收款}益損</td>
+				<td align="center" bgcolor="#CCCCCC">已申請未{$收款}</td>
+			</tr>
+			<foreach name="money" item="row">
+				<tr class="down_border">
+					<td align="center">{$row.qh}-{$row.count}</td>
+					<td align="center">{$row.dqmoney|number_format=0}</td>
+					<td align="center">
+						<if condition="$row['prepaid']==1">{$預收}款</if>
+						<if condition="$row['prepaid']==0">貨款</if>
+					</td>
+					<td align="center">
+						<if condition="$row['prepaid']==0">
+							{$row.xdj|number_format=0}
+						<else />
+							-
+						</if>
+					</td>
+					<td align="center">
+						<if condition="$row['prepaid']==0">
+							{$row.xqj|number_format=0}
+						<else />
+							-
+						</if>
+					</td>
+					<td align="center">{$row.xqj|number_format=0}</td>
+					<td align="center">{$row.exptime|date='Y-m-d',###}</td>
+					<td align="center">{$row.tips}<br/><strong>備註:</strong>{$row.zkbz}</td>
+					<td align="center">{$row.tips1}<br/><strong>備註:</strong>{$row.skbz}</td>
+					<td align="center">
+						<if condition="$row['getedflag'] eq 1">0<else />{$row.xqj|number_format=0}</if>
+					</td>
+				</tr>
+			</foreach>
+			<tr>
+				<td bgcolor="#CCCCCC"></td>
+				<td align="center" bgcolor="#CCCCCC">
+					己{$出貨}總額(不含預{$收款})
+					<br/>(依是否{$已收}列計)
+				</td>
+				<td align="center" bgcolor="#CCCCCC"></td>
+				<td align="center" bgcolor="#CCCCCC">目前已銷{$預收}款</td>
+				<td align="center" bgcolor="#CCCCCC">目前已銷期金</td>
+				<td align="center" bgcolor="#CCCCCC">目前{$已收}金額</td>
+				<td align="center" bgcolor="#CCCCCC"></td>
+				<td colspan="2" align="center" bgcolor="#CCCCCC">益損總計</td>
+				<td align="center" bgcolor="#CCCCCC">已申請{$未收}總額</td>
+			</tr>
+			<tr>
+				<td ></td>
+				<td align="center">{$all.sale_completed|number_format=0}</td>
+				<td align="center"></td>
+				<td align="center">{$all.allmoney_xdj|number_format=0}</td>
+				<td align="center">{$all.allmoney_xqj|number_format=0}</td>
+				<td align="center">{$all.real_get_paid|number_format=0}</td>
+				<td align="center"></td>
+				<td colspan="2" align="center">{$all.tips|number_format=0}</td>
+				<td align="center">{$all.real_get_unpaid|number_format=0}</td>
+			</tr>
+			<tr>
+				<td bgcolor="#CCCCCC"></td>
+				<td align="center" bgcolor="#CCCCCC">
+					未{$出貨}總額(不含預{$收款})
+					<br/>(依是否{$已收}列計)
+				</td>
+				<td bgcolor="#CCCCCC"></td>
+				<td align="center" bgcolor="#CCCCCC">目前未銷{$預收}款</td>
+				<td align="center" bgcolor="#CCCCCC">目前未收金額</td>
+				<td align="center" bgcolor="#CCCCCC"></td>
+				<td colspan="4" bgcolor="#CCCCCC"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td align="center">{$all.sale_uncompleted|number_format=0}</td>
+				<td></td>
+				<td align="center">{$all.allmoney_prepaid|number_format=0}</td>
+				<td align="center">{$all.money_uncomplete|number_format=0}</td>
+				<td align="center"></td>
+				<td colspan="4"></td>
+			</tr>
+		</table>
+	</body>
+</html>
+<script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+<script src="__PUBLIC__/js/jquery.table2excel.js"></script>
+<script>
+	$("input").click(function(){
+		$("#table2excel").table2excel({
+			// exclude CSS class
+			exclude: ".noExl",
+			name: "Worksheet Name"
+		});
+	});
+</script>

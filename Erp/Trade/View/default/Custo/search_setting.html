@@ -1,0 +1,100 @@
+
+        <li>
+          <select name="levelid">
+            <option  value="">{$system_parameter['等級']}</option>
+            <foreach name="levels" item="op">
+              <if condition="$op['id'] eq $_GET['levelid']">
+                <option value="{$op.id}" selected>{$op.name}</option>
+              <else />
+                <option value="{$op.id}">{$op.name}</option>
+              </if>
+            </foreach>
+          </select>
+        </li>
+        <if condition="in_array(115, $use_function_top)">
+          <li>
+            <select class="industr1_select" name="industr" style="width:100px">
+              <option value="">{$system_parameter['產業別']}</option>
+              <foreach name="industr" item="op">
+                <if condition="$op['industr'] eq $_GET['industr']">
+                  <option selected>{$op.industr}</option>
+                <else />
+                  <option >{$op.industr}</option>
+                </if>
+              </foreach>
+            </select>
+            <select  class="industr2_select" name="industr2" style="width:100px">
+              <option value="">{$system_parameter['產業次項']}</option>
+
+              <foreach name="industr2_search" item="op">
+                <if condition="$op['industr2']">
+                  <if condition="$op['industr2'] eq $_GET['industr2']">
+                    <option value="{$op.industr2}" selected>{$op.industr2}</option>
+                  <else />
+                    <option >{$op.industr2}</option>
+                  </if>
+                </if>
+              </foreach>
+            </select>
+          </li>
+        </if>
+        <li class="citybar">
+          <select id="county" class="city" name="country"  data-selected="{$country}"></select>
+            <select id="district" class="town" name="district" data-selected="{$district}"></select>
+            <!-- <input id="zip" name="zip" value="" type="text" placeholder="郵遞區號" readonly> -->
+        </li>
+        <if condition="$system_parameter['協同人員']">
+          <li class="cooperate_staff">
+            <div class="people-items">
+              <foreach name="crm_cum_pri" item="vo">
+              <div class="team-items">
+                <select name="{$vo['ename']}">
+                  <option value="">{$vo['name']}</option>
+                  <foreach name="eip_user" item="op">
+                    <if condition="$op['name'] neq ''">
+                      <if condition="$op['is_job'] eq '1'">
+                        <if condition="$op['id'] eq $_GET[$vo['ename']]">
+                          <option value="{$op.id}" selected>{$op.name}</option>
+                          <else />
+                          <option value="{$op.id}">{$op.name}</option>
+                        </if>
+                      </if>
+                    </if>
+                  </foreach>
+                </select>
+                <?php if($_GET['no_'.$vo['ename']] =='1'){ ?>
+                  <input type="checkbox" id="{$vo['ename']}{$vo['id']}" checked onclick="ch_value('no_{$vo['ename']}')">
+                  <label for="{$vo['ename']}{$vo['id']}">：排除</label>
+                  <input type="hidden" id="no_{$vo['ename']}" value="1" name="no_{$vo['ename']}" />
+                <?php }else{ ?>
+                  <input type="checkbox" id="{$vo['ename']}{$vo['id']}" onclick="ch_value('no_{$vo['ename']}')">
+                  <label for="{$vo['ename']}{$vo['id']}">：排除</label>
+                  <input type="hidden" id="no_{$vo['ename']}" value="0" name="no_{$vo['ename']}" />
+                <?php } ?>
+              </div>
+              </foreach>
+            </div>
+          </li>
+        </if>
+        <if condition="$system_parameter['公司資訊']">
+          <li>
+            <div class="search_bar">
+              <span class="custo-search-name">{$system_parameter['資本額']}區間:</span>
+              <input id="zbe_start" type="text" class="text" name="zbe_start" value="{$_GET['zbe_start']}" style="width: 80px;" autocomplete="off" />
+              <span class="custo-search-name">~</span>
+              <input id="zbe_end" type="text" class="text" name="zbe_end" value="{$_GET['zbe_end']}" style="width: 80px;"
+                     autocomplete="off" />
+            </div>
+            <div class="search_bar">
+              <span class="custo-search-name d-block d-md-inline">{$system_parameter['公司核准日']}:</span>
+              <input id="hzrq_start" type="date" class="text" name="hzrq_start" value="{$_GET['hzrq_start']}"  autocomplete="off" />
+              ~
+              <input id="hzrq_end" type="date" class="text" name="hzrq_end" value="{$_GET['hzrq_end']}" style="width: 150px;" autocomplete="off"/>
+            </div>
+          </li>
+        </if>
+        <li>
+          <div class="search_bar">
+            <input id="mom" type="text" class="text" name="mom" value="{$_GET['mom']}" placeholder="客戶備註內容" style="width: 150px;"/>
+          </div>
+        </li>

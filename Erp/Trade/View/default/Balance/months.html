@@ -1,0 +1,247 @@
+<include file="Public:header2" />
+  <head>
+    <style type="text/css">
+      .edit_table td.td_head{
+        background-color: #f6f6f6;
+        padding-top: 0.8rem;
+      }
+    </style>
+  </head>
+
+  <section class="main" id="balance_sheet">
+    <div id="right">
+      <div class="searchForm">
+        <ol class="headerOl rightR mb-0">
+          <li>
+            <div class="search_bar">
+              <span class="mr-4">
+								更新統計：
+								<select v-model="update_ym">
+									<option value="">選擇年月</option>
+									<volist name="salary_ym" id="ym">
+										<option value="{$ym}">{$ym}</option>
+									</volist>
+								</select>
+								<a href="###" class="btn btn-primary" @click="update_balance">更新</a>
+								<!-- <a href="###" class="btn btn-primary" @click="update_balance">更新{$ym_pre}統計</a> -->
+							</span>
+              <span class="mr-4">
+                查看年份：
+                <select v-model="y" @change="redirect">
+                  <option v-for="year in years" :value="year.year" v-text="year.year"></option>
+                </select>
+              </span>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="content-table">
+        <div class="edit_form">
+          <table cellpadding="2" cellspacing="1" class="table edit_table" style="width: unset; min-width: max-content;">
+            <thead class="edit_table_thead">
+              <tr class="edit_table tr">
+                <th style="width: 200px;" class="text-center" valign=" middle">\
+                  <span class="float-left">項目</span>
+                  <span class="float-right">月份</span>
+                </th>
+                <th style="width: 100px;" class="text-right" v-for="month in months">
+                  <!-- <a :href="'{:u('Balance/detail')}?ym='+ y + month.m"
+                     v-text="month.m" target="_blank"></a> -->
+                  <span v-text="month.m"></span>
+                </th>
+                <th style="width: 100px;" class="text-right">加總</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="td_head" :colspan="2+months.length">收入部分</td></tr>
+              <template v-for="column in in_columns">
+                <tr class="cursor_pointer" @click="slide_toggle(column.id, 'in_columns')">
+                  <td><span v-text="column.name"></span></td>
+                  <td style="width: 100px;" class="text-right" v-for="month in months">
+                    <span v-if="typeof(month['in_content']['k_'+column.id])!='undefined'"
+                        v-text="month['in_content']['k_'+column.id]['num']"></span>
+                    <span v-else>0</span>
+                  </td>
+                  <td class="text-right" v-text="column['num']"></td>
+                </tr>
+                <tr v-for="sub in column.sub" :class="'in_columns child_tr_'+column.id" style="display: none;">
+                  <td><span class="ml-4" v-text="sub.name"></span></td>
+                  <td style="width: 100px;" class="text-right" v-for="month in months">
+                    <template v-if="typeof(month['in_content']['k_'+column.id])!='undefined'">
+                      <span v-if="typeof(month['in_content']['k_'+column.id]['sub']['k_'+sub.id])!='undefined'"
+                            v-text="month['in_content']['k_'+column.id]['sub']['k_'+sub.id]['num']"></span>
+                      <span v-else>0</span>
+                    </template>
+                    <template v-else>0</template>
+                  </td>
+                  <td class="text-right">
+                    <span v-if="column['sub']['k_'+sub.id]['num']!='undefined'" 
+                        v-text="column['sub']['k_'+sub.id]['num']"></span>
+                    <span v-else>0</span>
+                  </td>
+                </tr>
+              </template>
+              <tr><td :colspan="2+months.length"><hr class="mt-2 mb-2"></td></tr>
+              <tr>
+                <td class="text-right">小計</td>
+                <td style="width: 100px;" class="text-right" v-for="month in months">
+                  <span v-text="month.in_total"></span>
+                </td>
+                <td class="text-right" v-text="sum_total('in_total')"></td>
+              </tr>
+
+              <tr><td class="td_head" :colspan="2+months.length">支出部分</td></tr>
+              <template v-for="column in out_columns">
+                <tr class="cursor_pointer" @click="slide_toggle(column.id, 'out_columns')">
+                  <td><span v-text="column.name"></span></td>
+                  <td style="width: 100px;" class="text-right" v-for="month in months">
+                    <span v-if="typeof(month['out_content']['k_'+column.id])!='undefined'"
+                        v-text="month['out_content']['k_'+column.id]['num']"></span>
+                    <span v-else>0</span>
+                  </td>
+                  <td class="text-right" v-text="column['num']"></td>
+                </tr>
+                <tr v-for="sub in column.sub" :class="'out_columns child_tr_'+column.id" style="display: none;">
+                  <td><span class="ml-4" v-text="sub.name"></span></td>
+                  <td style="width: 100px;" class="text-right" v-for="month in months">
+                    <template v-if="typeof(month['out_content']['k_'+column.id])!='undefined'">
+                      <span v-if="typeof(month['out_content']['k_'+column.id]['sub']['k_'+sub.id])!='undefined'"
+                            v-text="month['out_content']['k_'+column.id]['sub']['k_'+sub.id]['num']"></span>
+                      <span v-else>0</span>
+                    </template>
+                    <template v-else>0</template>
+                  </td>
+                  <td class="text-right">
+                    <span v-if="typeof(column['sub']['k_'+sub.id])!='undefined'" 
+                          v-text="column['sub']['k_'+sub.id]['num']"></span>
+                    <span v-else>0</span>
+                  </td>
+                </tr>
+              </template>
+              <tr><td :colspan="2+months.length"><hr class="mt-2 mb-2"></td></tr>
+              <tr>
+                <td class="text-right">小計</td>
+                <td style="width: 100px;" class="text-right" v-for="month in months">
+                  <span v-text="month.out_total"></span>
+                </td>
+                <td class="text-right" v-text="sum_total('out_total')"></td>
+              </tr>
+
+              <tr><td class="td_head" :colspan="2+months.length">利潤部分</td></tr>
+              <tr>
+                <td>利潤</td>
+                <td style="width: 100px;" class="text-right" v-for="month in months">
+                  <span v-text="Math.round(month['in_total']-month['out_total'])"></span>
+                </td>
+                <td class="text-right" v-text="sum_profit()"></td>
+              </tr>
+              <tr>
+                <td>利潤率</td>
+                <td style="width: 100px;" class="text-right" v-for="month in months">
+                  <span v-if="month['in_total']!=0" v-text="((month['in_total']-month['out_total']) * 100 / month['in_total']).toFixed(2)"></span>%
+                </td>
+                <td class="text-right">
+                  <span v-if="sum_total('in_total')!=0" v-text="(sum_profit() * 100 / sum_total('in_total')).toFixed(2)"></span>%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <include file="Public:footer" />
+
+  <script type="text/javascript">
+    const balance_sheet_data = {
+      update_ym: '',
+      ym_pre: "{$ym_pre}",
+      y: "{$y}",
+      months: [],
+      years: [],
+      in_columns: [],
+      out_columns: [],
+    }
+    const balance_sheetVM = new Vue({
+      el: '#balance_sheet',
+      data: balance_sheet_data,
+      methods: {
+        get_months_data: async function(){
+          self = this;
+          $('#body_block').show();
+          get_data = {};
+          get_data.y = self.y;
+          await $.ajax({
+            method: "GET",
+            dataType:'json',
+            url: "{:u('Balance/months_data_ajax')}",
+            data: get_data,
+            success: function(res){
+                            self.in_columns = res.in_columns;
+                            self.out_columns = res.out_columns;
+                            self.months = res.months;
+                            self.years = res.years;
+            },
+            error: function(res){
+              Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            },
+          });
+          $('#body_block').hide();
+        },
+        sum_total: function(total_name){
+          self = this;
+          sum = 0;
+          for (var i = 0; i < self.months.length; i++) {
+            const month = self.months[i];
+            sum += Number(month[total_name]);
+          }
+          // return sum.toFixed(2);
+          return Math.round(sum);
+        },
+        sum_profit: function(){
+          self = this;
+          sum = self.sum_total('in_total') - self.sum_total('out_total');
+          // return sum.toFixed(2);
+          return Math.round(sum);
+        },
+        slide_toggle: function(column_id, class_name){
+          self = this;
+          const selector = $('.'+class_name+'.child_tr_'+column_id);
+          selector.slideToggle('fast');
+        },
+        update_balance: function(){
+          self = this;
+          update_ym = this.update_ym ? this.update_ym : this.ym_pre;
+          $('#body_block').show();
+          $.ajax({
+            method: "GET",
+            dataType:'json',
+            url: "{:u('Balance/update_balance')}",
+            data: { 
+              ym: update_ym,
+            },
+            success: function(res){
+              if(res.status==1){
+                // location.reload();
+                self.redirect();
+              }else{
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                $('#body_block').hide();
+              }
+            },
+            error: function(res){
+              Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+              $('#body_block').hide();
+            },
+          });
+        },
+        redirect: function(){
+          self = this;
+          // location.href = "{:u('Balance/months')}?y="+self.y;
+          self.get_months_data();
+        },
+      },
+    });
+    balance_sheetVM.get_months_data();
+  </script>

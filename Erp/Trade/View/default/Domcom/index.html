@@ -1,0 +1,138 @@
+
+<include file="Public:header2" />
+
+
+<section class="main ">
+	<!---->
+	<div id="right">
+	
+		<div class="right_cont">
+			<if condition="$page eq ''">
+				<form name="search" id="searchform" class="searchform" action="{:u('Domcom/index')}" method="get">
+					<else />
+					<form name="search" id="searchform" class="searchform" action="{:u('Domcom/index')}?p={$Think.get.p}" method="get">
+					</if>
+					<ol class="headerOl rightR">
+						
+						<li>
+							<div class="search_bar">
+								<label for=""></label>
+								<input class="text" type="text"  placeholder="搜尋..." name="nick" value="{$input_nick}"   />
+								<input class="submit" type="submit" value="" />
+							</div>
+						</li>
+						<if condition="$access['domain_edi'] eq '1'">
+							<li style="float:right"><a href="{:u('Domcom/editor')}"><input type="button" value="新增域名廠商" class="addbtn btn"/></a></li>
+						</if>
+					</ol>
+				</form>
+				<div class="content-table">
+					<div class="page justify-content-end">
+						{$show}
+					</div>
+						<form action="{:u('Domcom/patchupdate')}" method="post">
+							<div class="edit_form">
+								<table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1400px;">
+									<thead class="edit_table_thead">
+										<tr class="edit_table tr ">
+											<th style="width:2%" class="text-center" valign="middle">
+												<input type="checkbox" class="seleall" name="all" id="all" />
+											</th>
+											<th style="width:3%" class="text-center" valign="middle">序號</th>
+											<th style="width:10%"><a href=" {:u('Domcom/index')}?order=nick">廠商名 </a> </th>
+											<th style="width:25%"><a href="{:u('Domcom/index')}?order=url">網址</a></th>
+											<th style="width:8%"><a href="{:u('Domcom/index')}?order=name">聯絡人</a></th>
+											<th style="width:12%"><a href="{:u('Domcom/index')}?order=mail">信箱</a></th>
+											<th style="width:10%"><a href="{:u('Domcom/index')}?order=moble">電話</a></th>
+											<th style="width:10%"><a href="{:u('Domcom/index')}?order=user">帳號</a></th>
+											<th style="width:10%">密碼</th>
+											<th >備註</th>
+
+										</tr>
+									</thead>
+									<tbody>
+										<foreach name="data" key="num" item="one">
+											<if condition="$num%2 eq 0">
+												<tr id="{$one.id}" class="color1">
+													<else />
+												<tr id="{$one.id}">
+											</if>
+
+											<td style="width:2%" class="text-center" valign="middle">
+												<input type="checkbox" class="seleck" value="{$one.id}" name="sele[]" />
+											</td>
+											<!-- <td>{$one.id}</td> -->
+											<td style="width:3%" class="text-center">{$num+1+$linit}</td>
+											<td style="width:10%">
+												<a href="{:u('Domcom/view')}?id={$one.id}" target="_blank">{$one.nick}</a>
+											</td>
+
+											<td style="width:25%" class="copy" data-clipboard-text="{$one.url}">{$one.url}</td>
+											<td style="width:8%">{$one.name}</td>
+											<td style="width:12%">{$one.mail}</td>
+											<td style="width:10%">{$one.moble}</td>
+											<td style="width:10%" class="copy" data-clipboard-text="{$one.user}">
+												{$one.user}
+											</td>
+											<td style="width:10%" class="copy" data-clipboard-text="{$one.pwd}">{$one.pwd}</td>
+											<td class="short">
+												{$one.bz}
+											</td>
+											</tr>
+										</foreach>
+									</tbody>	
+										
+								</table>
+							</div>
+						
+							
+							<div class="page">
+								<if condition="$access['domcom_edi'] eq '1'">
+									<select id="flag" class="flag mr-2" name="status">
+										<option value="0">移除</option>
+									</select>
+									<input type="submit" class="btn sendbtn" value="確定修改" />
+								</if>
+								{$show}
+							</div>
+						</form>
+				</div>
+				
+			
+							</div>
+							<!--right end-->
+							
+							<!--content end-->
+							</div>
+							
+							</div>
+							
+							
+							</div><!-- .wrapAll end-->
+							</section>
+							<include file="Public:footer" />
+							
+							<!--縮排-->
+							<script src="__PUBLIC__/js/jquery.readmore.js"></script>
+							
+							<script language="javascript">
+							$(function(){
+							$('.seleall').click(function(){
+							if($(this).attr('checked'))
+							$('.seleck').attr('checked',true);
+							else
+							$('.seleck').attr('checked',false);
+							});
+							$('.list').hover(function(){
+							$(this).css('background','#eeeeee');
+							},function(){
+							$(this).css('background','#ffffff');
+							});
+							
+							$(".short").readmore({
+							substr_len: 20, 
+							more_link: '<a class="more">...</a>'
+							});
+							})
+							</script>	
+														

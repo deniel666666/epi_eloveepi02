@@ -1,0 +1,533 @@
+<!DOCTYPE>
+<include file="Public:header2" />
+<head>
+    <link href="__PUBLIC__/css/jquery-ui.css" rel="stylesheet" type="text/css" />
+</head>
+
+<form target="my_iframe" action="{:u('Custo/do_addcrm')}" method="post">
+    <if condition="$Think.get.id neq ''">
+        <input type="hidden" name="id" value="{$Think.get.id}" />
+    </if>
+    <section id="crm_vue" class="contant-box crm-contant-box mt-0">
+        <input type="checkbox" id="menu-operate" name="">
+        <!-- <div class="check-btn">
+            <label for="menu-operate" class="hb">操作面板</label>
+        </div> -->
+        <div class="container-fluid">
+            <div class="row justify-content-end">
+                <!-- 右邊CRM開始 -->
+                <div class="right-content p-3 h-100" style="max-width:unset;">
+                    <!-- 右上公司資訊 -->
+                    <div class="row">
+                        <div class="col-xl-6 col-12 company-info">
+                            <h3 class="company-title">
+                                <span class="people-icon edit-btn"><i class="fas fa-user-edit"></i></span>
+                                <span>
+                                    <input class="w-100" type="text" name="nick" v-model="newbier.nick"
+                                            placeholder="{$system_parameter['客戶']}{$system_parameter['簡稱']}">
+                                </span>
+                            </h3>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['公司名稱']}</div>
+                                <div class="col-md-9 col-8 title-content color-copy copy">
+                                    <input class="w-100 norepeat" type="text" name="name" v-model="newbier.name">
+                                    <div class="norepeat_name_c"></div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['統編']}</div>
+                                <div class="col-md-9 col-8 title-content">
+                                    <input class="w-100 norepeat" type="text" name="no" v-model="newbier.no">
+                                    <div class="norepeat_no_c"></div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['公司電話']}</div>
+                                <div class="col-md-9 col-8 title-content">
+                                    <input class="w-100" type="text" name="comphone" v-model="newbier.comphone">
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['公司手機']}</div>
+                                <div class="col-md-9 col-8 title-content">
+                                    <input class="w-100" type="text" name="commobile" v-model="newbier.commobile">
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['公司MAIL']}</div>
+                                <div class="col-md-9 col-8 title-content">
+                                    <input class="w-100" type="text" name="commail" v-model="newbier.commail">
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['地址']}</div>
+                                <div class="col-md-9 col-8 title-content">
+                                    <if condition="$Think.get.id eq '' || $Think.get.id eq '-1'">
+                                        <span class="color1 borderR citybar"> 
+                                            <input class="w-100" type="text" name="zip" axlength="5" placeholder="郵遞區號" style="width:40%" v-model="newbier.zip"/>
+                                            <select name="city" class="city">
+                                                <option value="0">縣市</option>
+                                            </select>
+                                            <select name="town" class="town addr_api">
+                                                <option value="0">鄉鎮市區</option>                                     
+                                            </select>
+                                        </span>
+                                    <else />
+                                        <span>
+                                            <input class="w-100" type="text" name="zip" maxlength="5" placeholder="郵遞區號" style="width:40%" v-model="newbier.zip"/>
+                                        </span>
+                                    </if>
+                                    <input class="addr_api addr w-100" type="text" name="addr" v-model="newbier.addr" placeholder="地址">
+                                </div>
+                            </div>
+                            <if condition="$system_parameter['官方網站'] neq ''">
+                                <div class="item">
+                                    <div class="col-md-3 col-4 title-name">{$system_parameter['官方網站']}</div>
+                                    <div class="col-md-9 col-8 title-content">
+                                        <input class="w-100" type="text" name="url1" v-model="newbier.url1">
+                                    </div>
+                                </div>
+                            </if>
+                            <if condition="$system_parameter['品牌網站'] neq ''">
+                                <div class="item">
+                                    <div class="col-md-3 col-4 title-name">{$system_parameter['品牌網站']}</div>
+                                    <div class="col-md-9 col-8 title-content">
+                                        <input class="w-100" type="text" name="url2" v-model="newbier.url2">
+                                    </div>
+                                </div>
+                            </if>
+                            <div class="item">
+                                <div class="col-md-3 col-4 title-name">{$system_parameter['傳真']}</div>
+                                <div class="col-md-9 col-8 title-content">
+                                    <input class="w-100" type="text" name="comfax" v-model="newbier.comfax">
+                                </div>
+                            </div>
+                            <if condition="$system_parameter['公司核准日'] neq ''">
+                                <div class="item">
+                                    <div class="col-md-3 col-4 title-name">{$system_parameter['公司核准日']}</div>
+                                    <div class="col-md-9 col-8 title-content">
+                                        <input type="date" name="hzrq" v-model="newbier.hzrq">
+                                        <!-- <span v-if="newbier.hzrq" v-text="'('+newbier.hzrqcount+'歲)'"></span> -->
+                                    </div>
+                                </div>
+                            </if>
+                            <if condition="$system_parameter['公司LINE_FB'] neq ''">
+                                <div class="item">
+                                    <div class="col-md-3 col-4 title-name">{$system_parameter['公司LINE_FB']}</div>
+                                    <div class="col-md-9 col-8 title-content d-flex">
+                                        <input class="w-100" type="text" name="comline" v-model="newbier.comline"> / 
+                                        <input class="w-100" type="text" name="comfb" v-model="newbier.comfb">
+                                    </div>
+                                </div>
+                            </if>
+                        </div>
+                        <div class="col-xl-6 col-12">
+                            <div class="row">
+                                <if condition="$system_parameter['負責人'] neq ''">
+                                    <div class="col-sm-6 col-12">
+                                        <h4 class="lavel-title">
+                                            <span class="people-icon"><i class="fas fa-user"></i></span> {$system_parameter['負責人']}
+                                        </h4>
+                                        <div class="company-info">
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人暱稱']}</div>
+                                                <div class="col-md-9 col-8 title-content d-flex">
+                                                    <input class="w-100" type="text" name="bossname" v-model="newbier.bossname" placeholder="姓名">
+                                                    <input class="w-100" type="text" name="bossposition" v-model="newbier.bossposition" placeholder="職稱">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人電話']}</div>
+                                                <div class="col-md-9 col-8 title-content d-flex">
+                                                    <input class="w-100" type="text" name="bossphone" v-model="newbier.bossphone" placeholder="電話">
+                                                    <span class="d-flex">
+                                                        #<input class="w-100" type="text" name="bossextension" v-model="newbier.bossextension" placeholder="分機">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人手機']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <input class="w-100" type="text" name="bossmobile" v-model="newbier.bossmobile">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人MAIL']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <input class="w-100" type="text" name="bossmail" v-model="newbier.bossmail">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人生日']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <input type="date" name="bossbirth" v-model="newbier.bossbirth">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人LINE_FB']}</div>
+                                                <div class="col-md-9 col-8 title-content d-flex">
+                                                    <input class="w-100" type="text" name="bossline" v-model="newbier.bossline"> / 
+                                                    <input class="w-100" type="text" name="bossfb" v-model="newbier.bossfb">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['負責人備註']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <textarea class="w-100" name="bossmom" v-model="newbier.bossmom" rows="3"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </if>
+                                <if condition="$system_parameter['聯絡人'] neq ''">
+                                    <div class="col-sm-6 col-12">
+                                        <h4 class="lavel-title">
+                                            <span class="people-icon"><i class="fas fa-user"></i></span> {$system_parameter['聯絡人']}
+                                        </h4>
+                                        <div class="company-info">
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人暱稱']}</div>
+                                                <div class="col-md-9 col-8 title-content d-flex">
+                                                    <input class="w-100" type="text" name="contact[cname]" v-model="crm_contact_top.cname" placeholder="姓名">
+                                                    <input class="w-100" type="text" name="contact[position]" v-model="crm_contact_top.position" placeholder="職稱">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人電話']}</div>
+                                                <div class="col-md-9 col-8 title-content d-flex">
+                                                    <input class="w-100" type="text" name="contact[phone]" v-model="crm_contact_top.phone" placeholder="電話">
+                                                    <span class="d-flex">
+                                                        #<input class="w-100" type="text" name="contact[extension]" v-model="crm_contact_top.extension" placeholder="分機">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人手機']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <input class="w-100" type="text" name="contact[mobile]" v-model="crm_contact_top.mobile">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人MAIL']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <input class="w-100" type="text" name="contact[mail]" v-model="crm_contact_top.mail">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人生日']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <input type="date" name="contact[birth]" v-model="crm_contact_top.birth">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人LINE_FB']}</div>
+                                                <div class="col-md-9 col-8 title-content d-flex">
+                                                    <input class="w-100" type="text" name="contact[cline]" v-model="crm_contact_top.cline"> / 
+                                                    <input class="w-100" type="text" name="contact[cfb]" v-model="crm_contact_top.cfb">
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="col-md-3 col-4 title-name">{$system_parameter['聯絡人備註']}</div>
+                                                <div class="col-md-9 col-8 title-content">
+                                                    <textarea class="w-100" name="contact[mom]" v-model="crm_contact_top.mom" rows="3"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </if>
+                            </div>
+                            <div class="company-gray flex-wrap d-lg-flex d-none">
+                                <div class="row">
+                                    <if condition="$system_parameter['協同人員'] neq ''">
+                                        <div class="col-12 d-flex flex-wrap">
+                                            <h4 class="title">{$system_parameter['協同人員']}:</h4>
+                                            <div class="title-content">
+                                                <ul class="d-flex flex-wrap mb-0">
+                                                    <li v-for="crm_cum in crm_cum_pri" :class="['chat_record_'+crm_cum.ename]">
+                                                        <i v-text="crm_cum.name"></i>:
+                                                        <select :name="crm_cum.ename" :class="['chat_record_'+crm_cum.ename]" v-model="newbier[crm_cum.ename]">
+                                                            <option value="0">無</option>
+                                                            <option v-for="user in eip_user" :value="user.id" v-text="user.name"></option>
+                                                        </select>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    <else/>
+                                        <input type="hidden" v-for="crm_cum in crm_cum_pri" :name="crm_cum.ename" value="0">
+                                    </if>
+                                </div>
+                            </div>
+                            <div class="company-gray flex-wrap d-lg-flex d-none">
+                                <div class="row">
+                                    <if condition="$system_parameter['類別']">
+                                        <div class="col-sm-4 col-12 d-flex flex-wrap">
+                                            <h4 class="title">{$system_parameter['類別']}:</h4>
+                                            <div class="title-content">
+                                                <select name="typeid" v-model="newbier.typeid">
+                                                    <option v-for="(type, type_index) in crm_types"
+                                                            :value="type.id" v-text="type.name">
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    <else />
+                                        <input type="hidden" name="typeid" value="3">
+                                    </if>
+                                    <if condition="$system_parameter['等級']">
+                                        <div class="col-sm-8 col-12 d-flex flex-wrap">
+                                            <h4 class="title">{$system_parameter['等級']}:</h4>
+                                            <div class="title-content">
+                                                <div class="form-check-all">
+                                                    <div class="custom-control custom-radio" v-for="(level, level_index) in crm_levels">
+                                                        <input class="custom-control-input cursor_pointer" type="radio" :id="'lavel_'+level.id" name="levelid" :value="level.id"
+                                                            v-model="newbier.levelid">
+                                                        <label class="custom-control-label cursor_pointer" :for="'lavel_'+level.id" v-text="level.name">A</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <else />
+                                        <input type="hidden" name="levelid" value="0">
+                                    </if>
+                                    <if condition="in_array(115, $use_function_top)">
+                                        <div class="col-sm-4 col-12 d-flex flex-wrap">
+                                            <h4 class="title">{$system_parameter['產業別']}:</h4>
+                                            <div class="title-content">
+                                                <input class="industr1_select" type="text" maxlength="4" name="industr" list="industr" 
+                                                        v-model="newbier.industr" style="width:40%; min-width: 100px;"/>
+                                                <datalist id="industr">
+                                                    <option v-for="industr in crm_industr" v-text="industr.industr"></option> 
+                                                </datalist>
+                                                <select  class="industr2_select" name="industr2" v-model="newbier.industr2" style="width:100px" >
+                                                    <option value="">{$system_parameter['產業次項']}</option>
+                                                    <option :value="newbier.industr2" v-text="newbier.industr2"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </if>
+                                    <if condition="in_array(151, $use_function_top)">
+                                        <div class="col-sm-8 col-12 d-flex flex-wrap">
+                                            <h4 class="title">{$system_parameter['請款週期']}:</h4>
+                                            <div class="title-content">
+                                                每月
+                                                <input type="number" class="lavel-pay text-right" name="ask_money_date" v-model="newbier.ask_money_date">
+                                                日請款(依人力請款)
+                                            </div>
+                                        </div>
+                                    </if>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!------ 右下選擇區 ----->
+                    <if condition="$system_parameter['公司資訊']">
+                        <div class="right_lab company-event bg-white w-100">
+                            <ul>
+                                <li>
+                                    <div class="name">{$system_parameter['廠商類型']}：</div>
+                                    <div class="content">
+                                        <select name="status_supplier" v-model="newbier.status_supplier">
+                                            <option value="1">客戶</option>
+                                            <option value="2">供應商</option>
+                                        </select>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="name">{$system_parameter['公司備註']}:</div>
+                                    <div class="content">
+                                        <input name="mom" rows="3" class="w-100" v-model="newbier.mom">
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="name">{$system_parameter['來源']}：</div>
+                                    <div class="content">
+                                        <select name="sourceid" v-model="newbier.sourceid">
+                                            <option v-for="sourse in crm_cum_sourse"
+                                                    :value="sourse.id" v-text="sourse.name">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="name">{$system_parameter['資本額']}：</div>
+                                    <div class="content"><input name="zbe" type="number" v-model="newbier.zbe"/></div>
+                                </li>
+                                <li>
+                                    <div class="name">{$system_parameter['關係企業']}：</div>
+                                    <div class="content">
+                                        <input type="text" name="affiliates1" v-model="newbier.affiliates1"/>、
+                                        <input type="text" name="affiliates2" v-model="newbier.affiliates2"/>、
+                                        <input type="text" name="affiliates3" v-model="newbier.affiliates3"/>、
+                                        <input type="text" name="affiliates4" v-model="newbier.affiliates4"/>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="name">{$system_parameter['業務分析']}：</div>
+                                    <div class="content">
+                                        <textarea name="busanalysis" class="w-100" rows="3" v-model="newbier.busanalysis"></textarea>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="name">{$system_parameter['特別說明']}：</div>
+                                    <div class="content">
+                                        <textarea name="explan" class="w-100" rows="3" v-model="newbier.explan"></textarea>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </if>
+
+                    <div class="d-flex justify-content-center w-100 mt-2">
+                        <input id="submit_btn" class="btn btn-success" type="submit" value="確定送出"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</form>
+
+<include file="Public:footer" />
+
+<include file="Custo:view_js" />
+
+<script type="text/javascript">
+    crm_vueVM.crmId = '{$Think.get.id}';
+    crm_vueVM.teamid = '{$Think.get.teamid}';
+    crm_vueVM.init_crm_right_data().then(function(){
+        /*載入預設資料*/
+        crm_vueVM.get_crm_data(crmId).then(function(){
+            // 初始化產業別次項選單
+            if(crm_vueVM.newbier.industr){
+                init_industr2_select(crm_vueVM.newbier.industr)
+            }
+        });
+    });
+
+    /*送出前整理資料*/
+    $('#submit_btn').on('click', function(e){
+        // e.preventDefault();
+        $('#body_block').show()
+        Vue.toasted.show('資料處理中', { duration: 1500, className: ["toasted-primary", 'bg-success'] });
+
+        $('body').append('<iframe name="my_iframe" src="" class="d-none"></iframe>');
+        var iframe = $('[name="my_iframe"]');
+        iframe.on('load', function(e){
+            // console.log(iframe.contents()[0].body.innerHTML);
+            html = iframe.contents()[0].body.innerHTML;
+            iframe.remove();
+            var success = $(html).find('.success');
+            var error = $(html).find('.error');
+            if(error.length>0){
+                Vue.toasted.show(error.html().trim(), { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+            }else{
+                if(success.length>0){
+                    Vue.toasted.show(success.html().trim(), { duration: 1500, className: ["toasted-primary", 'bg-success'] });
+
+                    if(crm_vueVM.crmId==0 || crm_vueVM.crmId=='' || crm_vueVM.crmId=='-1'){ /*新增*/
+                        
+                    }else{ /*編輯*/
+                        if(''!='{$use_function|in_array=75, ###}'){
+                            history.back();
+                        }
+                    }
+
+                    setTimeout(function(){
+                        var href = $(html).find('#href');
+                        if(href.length>0){
+                            location.href = href.attr('href');
+                        }
+                    }, 100);
+                }
+
+            }
+
+            $('#body_block').hide()
+            iframe.off();
+        })
+    });
+</script>
+
+<script src="__PUBLIC__/js/dk-tw-citySelector/dk-tw-citySelector.js"></script>
+<script language="javascript">
+    bool = false;
+    function init_industr2_select(industr1_val){
+        $.ajax({
+            method:'post',
+            data:{industr1:industr1_val},
+            dataType:'text',
+            url:"{:U('Industr/industr_select')}",
+            success:function(res){
+                $(".industr2_select").html(res);
+                crm_vueVM.$forceUpdate();
+            }
+        });
+    }
+    $(".industr1_select").change(function(){
+        init_industr2_select($(this).val())
+    });
+
+    $(document).ready(function(){
+        //檢查重複
+        $('.norepeat').change(function(){
+            var input_name = $(this).attr('name');
+            var myname=$('.norepeat_'+input_name+'_c');
+            $.ajax({
+                type:'post',
+                dataType:'json',
+                url:"{:u('Custo/aj_repeat')}",
+                data:{
+                    crm_id:crm_vueVM.crmId,
+                    key:input_name,
+                    val:$(this).val(),
+                },
+                success:function(res){
+                    myname.html(res.info);
+                    if(res.status==1){
+                        myname.css('color','#009900');
+                        if($(".nick_name").val() == ''){
+                            $(".nick_name").val($(".norepeat").val().substr(0,5));
+                        }
+                    }else{
+                        myname.css('color','#990000');
+                    }
+                }
+            });
+        });
+        $('.citybar').dk_tw_citySelector('.city', '.town');
+
+        // 處理郵遞區號
+        var addr_api_element = $('.addr_api');
+        var addr_element = $('.addr');
+        if('{$Think.get.id}'=='' || '{$Think.get.id}'=='-1'){ /*新增*/
+            addr_api_element.change(function(){
+                var address = $(".city").val() + $(".town").val() + addr_element.val();
+                get_zip_code(address);
+            })
+        }else{ /*修改*/
+            addr_api_element.change(function(){
+                var address = $(this).val()
+                get_zip_code(address);
+            })
+            // get_zip_code(addr_element.val())
+        }
+        // api 取得郵遞區號
+        function get_zip_code(address){
+            console.log(address);
+            $.ajax({
+                type:'GET',
+                dataType:'text',
+                url:"https://zip5.5432.tw/zip/" + address,
+                success:function(res){
+                    var zipcode = $(res).find('#zipcode');
+                    if(zipcode){
+                        zipcode = zipcode.text()
+                        crm_vueVM.newbier.zip = zipcode;
+                        crm_vueVM.$forceUpdate();
+                    }
+                }
+            })
+        }
+    });
+</script>
+

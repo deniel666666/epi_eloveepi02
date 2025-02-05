@@ -1,0 +1,167 @@
+		<!-- End main --><!-- Start footer -->
+		<footer>	
+			<ul>
+				<li>{$eip_company['name']} 版權所有 © 2014 {$eip_company['en_name']}. All Rights Reserved.</li>
+				<li>
+					<a href="tel:{$eip_company['tel']}">電話：{$eip_company['tel']}</a>
+					<a>傳真：{$eip_company['fax']}</a>
+					<a href="{$eip_company['addr_link']}" target="_blank">地址：{$eip_company['addr']}</a>
+				</li>
+			</ul>
+		</footer>
+		<!-- End footer -->
+	</body>
+</html>
+
+<script src="__PUBLIC__/js/jquery/jquery-migrate-1.2.1.js"></script>
+<script src="__PUBLIC__/js/jquery/jquery.MenuTree.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/ui/jquery-ui.js" type="text/javascript"></script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script> <!--輔助bootstrap rwd-->
+<script src="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.js"></script>
+
+<!--ajax-->
+<script src="__PUBLIC__/js/jquery/jquery.form.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/ui/i18n/jquery.ui.datepicker-zh-TW.js"></script>
+<!--提示視窗-->
+<script src="__PUBLIC__/js/jquery.toaster.js"></script>
+<!--複製套件-->
+<script type="text/javascript" src="__PUBLIC__/js/clipboard.min.js"></script>
+<script src="__PUBLIC__/js/custom.js?0000"></script>
+<script>
+	/*匯入客戶用方法們*/
+	function iimcrmall(x){
+		if(!$('.seleck'+x).attr('checked'))
+			$('.seleck'+x).attr('checked',true);
+		else
+			$('.seleck'+x).attr('checked',false);		
+	}
+	function imcrmall(x){
+		var xxx = 0;
+		$('.seleck'+x).each(function() {
+			if(!$( this ).attr('checked')){
+				xxx = 1;
+			}
+		});
+		if(xxx == 1){
+			$('.imcrmall'+x).attr('checked',false);		
+		}else{
+			$('.imcrmall'+x).attr('checked',true);
+		}
+	}
+	$( window ).load(function() {
+		var s="{$Think.get.apart}";
+		if(s==''){ s="{$Think.get.eip_apart}"; }
+		if(s!=''){
+			$.ajax({
+				type:'POST',
+				data:{apartmentid:s,ck:"{$user_id}"},
+				dataType:'text',
+				url:"{:U('Ajax/aj_getmean')}",
+				success:function(res){
+					$("#mens").html(res);
+				}
+			});
+		}
+	});
+</script>
+<script type="text/javascript">
+	$(function(){
+		$('.seleall').click(function(){	
+			if($(this).attr('checked'))
+				$('.seleck').attr('checked',true);
+			else
+				$('.seleck').attr('checked',false);
+		});
+		$("#navi").change(function(){
+			window.location="/index.php/"+$(this).val();
+		});
+
+		var clipboard = new Clipboard('.copy');
+		clipboard.on('success', function(e) {
+			Vue.toasted.show('複製了文字:'+e.text, { duration: 1500, className: ["toasted-primary", 'bg-success'] });
+		});
+
+		$('[data-toggle="tooltip"]').tooltip();
+	});
+	$("tr").on("click",".seleall",function(){
+		if($(this).attr('checked'))
+			$(this).parents("table").find("input:not(.need_checkbox)").attr('checked',true);
+		else
+			$(this).parents("table").find("input:not(.need_checkbox)").attr('checked',false);
+	});
+
+	// 自動更新登入狀態
+		// $.ajax({
+		// 	url: "{:U('Public/renew_coockie')}",
+		// 	type: 'GET',
+		// 	datatype: 'json',
+		// 	error: function(xhr) {},
+		// 	success: function(response) {
+		// 		// console.log('renew_coockie');
+		// 	}
+		// });
+		// setInterval(function(){
+		// 	$.ajax({
+		// 		url: "{:U('Public/renew_session')}",
+		// 		type: 'GET',
+		// 		datatype: 'json',
+		// 		error: function(xhr) {},
+		// 		success: function(response) {
+		// 			console.log('renew_session:'+response);
+		// 		}
+		// 	}); 
+		// } ,60000);
+
+	/*補定義方法(補足不同瀏覽器的設定)*/
+	if (typeof String.prototype.replaceAll == "undefined") {  
+		String.prototype.replaceAll = function(match, replace) {  
+			return this.replace(new RegExp(match, 'g'), () => replace);  
+		}
+	}
+
+	/*頂端選單active*/
+		var parent_powercat = ".parent_powercat_{$parent_powercat_id}";
+		$(parent_powercat).addClass('active');
+
+	// window.addEventListener('pageshow', (event) => {
+	// 	if (event.persisted) {
+	// 		console.log('This page was restored from the bfcache.');
+	// 	} else {
+	// 		console.log('This page was loaded normally.');
+	// 	}
+	// });
+
+	// 計算年齡
+	const calculateAge = (birthday) => {
+		let temp = birthday || $('#birthday').val();
+		if (temp == '' || temp == undefined || temp == '0000-00-00') {
+			document.getElementById("calculateAge").innerHTML = '0歲';
+			return;
+		}
+		const ageDifMs = Date.now() - new Date(temp).getTime();
+		const ageDate = new Date(ageDifMs);
+		document.getElementById("calculateAge").innerHTML = Math.abs(ageDate.getUTCFullYear() - 1970) + '歲';
+	};
+
+	// 計算年資
+	const calculateJobTenure = (dutday) => {
+		let temp = dutday || $('#dutday').val();
+		if (temp == '' || temp == undefined || temp == '0000-00-00') {
+			document.getElementById("calculateJobTenure").innerHTML = '0年0個月';
+			return;
+		}
+		// 這邊範例直接給定日期，有需要傳入變數請自行改寫成方法
+		const startDate = moment(temp);
+		const endDate = moment();
+		// 計算兩者差異年數
+		const years = endDate.diff(startDate, 'years');
+		// 計算兩者差異月數，這邊要扣掉上面計算的差異年，否則會得到12個月
+		const months = endDate.diff(startDate, 'months') - (years * 12);
+		// 把差異的年、月數加回來，否則會變成計算起訖日相差的天數(365天)
+		startDate.add(years, 'years').add(months, 'months');
+		// const days = endDate.diff(startDate, 'days');
+
+		document.getElementById("calculateJobTenure").innerHTML = years + '年' + months + '個月';
+	};
+</script>

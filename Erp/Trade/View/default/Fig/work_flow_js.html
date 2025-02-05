@@ -1,0 +1,44 @@
+
+<script src="__PUBLIC__/workflow/all.js?20241203"></script>
+<script>
+	var workFlowVM = null
+
+	/*讀取事先載好的假日資料*/
+	holiday_data = []
+	holiday_data_string = '';
+	$.ajax({
+		type: "GET",
+		async: true,
+		datatype: 'json',
+		url: "{:u('Fig/get_holiday')}",
+		success: function (result) {
+			// holiday_data = JSON.parse(result);
+			holiday_data = result;
+			holiday_data_string = JSON.stringify(holiday_data);
+			workFlowVM = init_vue() // 建立vue物件
+
+			if(typeof(init_setting)!='undefined'){ 
+				init_setting(); /*初始化設定*/
+			}
+
+			/*抓取工作資料*/
+			workFlowVM.get_work_data();
+
+			init_scroll_event();
+		},
+	});
+
+	// 定義展開工作設定區
+	function work_setting_toggle(){
+		var work_info_area = $('.work_info_area');
+		var extend_btn = $('.work_info_area .extend_btn');
+		current_width = work_info_area.width()
+		if(current_width <= 100){
+			work_info_area.addClass('w-100');
+			extend_btn.addClass('open')
+		}else{
+			work_info_area.removeClass('w-100');
+			extend_btn.removeClass('open')
+		}
+	}
+</script>

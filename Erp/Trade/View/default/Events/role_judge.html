@@ -1,0 +1,136 @@
+<script type="text/javascript">
+  function sendCheck()//檢查人員
+  {
+    var singleValues = $(".steps");         /*事件流程*/
+    var singleNames = $(".code:not(.not)"); /*流程指派人員*/
+    var approve=0;      /*核可者數量統計*/
+    var distribute=0;   /*分配者數量統計*/
+    var execute=0;      /*執行者數量統計*/
+
+    var name = $('input[name="name"]').val();
+    if(name==''){
+      alert('請輸入模組名稱');
+      return;
+    }
+
+    var title = $('input[name="title"]').val();
+    if(title==''){
+      alert('請輸入事件名稱');
+      return;
+    }
+
+    for(var i=0;i<singleValues.size()-1;i++){
+      var c_name = singleNames[i].value; // 此階段人員
+
+      if($(".steps")[i].value==1){                  // 此階段是核可者
+        approve += 1;
+        has_other = 0;
+        for(var j=i-1;j>=0;j--){                      // 檢查此階段前的每個階段
+            if($(".steps")[j].value==1){                // 是核可者
+                if(c_name==singleNames[j].value){       //檢查人員重複
+                  alert('核可者人員重複');
+                  return;
+                }
+                continue;                                 // 略過，繼續檢查前一個
+            }else if( $(".steps")[j].value==3 ){        // 是執行者
+                has_other = 1;                            // 紀錄其他腳色
+                break;
+            }
+        }
+        if(has_other != 0){
+          alert('核可者請放置於事件最前面');
+          return
+        }
+      }
+
+      if($(".steps")[i].value==0){                  // 此階段是分配者
+          distribute += 1;
+          var has_execute=0;
+          for(var j=i+1;j<singleValues.size()-1;j++){ // 檢查此階段後的每個階段
+              if($(".steps")[j].value==0){              // 是分配者
+                  if(c_name==singleNames[j].value){     //檢查人員重複
+                    alert('分配者人員重複');
+                    return;
+                  }
+                  continue;                               // 略過，繼續檢查後一個
+              }else if($(".steps")[j].value==3){        // 是執行者
+                  has_execute=1;                          // 紀錄有執行者
+                  break;
+              }else{                                    // 其他腳色
+                  break;                                  // 跳出檢查
+              }
+          }
+          if(has_execute==0){
+            alert('分配者之後需是執行者或分配者');
+            return
+          }
+      }
+      
+      if($(".steps")[i].value==5){                  // 此階段是驗收者
+          var has_execute=0;
+          for(var j=i-1;j>=0;j--){                    // 檢查此階段前的每個階段
+              if($(".steps")[j].value==5){              // 是驗收者
+                  if(c_name==singleNames[j].value){
+                    alert('驗收者人員重複');               //檢查人員重複
+                    return;
+                  }
+                  continue;                               // 略過，繼續檢查前一個
+              }else if( $(".steps")[j].value==3 ){      // 是執行者
+                  has_execute = 1;                        // 紀錄有執行者
+                  break;
+              }else{                                    // 其他腳色
+                  break;                                  // 跳出檢查
+              }
+          }
+          if(has_execute==0){
+              alert('驗收者上一位需是執行者或驗收者');
+              return;
+          }
+      }
+
+      if($(".steps")[i].value==2){                  // 此段是會參者
+          for(var j=i-1;j>=0;j--){                    // 檢查此階段前的每個階段
+              if($(".steps")[j].value==3){              // 是執行者
+                  alert('會參者不能再執行者後面');
+                  return;
+              }else if($(".steps")[j].value==2){        // 是會參者
+                if(c_name==singleNames[j].value){       //檢查人員重複
+                  alert('會參者人員重複');
+                  return;
+                }
+              }
+          }
+      }
+
+      if($(".steps")[i].value==3){                  // 此段是執行者
+          execute += 1;
+      }
+    }
+    // if(approve == 0){
+    //   alert('案件不能沒有核可者');
+    //   return;
+    // }
+    // if(distribute==0){
+    //   alert('案件不能沒有分配者');
+    //   return;
+    // }
+    if(execute==0){
+      alert('案件不能沒有執行者');
+      return;
+    }
+
+    if(check_user){
+      for(var i=0;i<singleNames.size()-1;i++){
+        if(singleNames[i].value==0){
+          alert('有流程未安排人員');
+          return;
+        }
+      }
+    }
+
+    $(window).off('beforeunload');
+    $('#body_block').show();
+    form.submit();
+    setTimeout(()=>{ $('#body_block').hide(); }, 500);
+  }
+</script>

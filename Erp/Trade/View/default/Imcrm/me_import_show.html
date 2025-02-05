@@ -1,0 +1,97 @@
+<include file="Public:header2" />
+
+<section class="document main">
+	<div class="top_bar">
+		<div class="crumbs">
+			<a href="#">匯入客戶</a>
+			<span>></span><a href="#">經濟部替代匯入</a>
+		</div>
+	</div>
+	<div class="below">
+		
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+		
+		<div class="right">
+			<div class="document_edit">
+				<form id="steptwoform" method="post" action="{:U('Imcrm/me_import_do')}">
+					<div class="naviPage">
+						<span class="">匯入的名單：</span>
+						<span class="vRight"></span>
+					</div>
+					
+					<foreach name="gop" item="vo" key="index">
+						<input type='hidden' name='me_list[]' value='{$vo|json_encode}' />
+					</foreach>
+					<div class="edit_form">
+						<table cellpadding="0" cellspacing="0" id="sameTable" class="table edit_table" style="min-width:1200px">
+							<thead>
+								<tr>
+									<th>編號</th>
+									<th>{$system_parameter["統編"]}</th>
+									<th>{$system_parameter["公司名稱"]}</th>
+									<th>郵遞區號</th>
+									<th>{$system_parameter["地址"]}</th>
+									<th>{$system_parameter["負責人"]}{$system_parameter["名稱"]}</th>
+									<th>{$system_parameter["資本額"]}<br>(萬元)</th>
+									<th>{$system_parameter["公司核准日"]}</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+								<foreach name="gop" item="vo" key="index">
+									<tr>
+										<td>{$index+1}</td>
+										<td>{$vo.no}</td>
+										<td>{$vo.name}</td>
+										<td>{$vo.zip}</td>
+										<td>{$vo.addr}</td>
+										<td>{$vo.bossname}</td>
+										<td>{$vo.zbe}</td>
+										<td>{$vo.hzrq}</td>
+									</tr>
+								</foreach>
+							</tbody>
+						</table>
+					</div>
+					
+					<div class="naviPage">
+						<span class="vRight"></span>
+					</div>
+					<div style="text-align:right;">
+						<input type="submit" value="確定替代"/>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+</section>
+<include file="Public:footer" />
+<script type="text/javascript">
+	
+</script>
+<script language="javascript" type="text/javascript">
+	$('.allgroup').click(function(){
+		if($(this).attr('checked'))
+		{
+			$('.groups').attr('checked',true);
+		}else
+		{
+			$('.groups').attr('checked',false);
+		}
+	})
+</script>
+
+
+<script language="javascript">
+	$(function(){
+		$('.seleall').click(function(){
+			if($(this).attr('checked'))
+			$('.seleck').attr('checked',true);
+			else
+			$('.seleck').attr('checked',false);
+		})
+	})
+</script>

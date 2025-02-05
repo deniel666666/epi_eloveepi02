@@ -1,0 +1,20 @@
+
+              <div class="document-mode-btn">
+                <a class="typeBtn btn addbtn {$ACTION_NAME|compare_return='search', 'd-none'}"
+                   href="{:U('Km/search', ['type'=>$fileCode])}">
+                  已發佈
+                </a>
+
+                <if condition="$acc[$right_edi] eq '1'">
+                  <a class="typeBtn btn sendbtn {$ACTION_NAME|compare_return='others', 'd-none'}"
+                     href="{:U('Km/others', ['type'=>$fileCode])}">暫停或未發佈
+                    <!-- <input type="button" class="sendbtn btn" value="" /> -->
+                  </a>
+                </if>
+                <if condition="$acc[$right_hid] eq '1'">
+                  <a class="typeBtn btn delate {$ACTION_NAME|compare_return='trash', 'd-none'}" 
+                     href="{:U('Km/trash', ['type'=>$fileCode])}">垃圾桶
+                    <!-- <input type="button" class="delate btn" value="垃圾桶 " /> -->
+                  </a>
+                </if>
+              </div>

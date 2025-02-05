@@ -1,0 +1,212 @@
+<include file="Public:header2" />
+
+<section id="right">
+  <div class="container mw1920 p-4" id="schedule_pay_div">
+    <div class="navi1">
+      <div class="menu-sub-btn">
+        <ol class="tabs-menu">
+          <li class="subbtn nav-item">
+            <a href="{:U('SchedulePay/pay')}" class="active">待付薪資</a>
+          </li>
+          <li class="subbtn nav-item">
+            <a href="{:U('SchedulePay/pay_page')}" class="">付款單</a>
+          </li>
+          <li></li>
+        </ol>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center pt-1 pb-1">
+      <select class="mr-2" v-model="search_params.pay_count_type" @change="get_schedule_pay">
+        <option value="1">月統計</option>
+        <option value="2">雙週統計</option>
+        <option value="3">每日統計</option>
+      </select>
+      <div>
+        日期區間:
+        <input class="w100 mr-2" v-model="search_params.date_s" type="date" style="max-width: 120px;"> ~
+        <input class="w100 mr-2" v-model="search_params.date_e" type="date" style="max-width: 120px;">
+      </div>
+      <input class="w100 mr-2" v-model="search_params.mens_keyword" placeholder="姓名/別稱/手機/電話/信箱" style="max-width: 240px;">
+      <input class="w100 mr-2" v-model="search_params.searchtext" placeholder="名稱/地點" style="max-width: 300px;">
+      <input class="w100 mr-2" v-model="search_params.evesno" placeholder="事件編號" style="max-width: 150px;">
+      <input class="w100 mr-2" v-model="search_params.sn" placeholder="{$system_parameter['合約']}編號" style="max-width: 150px;">
+      <a href="###" class="btn addbtn mr-2" @click="get_schedule_pay">搜尋</a>
+      <a href="javascript:location.reload()" class="btn btn-light">清除搜尋</a>
+    </div>
+    <div class="send">
+      <if condition="$access['schedulepay_edi'] eq '1'">
+        <div>
+          <button class="sendbtn btn mr-2" @click="create_pay_page_patch">篩選結果生成付款單</button>
+          <span class="text-danger">批次生成時，相同支付對象的款項將合併成同一筆付款單</span>
+        </div>
+      </if>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table edit_table mb-2" style="min-width: 1275px;">
+        <thead>
+          <tr>
+            <th style="width: 75px;" valign="middle">序號</th>
+            <th style="min-width: 100px;">姓名</th>
+            <th style="min-width: 100px;">別稱</th>
+            <th style="min-width: 100px;" class="text-right">時薪</th>
+            <th style="min-width: 100px;" class="text-right">正規工時</th>
+            <th style="min-width: 100px;" class="text-right">加班時薪</th>
+            <th style="min-width: 100px;" class="text-right">加班工時</th>
+            <th style="min-width: 100px;" class="text-right">獎懲調薪</th>
+            <th style="min-width: 100px;" class="text-right">應付薪資</th>
+            <th style="min-width: 100px;">工作日期</th>
+            <th style="min-width: 200px;">名稱</th>
+            <th style="min-width: 150px;">事件編號</th>
+            <th style="min-width: 150px;">{$system_parameter['合約']}編號</th>
+            <th style="min-width: 100px;">{$system_parameter['客戶']}</th>
+            <th style="min-width: 100px;">拋轉薪資日期</th>
+            <th style="min-width: 100px;">操作</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="(pay, pay_index) in schedule_pays">
+            <td>
+              <label v-text="pay_index+1"></label>
+            </td>
+            <td><span v-text="pay.schedule_date_user_name"></span></td>
+            <td><span v-text="pay.schedule_date_user_ename"></span></td>
+            <td class="text-right" v-text="pay.user_hour_pay"></td>
+            <td class="text-right" v-text="pay.do_hour"></td>
+            <td class="text-right" v-text="pay.user_hour_pay_over"></td>
+            <td class="text-right" v-text="pay.do_hour_overtime"></td>
+            <td class="text-right" v-text="pay.change_num"></td>
+            <td class="text-right">
+              <span v-text="Number(pay.pay_total) + Number(pay.change_num)"></span>
+            </td>
+            <td><span v-text="pay.date"></span></td>
+            <td><span v-text="pay.name"></span></td>
+            <td><span v-text="pay.evesno"></span></td>
+            <td><span v-text="pay.sn"></span></td>
+            <td><span v-text="pay.show_name"></span></td>
+            <td><span v-text="pay.turn_salary_time_format.slice(0,10)"></span></td>
+            <td>
+              <if condition="$access['schedulepay_edi'] eq '1'">
+                <button class="sendbtn btn" @click="create_pay_page_one(pay.schedule_date_user_primary)" v-if="search_params.pay_count_type==3">
+                  生成付款單
+                </button>
+              </if>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="send">
+      <if condition="$access['schedulepay_edi'] eq '1'">
+        <div>
+          <button class="sendbtn btn mr-2" @click="create_pay_page_patch">篩選結果生成付款單</button>
+          <span class="text-danger">批次生成時，相同支付對象的款項將合併成同一筆付款單</span>
+        </div>
+      </if>
+    </div>
+  </div>
+</section>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const schedule_pay_data = {
+    pay_selected: [],
+
+    search_params: {
+      pay_count_type: 3,
+      date_s: '',
+      date_e: '',
+      mens_keyword: '',
+      searchtext: '',
+      evesno: '',
+      sn: '',
+    },
+    schedule_pays: [],
+  };
+  const schedule_payVM = new Vue({
+    el: '#schedule_pay_div',
+    data: schedule_pay_data,
+    methods: {
+      get_schedule_pay: function(){
+        $('#seleall').prop('checked', false);
+        schedule_payVM.pay_selected = [];
+        data = JSON.parse(JSON.stringify(schedule_payVM.search_params));
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('SchedulePay/get_schedule_pay')}",
+          success:function(res){
+            schedule_payVM.schedule_pays = res.list;
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      select_all: function($event){
+        schedule_payVM.pay_selected = [];
+
+        var select_all = $($event.currentTarget);
+        if(select_all.prop('checked')==true){
+          for (var i = 0; i < schedule_payVM.schedule_pays.length; i++) {
+            schedule_payVM.pay_selected.push(schedule_payVM.schedule_pays[i].schedule_date_user_primary);
+          }
+        }
+      },
+      create_pay_page_one: function(schedule_date_user_primary){
+        schedule_payVM.create_pay_page([schedule_date_user_primary]);
+      },
+      create_pay_page_patch: function(){
+        data = JSON.parse(JSON.stringify(schedule_payVM.search_params));
+        $('#body_block').show();
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('SchedulePay/create_pay_page_patch')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_payVM.get_schedule_pay();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide(); 
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      create_pay_page: function(ids=[]){
+        if(ids.length==0){ Vue.toasted.show('請選擇對象', { duration: 1500, className: ["toasted-primary", "bg-danger"] });return; }
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: { ids: ids},
+          url: "{:u('SchedulePay/create_pay_page')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_payVM.get_schedule_pay();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();            
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+    },
+  });
+
+  async function init_data(){
+    await schedule_payVM.get_schedule_pay();
+  }
+  init_data();
+</script>

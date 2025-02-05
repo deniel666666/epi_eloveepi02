@@ -1,0 +1,147 @@
+<include file="Public:header2" />
+<section class="document main">
+    <div id="right">
+        <div class="content-table">
+
+            <div class="eventsContainer">
+
+                <!-- ////////////////////////// events_List ////////////////////////// -->
+                <div class="cardContainer">
+                    <h3 class="casesubtitle mt-2 mb-2">發佈事件 - 案件安排</h3>
+                    <!-- 公司資訊 -->
+                    <form name="form"action="{:u('Fig/do_wrong')}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="parent_id" value="{$_GET['id']}" />
+                        <div class="container-fluid contract-item pl-0 pr-0">
+                            <div class="row w-100 m-0">
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>往返單類型：</label>
+                                    <select name='eve_tid'>
+                                        <foreach name="eve_back_flow" key="num" item="vo">
+                                            <option value="{$vo.id}" {$vo.id|compare_return=$wrong_job['eve_tid'],'selected="selected"'}>{$vo.name}</option>
+                                        </foreach>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label>往返內容：</label>
+                                    <!-- 記得開大一點喔 -->
+                                    <textarea id="descriptions" name="content" cols="100" rows="8" style="width:700px;height:200px;visibility:hidden;">
+                                        <?php if($job_id!=-1){
+                                            echo $wrong_job['content'];
+                                        } ?>
+                                    </textarea>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>附件：</label>
+                                    <if condition="$job_id!=-1">
+                                        {$wrong_job['file_name']}
+                                    <else />
+                                        <input type="file" name="file[]" multiple/> <span>(多個檔案請自行壓縮後上傳)</span>
+                                    </if>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="row">
+                            <div class="col-md-12 mb-2">
+                                預定製作時間：
+                                <if condition="$job_id!=-1"> <!--如果有已建立-->
+                                    <if condition="$wrong_job['datestart']"> <!--如果有時間-->
+                                        <input id="datetime" type="datetime-local"  name='datestart' value="{$wrong_job['datestart']|date='Y-m-d',###}T{$wrong_job['datestart']|date='H:i',###}">
+                                    <else />
+                                        <input id="datetime" type="datetime-local"  name='datestart' value="">
+                                    </if>
+                                <else />
+                                    <input id="datetime" type="datetime-local"  name='datestart' value="{$de_date}T09:00">
+                                </if>
+                                ~
+                                <if condition="$job_id!=-1"> <!--如果有已建立-->
+                                    <if condition="$wrong_job['dateline']"> <!--如果有時間-->
+                                        <input id="datetime" type="datetime-local"  name='dateline' value="{$wrong_job['dateline']|date='Y-m-d',###}T{$wrong_job['dateline']|date='H:i',###}">
+                                    <else />
+                                        <input id="datetime" type="datetime-local"  name='dateline' value="">
+                                    </if>
+                                <else />
+                                    <input id="datetime" type="datetime-local"  name='dateline' value="{$de_date}T18:00">
+                                </if>
+                            </div> 
+                            <div class="col-md-12 mb-2">
+                                預估工時：&nbsp;<input type="text" name="estimated_time" style="width:20%" value="<?php if($job_id!=-1){
+                                      echo $wrong_job['estimated_time'];
+                                 } ?>" />天
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                實際工時：&nbsp;<input type="text" name="exact_time" style="width:20%" value="<?php if($job_id!=-1){
+                                      echo $wrong_job['exact_time'];
+                                 } ?>" />天
+                            </div>
+                            <div class="col-md-12">
+                                增加績效(稅前)：$&nbsp;<input type="text" name="money" style="width:20% ;" value="<?php if($job_id!=-1){
+                                      echo $wrong_job['money'];
+                                 } ?>" />
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="job_id" value="{$job_id}" />
+                        <input type="hidden" name="eve_id" value="{$eve_id}" />
+                        <input type="hidden" name="user_id" value="{$_GET['user_id']}" />
+                        <!-- <input type="hidden" name="count" value="{$_GET['count']}" /> -->
+                        <input type="hidden" name="orders" value="{$_GET['order']}" />
+                        
+                        <if condition="$can_edit_content eq '1' || $job_id==-1">
+                            <input type="button" style="width: 100px;" class=" btn addbtn mt-2" value="儲存資料" onclick="wrong_job()"/>
+                        </if>
+                        <input type="button" style="width: 100px;" class="btn btn-default mt-2" value="關閉" onclick="myFunction()"  />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<include file="Public:footer" />
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script>
+    function myFunction(){
+      window.close();
+    }
+    function wrong_job(){
+      //
+      form.submit();
+      //window.close();
+    }
+    var editor;
+    KindEditor.ready(function(K) {
+        editor = K.create('#descriptions', {
+            afterBlur: function() {
+                this.sync();
+            },
+            langType: 'zh_TW',
+            items: [
+                'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
+                'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+                'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+                'superscript', 'quickformat', 'selectall', '|', 'fullscreen', '/', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+                'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
+                'table', 'hr', 'emoticons', 'pagebreak',
+                'anchor', 'link', 'unlink', '|', 'about'
+            ],
+            width: '100%',
+            height: '300px',
+            resizeType: 0
+        });
+    });
+    //選擇分配人員
+    $.ajax({
+        type: 'GET',
+        dataType:'text',
+        url: "{:u('Fig/aj_schedule')}",
+        data: {
+            add: "true"
+        },
+        success: function(res) {
+            $(".schedule").html(res);
+        },
+        error: function(request, error) {
+            console.log(arguments);
+            alert(" Can't do because: " + error);
+        }
+    })
+</script>

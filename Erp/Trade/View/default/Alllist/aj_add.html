@@ -1,0 +1,529 @@
+
+<!-- 合約共用內容 -->
+<input type="hidden" name="pid" value="{$crm_contract['id'] ?? 0}">
+<input type="hidden" name="belongs_to" value="{$belongs_to}">
+<input type="hidden" name="pay_to" value="{$pay_to}">
+<input type="hidden" name="cate" value="{$cate}">
+
+<div class="container-fluid">
+  <div class="contract-main row">
+    <div class="item-L">
+      <div class="main">
+        <div class="container-fluid contract-top pl-0 pr-0">
+          <div class="row w-100 m-0">
+            <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+              {$system_parameter['合約']}類型：<span class="type">{$crm_cum_cat['name']}</span>
+            </div>
+            <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+              {$system_parameter['合約']}號：
+              <if condition="$_GET['pid'] eq ''">
+                <input type="text" name="sn" value="" placeholder="自訂編號"/>
+                <div class="text-danger" style="font-size: 0.8rem;">若保留空白，系統將自動生成</div>
+                <else />
+                <input type="text" name="sn" value="{$crm_contract['sn']}" />
+              </if>
+            </div>
+            <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+              總金額：<input type="number" name="allmoney" 
+                            placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                            {$control_money_input|compare_return=0,'step="0.01"'}
+                            value="{$crm_contract['allmoney'] ?? ''}">
+            </div>
+            <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+              內外單：
+              <input type="radio" name="count_type" value="0" id="count_type2_0" {$crm_contract['count_type']|compare_return='0', 'checked'}>
+              <label for="count_type2_0">內單</label>
+              <input type="radio" name="count_type" value="1" id="count_type2_1" {$crm_contract['count_type']|compare_return='1', 'checked'}>
+              <label for="count_type2_1">外單</label>
+            </div>
+          </div>
+        </div>
+        <div class="container-fluid contract-item pl-0 pr-0">
+          <div class="row w-100 m-0">
+            <div class="col-lg-6 col-md-6 col-12">
+              <label>{$system_parameter['合約']}主題：</label>
+              <input name="topic" type="text" size="20" class="subject" value="{$crm_contract['topic']}">
+            </div>
+            <div class="col-lg-3 col-md-6 col-12">
+              <label>{$system_parameter['合約']}訂金：</label>
+              <input name="money" type="number" class="subject"
+                     placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                     {$control_money_input|compare_return=0,'step="0.01"'}
+                     value="{$crm_contract['money']}">
+            </div>
+            <div class="col-lg-3 col-md-6 col-12">
+              <label>{$收款}方式：</label>
+              <select name="paymenttype" class="input_content paymenttype">
+                <option value="1">現金</option>
+                <option value="2">匯款</option>
+                <option value="3">支票</option>
+              </select>
+            </div>
+            <div class="col-lg-3 col-md-6 col-12">
+              <label>發票：</label>
+              <select name="invoice" id="invoice">
+                <option value="二聯">二聯</option>
+                <option value="三聯">三聯</option>
+                <option value="免付">免付</option>
+                <!-- <option value="">未決定</option> -->
+              </select>
+              <sapn class="small">PS:請依{$system_parameter['合約']}選擇發票格式</sapn>
+            </div>
+            <if condition="$control_auto_sale_day neq 0">
+              <div class="col-lg-3 col-md-6 col-12">
+                <label>分期出帳數：</label>
+                <select name="contracttime" id="contracttime">
+                  <option value="0">不使用</option>
+                  <foreach name="contracttime_option" item="vo">
+                    <option value="{$vo}">{$vo}期</option>
+                  </foreach>
+                </select>
+                <span class="small">使用後每月{$control_auto_sale_day}日將自動生成請款資料</span>
+              </div>
+              <div class="col-lg-3 col-md-6 col-12">
+                <label>開始日期：</label>
+                <input type="date" name="starttime" value="{$crm_contract['starttime']}">
+              </div>
+              <div class="col-lg-3 col-md-6 col-12">
+                <label>{$出貨}品名：</label>
+                <input type="text" class="subject" name="sale_items" value="{$crm_contract['sale_items']}">
+              </div>
+            </if>
+
+            <div class="col-12">
+              <label>{$system_parameter['合約']}內容：</label>
+              <if condition="$_GET['pid'] eq ''">
+                <!-- 新增，自動帶入類別預設內容 -->
+                <textarea type="text" rows="8" style="width:100%" id="note"
+                  name="content">{$crm_cum_cat['content']}</textarea>
+              <else />
+                <!-- 編輯，顯示{$system_parameter['合約']}儲存的內容 -->
+                <textarea type="text" rows="8" style="width:100%" id="note"
+                  name="content">{$crm_contract['content']}</textarea>
+              </if>
+            </div>
+            <div class="col-12">
+              <label>備註：</label>
+              <textarea type="text" class="w100" rows="5" name="note">{$crm_contract['note']}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 合約特別內容 -->
+      <switch name="cate">
+        <case value="0">
+        </case>
+
+        <case value="1">
+          <!---------------------------S E O----------------------------------->
+          <div class="toll-add">
+            <div class="items">
+              <div class="list">
+                <label>收費上限：</label>
+                <input type="number" name="upmoney" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['upmoney']}" />
+              </div>
+              <div class="list">
+                <label>計費日期：</label><input type="date" id="date" name="date" value="">
+              </div>
+            </div>
+          </div>
+        </case>
+
+        <case value="2">
+          <!---------------------------網頁設計----------------------------------->
+          <div class="toll-add">
+            <div class="items">
+              <div class="list">
+                <label>執行網址：</label>
+                <if condition="$_GET['pid'] eq ''">
+                  <input name="url1" type="text" size="40" value="http://" />
+                  <else />
+                  <input name="url1" type="text" size="40" value="{$crm_contract['url1']}" />
+                </if>
+              </div>
+            </div>
+          </div>
+          <!-- <table>
+            <tr>
+              <td width="10%" align="left" valign="middle" class="gray">執行網址</td>
+              <td width="633" colspan="5" valign="middle">
+                <if condition="$_GET['pid'] eq ''">
+                  <input name="url1" type="text" size="60" value="http://" />
+                  <else />
+                  <input name="url1" type="text" size="60" value="{$crm_contract['url1']}" />
+                </if>
+              </td>
+            </tr>
+          </table> -->
+        </case>
+
+        <case value="3">
+          <!---------------------------主機域名維護----------------------------------->
+          <div class="toll-add">
+            <div class="items">
+              <div class="list">
+                <if condition="$crm_contract['cate1'] neq '0'">
+                  <input id="cate1_check" name="type1" type="checkbox" id="type1" value="1" checked>
+                  <else />
+                  <input id="cate1_check" name="type1" type="checkbox" id="type1" value="1">
+                </if>
+                <label for="cate1_check">主機總額：</label>
+                <input type="number" name="h_num" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['h_num']}">
+                <label>主機訂金：</label>
+                <input type="number" name="h_money" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['h_money']}">
+              </div>
+              <div class="list">
+                <if condition="$crm_contract['cate2'] neq '0'">
+                  <input id="cate2_check" name="type2" type="checkbox" id="type2" value="1" checked>
+                  <else />
+                  <input id="cate2_check" name="type2" type="checkbox" id="type2" value="1">
+                </if>
+                <label for="cate2_check">域名總額：</label>
+                <input type="number" name="d_num" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['d_num']}" />
+                <label>域名訂金：</label>
+                <input type="number" name="d_money" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['d_money']}" />
+              </div>
+              <div class="list">
+                <if condition="$crm_contract['cate3'] neq '0'">
+                  <input id="cate3_check" name="type3" type="checkbox" id="type3" value="1" checked>
+                  <else />
+                  <input id="cate1_check" name="type3" type="checkbox" id="type3" value="1">
+                </if>
+                <label for="cate3_check">SSL總額：</label>
+                <input type="number" name="s_num" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['s_num']}" />
+                <label for="">SSL訂金：</label>
+                <input type="number" name="s_money" 
+                       placeholder="{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       value="{$content['s_money']}" />
+              </div>
+
+            </div>
+          </div>
+        </case>
+
+        <default />
+        <!---------------------------其他----------------------------------->
+      </switch>
+    </div>
+  </div>
+</div>
+<!-- 執行項目 開始 -->
+<div id="contract_uints">
+  <div class="casetitle d-flex flex-wrap align-items-baseline
+              {$use_function_top|in_array=121, ###|compare_return=1, 'default_block', 'default_none'}
+              {$use_function_top|in_array=148, ###|compare_return=1, 'default_block', 'default_none'}">
+    <span class="mr-3">執行項目:</span>
+    <ul class="tabs-menu d-inline-flex flex-wrap mb-0 mr-3">
+      <li class="nav-item {$use_function_top|in_array=121, ###|compare_return=1, 'default_block', 'default_none'}">
+        <a href="#crm_contract_unit">提供服務</a>
+      </li>
+      <li class="nav-item
+                {$get_or_pay|compare_return=0, 'default_block', 'default_none'}
+                {$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}">
+        <a href="#skill_price">人力請款</a>
+      </li>
+      <li class="nav-item"></li>
+    </ul>
+  </div>
+  <div id="crm_contract_unit">
+    <section id="use_function_top-121" class="{$use_function_top|in_array=121, ###|compare_return=1, 'default_block', 'default_none'}">
+      <div class="edit_form">
+        <input v-for="id in units_del" type="hidden" name="units_del[]" v-model="id">
+        <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1300px;">
+          <thead class="edit_table_thead">
+            <tr class="edit_table tr ">
+              <th style="width: 90px">
+                <label class="mb-0">
+                  項次
+                  <a class="btn addbtn text-white" href="###" @click="open_modal()">
+                    <i aria-hidden="true" class="fas fa-plus"></i>
+                  </a>
+                </label>
+              </th>
+              <th v-for="column in columns_aj_add"
+                :class="['list_price', 'sale_price', 'profit', 'orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                v-text="column.name"
+                width="100"
+               ></th>
+              <th style="width: 70px" class="text-right">數量</th>
+              <if condition="$system_parameter['商品售價']">
+                <th style="width: 100px" class="text-right">{$system_parameter['商品售價']}</th>
+                <th style="width: 100px" class="text-right">小計</th>
+              </if>
+              <th style="width: 100px" class="text-right">優惠總價</th>
+              <th style="width: 70px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item,key) in units">
+              <td>
+                <label v-text="(currentPage-1)*countOfPage + key+1"></label>
+                <input type="hidden" :name="'units['+key+'][id]'" v-model="item['id']">
+                <input type="hidden" :name="'units['+key+'][cat_unit_id]'" v-model="item['cat_unit_id']">
+              </td>
+              <td v-for="column in columns_aj_add"
+                :class="['list_price', 'sale_price', 'profit'].indexOf(column.key)!=-1 ? 'text-right' : ''">
+                <template v-if="column.editable">
+                  <input type="text" :name="'units['+key+']['+column.key+']'" v-model="item[column.key]">
+                </template>
+                <template v-else>
+                  <input type="hidden" :name="'units['+key+']['+column.key+']'" v-model="item[column.key]">
+                  <span class="item" v-text="item[column.key]"></span>
+                </template>
+              </td>
+              <td>
+                <input type="number" min="0" step="1" class="text-right w-100" :name="'units['+key+'][num]'" 
+                     v-model="item.num" @change="count_price(key)">
+              </td>
+              <if condition="$system_parameter['商品售價']">
+                <td>
+                  <input type="number" min="0" class="text-right w-100" :name="'units['+key+'][sale_price]'" 
+                         {$control_money_input|compare_return=0,'step="0.01"'}
+                         v-model="item.sale_price" @change="count_price(key)">
+                </td>
+                <td>
+                  <div class="text-right" v-text="item.total"></div>
+                  <input type="hidden" :name="'units['+key+'][total]'" 
+                         {$control_money_input|compare_return=0,'step="0.01"'}
+                         v-model="item.total">
+                </td>
+              </if>
+              <td>
+                <input type="number" min="0" class="text-right w-100" :name="'units['+key+'][total_dis]'" 
+                       {$control_money_input|compare_return=0,'step="0.01"'}
+                       v-model="item.total_dis"
+                       @change="count_total_uints">
+              </td>
+              <td>
+                <!-- 選擇 -->
+                <a href="###" class="btn delate" @click="cancel_unit(key)">
+                  刪除
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td :colspan="columns_aj_add.length + column_additional_length"></td>
+              <td class="text-right">總計</td>
+              <td class="text-right" v-text=total_uints></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <div id="skill_price">
+    <section id="use_function_top-153" class="{$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}">
+      <div class="edit_form">
+        <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 450px; width: auto;">
+          <thead class="edit_table_thead">
+            <tr class="edit_table tr">
+              <th style="width: 90px">工種名稱</th>
+              <th style="width: 150px" class="text-right">請款金額(hr)</th>
+              <th style="width: 150px" class="text-right">加班請款金額(hr)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item,key) in skills">
+              <td v-text="item.name"></td>
+              <td>
+                <input type="hidden" v-model="item.id" :name="'units3['+key+'][user_skill_id]'">
+                <input type="hidden" v-model="item.crm_contract_user_skill_id" :name="'units3['+key+'][crm_contract_user_skill_id]'">
+                <input type="number" class="text-right" v-model="item.hour_price" :name="'units3['+key+'][hour_price]'">
+              </td>
+              <td><input type="number" class="text-right" v-model="item.hour_price_over" :name="'units3['+key+'][hour_price_over]'"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="text-right" style="font-size:1rem">p.s. {$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}</div>
+
+<div class="d-flex justify-content-center mb-3">
+  <input type="submit" id="sub_contract" class="btn addbtn pl-4 pr-4"/>
+</div>
+
+<script type="text/javascript">
+  var column_additional_length = Number("{$system_parameter['商品售價']|compare_return='', 1, 3}");
+  // 提供服務
+  var contract_uints_data = {
+    columns: columns,
+    columns_aj_add: columns_aj_add,
+    column_additional_length: column_additional_length,
+    units: [],
+    units_del: [],
+
+    searchKeyword:"",
+
+    countOfPage: 0,
+    currentPage: 1,
+    totalPage: 1,
+    pages: [],
+    p_prev: "",
+    p_next: "",
+
+    total_uints: 0,
+  };
+  var contract_uintsVM = new Vue({
+    el: '#use_function_top-121',
+    data: contract_uints_data,
+    computed: {
+    },
+    methods: {
+      open_modal: function(){
+        $('#contract_units_modal_btn').click();
+      },
+      count_price: function(index){
+        if(this.units[index]['sale_price']){
+          price = this.units[index]['sale_price'] * this.units[index]['num'];
+          this.units[index]['total'] = price;
+          this.units[index]['total_dis'] = price;
+        }
+        this.count_total_uints();
+      },
+      cancel_unit: function(index){
+        if(this.units[index]['id']){
+          this.units_del.push(this.units[index]['id']);
+        }
+        this.units.splice(index, 1);
+        this.count_total_uints();
+      },
+      count_total_uints: function(){
+        this.total_uints = 0;
+        for (var i = 0; i < this.units.length; i++) {
+          this.total_uints += Number(this.units[i]['total_dis']);
+        }
+      },
+    },
+  });
+  // 載入資料
+  function get_crm_contract_unit(){
+    contract_uintsVM.units = [];
+    $.ajax({
+      method:'post',
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/get_crm_contract_unit_ajax', ['pid'=>$crm_contract['id']])}",
+      data:{
+        cond: {
+          currentPage: contract_uintsVM.currentPage,
+          searchKeyword: contract_uintsVM.searchKeyword,
+        },
+      },
+      success:function(res){
+        // console.log(res)
+        contract_uintsVM.units=res.cat_units;
+
+        contract_uintsVM.count_total_uints();
+      }
+    });
+  }
+  get_crm_contract_unit();
+</script>
+
+<script type="text/javascript">
+  // 人力請款
+  var skill_price_data = {
+    skills: [],
+  };
+  var skill_price_VM = new Vue({
+    el: '#use_function_top-153',
+    data: skill_price_data,
+    computed: {
+    },
+    methods: {
+    },
+  });
+  // 載入資料
+  function get_user_skill(){
+    skill_price_VM.skills = [];
+    $.ajax({
+      method:'get',
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/get_user_skill', ['pid'=>$crm_contract['id']])}",
+      data:{
+      },
+      success:function(res){
+        // console.log(res)
+        skill_price_VM.skills = res;
+      }
+    });
+  }
+  get_user_skill();
+</script>
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script>
+  // 初始化文字編輯器
+  var editor;
+  editor = KindEditor.create('#note', {
+    afterBlur: function(){this.sync();},
+    langType : 'zh_TW',
+    items:[
+      'source', '|',
+      'undo', 'redo', '|', 'preview', 'cut', 'copy', 'paste','plainpaste', 'wordpaste', '|',
+      'justifyleft', 'justifycenter', 'justifyright','justifyfull', 'link', 'unlink', 'selectall', '|',
+      'fontname', 'fontsize', '|',
+      'forecolor','hilitecolor', 'bold', 'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|',
+      'hr',  '|',
+      'fullscreen', '|',
+      'about'
+  ],
+    width:'100%',
+    height:'300%',
+    resizeType:0
+  });
+
+  // 編輯時自動填資料
+  if("{$_GET['pid']}" !=''){
+    $(".paymenttype").val("{$crm_contract['paymenttype']}");
+    // $("#paymenttype").val("{$crm_contract['paymenttype']}");
+    $("#contracttime").val("{$crm_contract['contracttime']}");
+    $("#invoice").val("{$crm_contract['invoice']}");
+    $("#h_paymenttype").val("{$content['h_paymenttype']}");
+    $("#d_paymenttype").val("{$content['d_paymenttype']}");
+    $("#w_paymenttype").val("{$content['w_paymenttype']}");
+    $("#date").val("{$content['date']|date='Y-m-d', ###}");
+  }
+
+  $(function() {
+    index_active = 0;
+    if('{$use_function_top|in_array=121, ###}'==1){
+      index_active = 0;
+    }else if('{$use_function_top|in_array=153, ###}'==1 || '{$use_function_top|in_array=148, ###}'==1){
+      index_active = 1;
+    }
+    $("#contract_uints").tabs({ active: index_active });
+  });
+
+  /*<if condition="in_array(121, $use_function_top)">*/
+    $("#sub_contract").on("click",function(e){
+      allmoney = parseFloat( $('input[name="allmoney"]').val() );
+      if(allmoney != contract_uintsVM.total_uints){
+        alert("{$system_parameter['合約']}金額與執行項目金額不相等，請修改後再提交");
+        e.preventDefault();
+      }
+    });
+  /*</if>*/
+</script>

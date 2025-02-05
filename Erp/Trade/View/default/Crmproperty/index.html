@@ -1,0 +1,362 @@
+<include file="Public:header2"/>
+<head>
+    <style type="text/css">
+        .overflow_area{
+            overflow-y:auto;
+            min-height: 63vh;
+            max-height: calc(100vh - 358px);
+        }
+        @media only screen and (max-width: 991px){
+            .overflow_area{
+                overflow-y:auto;
+                max-height: calc(100vh - 388px);
+            }
+        }
+    </style>
+</head>
+
+<section class="p-4" id="crm_property">
+	<div class="container mw1920">
+
+		<a class="btn cursor_pointer text-white addbtn mb-2" @click="newBlock"><i class="fas fa-plus"></i> 新增特性</a>
+        
+        <div class="w-100 overflow_area">
+			<table class="rwd_table table apply-table">
+			    <thead>
+			        <tr>
+			            <th>
+			            	<input type="checkbox" style="cursor:pointer;" v-model="select_all" @click="selectAll()">
+			            	編號
+			           	</th>
+			            <th>狀態</th>
+			            <th>標題</th>
+			            <th>資料類型</th>
+			            <!-- <th>說明</th> -->
+			            <th>排序</th>
+			            <th>操作</th>
+			        </tr>
+			    </thead>
+			    <tbody>
+			        <tr v-for="(vo, index) in feilds">
+			            <td data-th="編號">
+			            	<input type="checkbox" v-model="vo.select">
+                    		<span v-text="index + 1"></span>
+			            </td>
+			            <td data-th="狀態">
+			            	<select v-model="vo.online" :class="[vo.online== 0 ? 'text-danger' : 'text-success']" @change="save_one(index)">
+		                        <option class="text-success" value="1">啟用</option>
+		                        <option class="text-danger" value="0">停用</option>
+		                    </select>
+			            </td>
+			            <td data-th="標題">
+			            	<a href="###" @click="openBox(index)" v-text="vo.title"></a>
+                            <span class="text-danger" v-if="vo.required==1">*</span>
+                    		<span class="" v-if="vo.special==1">(套用篩選)</span>
+			            </td>
+			            <td data-th="資料類型" v-html="data_types[vo.type]"></td>
+			            <!-- <td data-th="說明" v-html="vo.discription"></td> -->
+			            <td data-th="排序"><input value="number" v-model="vo.order_id" @change="save_one(index)"></td>
+			            <td >
+			            	<button type="button" class="btn delate d-inline" @click="del(vo.id)">
+                        		<i aria-hidden="true" class="far fa-trash-alt"></i>
+                        	</button>
+			            </td>
+			        </tr>
+			    </tbody>
+			</table>
+        </div>
+        
+        <span class="d-inline-flex align-items-center">
+            批次操作：
+            <a class="btn mr-2  cursor_pointer text-white btn-success" @click="multiOnline()">啟用</a>
+            <a class="btn mr-2  cursor_pointer text-white btn-secondary" @click="multiOffline()">停用</a>
+            <a class="btn mr-2  cursor_pointer text-white btn-danger" @click="multiDelete()">刪除</a>
+        </span>
+
+	</div>
+
+	<a id="aeModel_btn" data-toggle="modal" data-target="#aeModel"></a>
+	<div class="modal fade" id="aeModel" tabindex="-1" role="dialog"
+        aria-labelledby="aeModelTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered align-items-start" role="document">
+            <div class="modal-content">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="position: absolute;top: 15px;right: 15px;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aeModelTitle">新增/編輯欄位</h5>
+                </div>
+                <div class="modal-body">
+                	<p>資料類型：
+		                <select v-model="aeModel.type" @change="change_type">
+		                    <option v-for="key in Object.keys(data_types)" :value="key" v-text="data_types[key]"></option>
+		                </select>
+		            </p>
+		            <p>
+		                標題：<input type="text" v-model="aeModel.title"/>
+		                &nbsp;&nbsp;
+		                <!-- 必填：<input type="checkbox" v-model="aeModel.required" true-value="1" false-value="0"/>&nbsp;&nbsp;&nbsp;&nbsp; -->
+		                套用篩選：<input type="checkbox" v-model="aeModel.special" true-value="1" false-value="0"/>
+		            </p>
+		            <p>
+		                排序：<input type="number" v-model="aeModel.order_id"/>
+		                &nbsp;&nbsp;
+		                狀態：
+		                <select v-model="aeModel.online" :class="[aeModel.online== 0 ? 'text-danger' : 'text-success']">
+		                    <option class="text-success" value="1">啟用</option>
+		                    <option class="text-danger" value="0">停用</option>
+		                </select>
+		            </p>
+		            <div v-if="['radio', 'radio_box', 'checkbox', 'checkbox_box', 'select'].indexOf(aeModel.type) != -1">
+		                <table style="width: 100%">
+		                    <tr>
+		                        <td>選項內容</td>
+		                        <td>操作
+		                            <span class="btn btn-primary cursor_pointer" @click="add_option()" style="float:right">
+		                            	<i class="fas fa-plus-circle"></i>
+		                            </span>
+		                        </td>
+		                    </tr>
+		                    <tr v-for="(item, index) in aeModel.options">
+		                        <td>
+		                            <input type="text" v-model="aeModel.options[index]">
+		                        </td>
+		                        <td>
+		                        	<button type="button" class="btn delate" @click="del_option(index)">
+		                        		<i aria-hidden="true" class="far fa-trash-alt"></i>
+		                        	</button>
+		                        </td>
+		                    </tr>
+		                </table>
+		                <br>
+		            </div>
+		            <!-- <div v-if="['text', 'textarea', 'number', 'file'].indexOf(aeModel.type) != -1">
+		                限定格式：<input type="text" v-model="aeModel.limit"/ style="width: 100%;"><br>
+		                <ul style="padding-left: 20px;">
+		                    <li>文字類型資料請輸入「正規表達式」，可參考<a href="https://ihateregex.io" target="_blank">此網站</a>，用於檢查輸入內容是否符合格式</li>
+		                    <li>檔案資料則請參考<a href="https://blog.gtwang.org/web-development/html-input-accept-attribute-tutorial/" target="_blank">此網頁的「指定副檔名」格式</a>來輸入，用於設定允許上傳的檔案類型</li>
+		                </ul>
+		            </div> -->
+		            <!-- <p>
+		                欄位說明：<br>
+		                <textarea id="editor"></textarea>
+		                <input type="hidden" v-model="aeModel.discription"/>
+		            </p> -->
+        			
+        			<a class="btn btn-success text-white w-100" @click="ajaxSubmit">儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<include file="Public:footer" />
+
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script type="text/javascript">
+    /*初始化編輯器*/
+    var editor;
+    KindEditor.ready(function(K) {
+        editor = K.create('#editor', {
+            langType : 'zh_TW',
+            items:['source', '|', 'hr','|','emoticons','|','forecolor','bold', 'italic', 'underline','link', 'unlink',],
+            width:'100%',
+            height:'200px',
+            resizeType:0
+        });
+    });
+</script>
+<script type="text/javascript">
+	var crm_property_data = {
+		select_all: false,
+        search: {searchOnline:'{$searchOnline}', searchKey: '{$searchKey}'},
+        aeModel: { 
+        	id: 0, title: "", type: "text", 
+            required: 0, special: 0, limit: "", discription: "", 
+            options:[], order_id: 0, online: 1,
+        },
+        data_types:{
+            text:"單行文字",
+            textarea: "多行文字",
+            radio: "單選題",
+            // radio_box: "單選題_開視窗",
+            checkbox: "多選題",
+            // checkbox_box: "多選題_開視窗",
+            select: "下拉選單",
+            number: "數字題",
+            file: "檔案上傳",
+            date: "日期",
+        },
+        feilds: [],
+	};
+	var crm_propertyVM = new Vue({
+		el: '#crm_property',
+		data: crm_property_data,
+		computed: {
+		},
+		methods: {
+			/*取得已新增的欄位資料*/
+			get_feilds: function(){
+				self = this;
+				$.ajax({
+                    type: 'GET',
+                    dataType:'json',
+                    url: "{:u('Crmproperty/get_feilds')}",
+                    success:function(res){
+                        self.feilds = res;
+                        self.select_all = false;
+                    },
+                });
+			},
+
+            /*切換資料類型*/
+            change_type: function(){
+                if(['text', 'textarea', 'number', 'file'].indexOf(this.aeModel.type) == -1){ /*切換至不須限定格式的類型*/
+                    this.aeModel.limit = "";
+                }
+            },
+            /*開啟新增畫面*/
+            newBlock: function (){
+                this.aeModel.id = 0;
+                this.aeModel.title = "";
+                this.aeModel.type = "text";
+                this.aeModel.required = 0;
+                this.aeModel.special = 0;
+                this.aeModel.limit = "";
+                this.aeModel.discription = "";
+                this.aeModel.options = [];
+                this.aeModel.order_id = 0;
+                this.aeModel.online = 1;
+                if(editor){ editor.html(""); }
+                $('#aeModel_btn').click();
+            },
+            /*開啟編輯畫面*/
+            openBox: function(index){
+                self = this;
+                self.aeModel = Object.assign({}, self.feilds[index]);
+                console.log(self.aeModel)
+                if(editor){ editor.html(self.aeModel.discription); }
+                $('#aeModel_btn').click();
+            },
+            /*新增、編輯欄位*/
+            ajaxSubmit: function(){
+                self = this;
+                if(editor){ self.aeModel.discription = editor.html(); }
+                self.ajax_save_data(self.aeModel);
+            },
+            /*儲存單個欄位*/
+            save_one: function(index){
+                self = this;
+                self.ajax_save_data(self.feilds[index]);
+            },
+            /*送出儲存資料請求*/
+            ajax_save_data: function(post_data, reload=true){
+            	self = this;
+
+                clear_option = [];
+                for (var i = 0; i < post_data.options.length; i++) {
+                    if( $.trim(post_data.options[i])!="" ){
+                        clear_option.push(post_data.options[i]);
+                    }
+                }
+                post_data.options = clear_option;
+
+                $.ajax({
+                    type:'POST',
+                    data: post_data,
+                    dataType:'json',
+                    url:"{:u('Crmproperty/fields_set_save')}",
+                    success:function(res){
+                    	console.log(res);
+
+                        if(res.status==1){
+                            bg_class = "bg-success";
+                        }else{
+                            bg_class = "bg-danger";
+                        }
+                        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                        if(res.status=='1' && reload){
+                            self.get_feilds();
+                            $('#aeModel button[aria-label="Close"]').click();
+                        }
+                    }
+                });
+            },
+
+            /*刪除欄位*/
+            del: function(id){
+            	self = this;
+                $.ajax({
+                    type:'POST',
+                    data: {id: id},
+                    dataType:'json',
+                    url:"{:u('Crmproperty/fields_set_delete')}",
+                    success:function(res){
+                        if(res.status==1){
+                            bg_class = "bg-success";
+                        }else{
+                            bg_class = "bg-danger";
+                        }
+                        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                        if(res.status=='1'){
+                            self.get_feilds();
+                        }
+                    }
+                });
+            },
+            
+            /*列表操作*/
+                selectAll: function(){
+                    self = this;
+                    var select_type = self.select_all ? true : false;
+                    for (var i = 0; i < self.feilds.length; i++) {
+                        self.feilds[i]['select'] = select_type;
+                    }
+                },
+                multiOnline: function(){
+                    self = this;
+                    for (var i = 0; i < self.feilds.length; i++) {
+                        if(self.feilds[i]['select']){
+                            self.feilds[i]['online'] = 1;
+                            self.ajax_save_data(self.feilds[i], false);
+                        }
+                    }
+                    self.get_feilds();
+                },
+                multiOffline: function(){
+                    self = this;
+                    for (var i = 0; i < self.feilds.length; i++) {
+                        if(self.feilds[i]['select']){
+                            self.feilds[i]['online'] = 0;
+                            self.ajax_save_data(self.feilds[i], false);
+                        }
+                    }
+                    self.get_feilds();
+                },
+                multiDelete: function(){
+                    if(!confirm('確認批次刪除？')){return}
+                    self = this;
+                    for (var i = 0; i < self.feilds.length; i++) {
+                        if(self.feilds[i]['select']){
+                            self.del(self.feilds[i]['id']);
+                        }
+                    }
+                    self.get_feilds();
+                },
+
+            /*添加選項*/
+            add_option: function(){
+                self = this;
+                self.aeModel.options.push("");
+            },
+            /*刪除選項*/
+            del_option: function(index){
+                self = this;
+                self.aeModel.options.splice(index, 1);
+            },
+        },
+	});
+	crm_propertyVM.get_feilds();
+</script>

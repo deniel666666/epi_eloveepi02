@@ -1,0 +1,610 @@
+<include file="Public:header2" />
+
+  <!-- Start document_template -->
+  <section class="main document">
+    <div class="below">
+
+      <!-- 共用階層列表 -->
+      <include file="Km:leftlist" />
+      <!-- END 共用階層列表 -->
+
+      <div class="right">
+        <!-- ///////////////////////// 編輯頁 /////////////////////////// -->
+        <form action="{:U('Km/addfile', ['type'=>$fileCode])}" method="post" enctype="multipart/form-data" id="writefile">
+          <div class="document_edit">
+            <h3 id="edit_section_title" class="edit_section_title"><i class="fas fa-pen"></i> 撰寫文章/階層</h3>
+            <ul class="main_edit">
+              <li class="article-category">
+                <div class="item d-flex flex-wrap mb-2">
+                  <span class="small">文章/階層位置：</span>
+                  <select id="parent_id" class="mr-1" name="parent_id">
+                    <option value="0">頂層</option>
+                    <foreach name="sort" key="k_level1" item="v_level1">
+                      <if condition="$v_level1['file_layer'] eq 1">
+                        <option value="{$v_level1['id']}">{$v_level1['title']}</option>
+                      </if>
+                      <foreach name="v_level1['sub_file']" key="k_level2" item="v_level2">
+                        <if condition="$v_level2['file_layer'] eq 1">
+                          <option value="{$v_level2['id']}">___{$v_level2['title']}</option>
+                        </if>
+                      </foreach>
+                    </foreach>
+                  </select>
+                  <div>
+                    <label class="small">排序：</label>
+                    <if condition="$file['order_id']">
+                      <input type="text" name="order_id" class="article-order" value="{$file['order_id']}">
+                    <else />
+                      <input type="text" name="order_id" class="article-order" value="0">
+                    </if>
+                  </div>
+                </div>
+                
+                <div class="item">
+                  <span class="small">請選擇：</span>
+                  <input type="radio" name="file_layer" value="0" id="file_layer_file" onclick="$('.article_area').show()"
+                    checked>
+                  <label for="file_layer_file">文章</label>
+                  <input type="radio" name="file_layer" value="1" id="file_layer_layer" onclick="$('.article_area').hide()">
+                  <label for="file_layer_layer">階層</label>
+                </div>
+                <div class="item">
+                  <label class="small">文章/階層標題：</label>
+                  <input class="title_input" name="title" type="text" value="{$file['title']}">
+                  <input name="edit_code" type="hidden" value="{$edit_code}">
+                </div>
+                <div class="item doc_num_in">
+                  <!--<label for="">文號：</label>-->
+                  <input type="hidden" name="date" value="{$date}" />
+                  <input type="hidden" name="num" value="{$num}" />
+                  <input type="hidden" name="number" value="{$number}" />
+                  <!-- 輸入英文 -->
+                  <!--<input class="title_input" name="number" type="text" value="{$file['number']}">-->
+                  <!-- boss說 自動產生 -->
+                  <span>
+                    <label class="small">文號：</label>{$number}{$date}{$num|str_pad=3,"0",STR_PAD_LEFT}
+                  </span>
+                </div>
+                
+              </li>
+            
+            
+              <li>
+                <label class="text_edit_lab small">文章/階層內容：</label>
+                <div class="text_edit_part">
+                  <input type="hidden" name="note" id="note" value="{$file['note']|htmlspecialchars}">
+                </div>
+              </li>
+              <li class="upload_file article_area mt-2">
+                <if condition="$_GET['id'] neq '0'">
+                  <label class="small">已上傳的附件：</label>
+                  <if condition="$file['file'] neq ''">
+                    <foreach name="file['file']" item="vo" key="key">
+                      <input class="delete_file{$key}" name=delete_file[{$key}] value="0" type="hidden">
+                      <div style="display: flex;align-items: center; margin-bottom: 10px">
+                        {$vo}
+                        <if condition="$acc[$right_hid] eq '1'">
+                          &nbsp;&nbsp;<span class="del_btn" onclick="delete_file(this, {$key})"><i
+                              class="far fa-trash-alt"></i></span>
+                        </if>
+                      </div>
+                    </foreach>
+                  <else />
+                    <label>無</label><br>
+                  </if>
+                </if>
+                <label class="small">附件上傳：</label><span class="upload"><i class="fas fa-plus"></i></span>
+                <div class="upload_btn">
+                  <div class="file_select">
+                    <div class="file_select_block">
+                      <input type='file' name='file[]' /><span class="del_btn" onclick="cancel_file(this)"><i
+                          class="far fa-trash-alt"></i></span>
+                      <br>
+                    </div>
+                  </div>
+                  
+                  <!-- <img  style="height:40px;" src="/Public/qhand/images/add.png"> -->
+                </div>
+                <!-- 嶧德~檔案名稱直接加在下面這裡吧不用怕長長的 -->
+                <!--<ul style="border-bottom: 0px;margin: 0px;padding-bottom: 0px;">
+                  <li>檔案名稱</li>
+                </ul>-->
+              </li>
+            </ul>
+            <h3 class="edit_section_title"><i class="fas fa-file-alt"></i> 文章/階層設定</h3>
+            <ul class="auth_edit">
+              <li class="col_power">
+                <label class="edit_section_subtitle">閱覽權限：</label>
+                <div class="power_group">
+                  <if condition="$page_title eq '我的文件'"> <!-- 我的文件 -->
+                    <div class="people">
+                      <input id="personal" name="access_type" class="choose_group" type="radio" value="own" checked />
+                      <label for="personal">僅個人</label>
+                    </div>
+                  </if>
+
+                  <div class="people">
+                    <input id="general" name="access_type" class="choose_group" type="radio" value="all" />
+                    <label for="general">全部人員</label>
+                  </div>
+                  <div class="people">
+                    <input id="special" name="access_type" class="choose_group" type="radio" value="on">
+                    <label for="special">指定人員</label>
+
+                  </div>
+                  <!-- 閱覽權限展開 -->
+                  <div class="people_showbox">
+                    <div class="nav_group">
+                      <ul>
+                        <foreach name="apart" key="key" item="vo">
+                          <li>
+                            <input class="select_click apart_{$vo.id}" id="click_{$vo.id}" name="apart[]"
+                              type="checkbox" value="{$vo.id}">
+                            <a class="tablinks this_dep tab{$key}" href="javascript:void(0)"
+                              onclick="openQ(event, 'Q_dep{$vo.id}');">{$vo.name}</a>
+                          </li>
+                        </foreach>
+                      </ul>
+                    </div>
+
+                    <foreach name="apart" item="vo">
+                      <div id="Q_dep{$vo.id}" class="list_group Q_dep">
+                        <foreach name="user[$vo['id']]" item="v">
+                          <div class="one_people">
+                            <input class="select_{$vo.id} select_check access_{$v['id']}" id="{$v['id']}"
+                              type="checkbox" name="name[]" value="{$v.id}">
+                            <label for="{$v['id']}">{$v.name}</label>
+                          </div>
+                        </foreach>
+                      </div>
+                    </foreach>
+                  </div>
+                </div>
+              </li>
+              <li class="col_showtime">
+                <label class="edit_section_subtitle">發佈時機：</label>
+                <div class="opt_group">
+                  <div class="now">
+                    <input id="now" type="radio" class="showtime" name="showtime" value="now"><label for="now">立即發佈</label>
+                  </div>
+                  <div class="chos_time">
+                    <input id="chos_time" type="radio" class="showtime" name="showtime" value="chos_time"><label for="chos_time">指定日期</label>
+                    <div class="during" style="display:none">
+                      <div class="bar d-inline-block">
+                        <if condition="$file['showtime'] eq 'chos_time'">
+                          <input class="time_set start_time" id="start_time" type="text" name="start_time" value="{$file['start_time']|date='Y-m-d H:i',###}"/>~
+                        <else />
+                          <input class="time_set start_time" type="text" name="start_time"/>~
+                        </if>
+                      </div>
+                      <div class="d-inline-block">
+                        <if condition="$_GET['id'] eq '0'">
+                          <input type="radio" class="time_length" id="forever" name="time_length" value="1" checked><label for="forever">永久</label>
+                          <input type="radio" class="time_length" id="limit" name="time_length" value="2"><label for="limit">自訂結束時間</label>
+                        <else />
+                          <input type="radio" class="time_length" id="forever" name="time_length" value="1" <if condition="$file['end_time'] eq '9999999999'">checked</if>><label for="forever">永久</label>
+                          <input type="radio" class="time_length" id="limit" name="time_length" value="2" <if
+                            condition="$file['end_time'] neq '9999999999'">checked</if>><label for="limit">自訂結束時間</label>
+                        </if>
+                        <div class="bar_end" style="display:none">
+                          <if condition="$file['showtime'] eq 'chos_time'  && $file['end_time'] neq '9999999999'">
+                            <input class="time_set end_time" id="end_time" type="text" name="end_time" value="{$file['end_time']|date='Y-m-d h:i A',###}"/>
+                          <else />
+                            <input class="time_set end_time" type="text" name="end_time"/>
+                          </if>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="stop">
+                    <input id="stop" type="radio" class="showtime" name="showtime" value="stop"><label for="stop">暫停發佈</label>
+                  </div>
+                </div>
+              </li>
+              
+            </ul>
+            
+          </div>
+          <if condition="$_GET['id'] neq '0'">
+            <h3 class="edit_section_title"><i class="fas fa-info"></i> 文章/階層資訊</h3>
+            <ul class="more_info">
+              <li class="item">
+                <div class="mod_people">
+                  <p>建立者：<span class="human">{$file['name']}</span>
+                    <span class="time">{$file['date']|date="Y-m-d",###}</span>
+                  </p>
+                  <if condition="$file['update_person'] neq ''">
+                    <p>最近修改：<span class="human">{$file['update_person'][$count]}</span><span
+                        class="time">{$file['update_time'][$count]|date="Y-m-d",###}</span></p>
+                    <else />
+                    <p>最近修改：無</p>
+                  </if>
+                  
+                </div>
+                <a class="see_hol fancy_box">
+                  <span class="display" style="cursor: pointer;">顯示歷程記錄</span>
+                  <span class="undisplay" style="display:none;cursor: pointer;">隱藏歷程記錄</span>
+                </a>
+              </li>
+              <li class="item">
+                <div class="data_group">
+                  <div class="item">公告人數：<span>{$read_num['all']}人</span></div>
+                  <div class="item">已讀人數：<span>{$read_num['read']}人</span></div>
+                  <div class="item">未讀人數：<span>{$read_num['unread']}人</span></div>
+                  <div class="item">讀取率：<span>{$read_num['rate']}%</span></div>
+                </div>
+              </li>
+            
+            </ul>
+            
+            <div id="full_history" style="display: none;">
+              <table class="table full_history-table">
+                <thead>
+                  <tr>
+                    <th>人員</th>
+                    <th>日期</th>
+                    <th>動作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{$file.name}</td>
+                    <td>{$file.date|date="Y-m-d",###}</td>
+                    <td>建立</td>
+                  </tr>
+                  <foreach name="file.update_person" key="key" item="vo">
+                    <tr>
+                      <td>{$vo}</td>
+                      <td>{$file['update_time'][$key]|date="Y-m-d",###}</td>
+                      <td>修改</td>
+                    </tr>
+                  </foreach>
+                </tbody>
+                
+              </table>
+            </div>
+            <input type="hidden" name="id" value="{$_GET['id']}">
+          </if>
+          <input class="save_article btn addbtn" type="button" style="width:80px" value="儲存"
+            onclick="form_submit()">
+        </form>
+        <!-- ///////////////////// END-編輯頁 /////////////////////////// -->
+      </div>
+      <div class="clearfix"></div>
+    </div>
+  </section><div class="test"></div>
+<include file="Public:footer" />
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script src="__PUBLIC__/js/jquery.quickpaginate.js"></script>
+<link href="__PUBLIC__/css/jquery-ui-timepicker-addon.css" rel="stylesheet"></link>
+<script src="__PUBLIC__/js/ui/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js"></script>
+<script>
+  // 離開頁面時是否檢確認離開
+  var check_renew = true;
+
+  $(document).ready(function(){
+    if("{$file['end_time']}" != '9999999999'){
+      $(".bar_end").css("display","inline");
+    }
+    $.ajax({
+      method:'post',
+      data:{},
+      dataType:'text',
+      url:"{:U('Km/aj_note', ['type'=>$fileCode])}",
+      success:function(res){
+        if(res.trim() != ''){
+          editor.html(res);
+        }
+      }
+    });
+
+    window.onbeforeunload=function(e){
+      if(check_renew){
+        var e=window.event||e;
+        e.returnValue=("確定離開當前頁面嗎？");
+      }
+    }
+
+    if("{$_GET['id']}" != "0"){ // 編輯文章
+
+      // 自動勾選文章/階層
+      var file_layer = "{$file['file_layer']}"
+      if(file_layer=='1'){
+        $('#file_layer_layer').click();
+      }
+
+      //修改路徑
+      $('#mainPath').html(`
+        <span>></span><a class="Km_auto_no" href="{:U('Km/index', ['type'=>$fileCode])}">文章目錄</a>
+      `)
+      $('#secondPath').html(`
+        <span>></span><a class="pathBtn" href="{:U('Km/read', ['type'=>$fileCode])}?id='.$_GET['id'])}">{$file['title']}</a>
+      `)
+      $('#thirdPath').html(`
+        <span>></span>編輯
+      `)
+    }else{ // 新增文章
+      if("{$_GET['level2']}" != ""){ // 新增在第二階層下
+        // 不允許新增階層
+        $('#file_layer_layer, label[for="file_layer_layer"]').hide()
+      }
+
+      //修改路徑
+      $('#mainPath').html(`
+        <span>></span><a class="Km_auto_no" href="{:U('Km/index', ['type'=>$fileCode])}">文章目錄</a>
+      `)
+      if("{$_GET['level2']}" == ""){
+        $('#secondPath').html(`
+          <span>></span><a class="pathBtn" href="{:U('Km/read', ['type'=>$fileCode])}?id='.$_GET['level1_file'])}">{$_GET['level1']}</a>
+        `)
+      }else{
+        $('#secondPath').html(`
+          <span>></span><a class="pathBtn" href="{:U('Km/read', ['type'=>$fileCode])}?id='.$_GET['level2'])}">{$_GET['level2_title']}</a>
+        `)
+      }
+      $('#thirdPath').html(`
+        <span>></span>新增
+      `)
+    }
+
+    //調整狀態按鈕
+    $('.on_btn').show();
+    $('.trash_btn').show();
+    $('.others_btn').show();
+
+    // 自動勾選閱讀權限
+    var pre_share = '{$pre_share}';
+    pre_share = JSON.parse(pre_share);
+    if(pre_share && ("{$_GET['id']}"=="0" || "{$_GET['id']}"=="")){ // 如果有前一次上傳紀錄且是新增文章
+      setTimeout(function(){
+        $('input[name="access_type"][value="'+pre_share.access_type+'"]').click();
+      }, 500);
+      if(pre_share.access_type == "on"){ // 是指定人員
+        if(pre_share.apart){ // 有指定部門
+          for (var i = 0; i < pre_share.apart.length; i++) {
+            console.log('.apart_'+pre_share['apart'][i]);
+            $('.apart_'+pre_share['apart'][i]).attr('checked','checked');
+          }
+          
+        }
+        if(pre_share.access){ // 有指定人員
+          for (var i = 0; i < pre_share.access.length; i++) {
+            console.log('.access_'+pre_share['access'][i]);
+            $('.access_'+pre_share['access'][i]).attr('checked','checked');
+          }
+        }
+      }
+      
+    }
+    
+
+    // 設定父階層
+    var parent_id = '{$parent_id}' ? '{$parent_id}' : '0';
+    $('#parent_id option[value="'+parent_id+'"]').prop('selected', true);
+
+    setTimeout(function(){
+      $("#writefile").validate({
+        rules: {
+          title: {
+            required: true
+          }
+        },
+        messages: {
+          title: {
+            required: "<a style='color:red'>標題不得為空</a>"
+          }
+        }
+      });
+      var editor;
+          editor = KindEditor.create('#note', {
+              afterBlur: function(){this.sync();},
+              langType : 'zh_TW',
+              items:[
+              'source', '|',
+              'undo', 'redo', '|', 'preview', 'cut', 'copy', 'paste','plainpaste', 'wordpaste', '|',
+              'justifyleft', 'justifycenter', 'justifyright','justifyfull', 'link', 'unlink', 'selectall', '|',
+              'fontname', 'fontsize', '|',
+              'forecolor','hilitecolor', 'bold', 'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|',
+              'hr',  '|',
+              'fullscreen', '|',
+              'about'
+          ],
+              width:'100%',
+              height:'300%',
+              resizeType:0
+          });
+    }, 500);
+  });
+  function form_submit(){
+    var form = $('#writefile')[0];
+        var formData = new FormData(form);
+    var access_type=document.getElementsByName("access_type");
+    var showtime=document.getElementsByName("showtime");
+    var time_length=document.getElementsByName("time_length");
+    var access ='';
+    for(var i = 0;i < access_type.length;i++){
+      if(access_type[i].checked)
+      {
+        access = access_type[i].value;
+      }
+    }
+    for(var i = 0;i < showtime.length;i++){
+      if(showtime[i].checked)
+      {
+        show = showtime[i].value;
+      }
+    }
+    for(var i = 0;i < time_length.length;i++){
+      if(time_length[i].checked)
+      {
+        length = time_length[i].value;
+      }
+    }
+    if($('input[name="title"]').val() == ''){
+      alert("標題不可為空");
+      return;
+    }
+    if(!access){
+      alert("請選擇閱讀權限");
+      return;
+    }
+    if(access == 'on'){
+      read_access = 0;
+      $(".select_click").each(function(){
+        if($(this).prop('checked') == true){
+          read_access = 1;
+        }
+      });
+      $(".select_check").each(function(){
+        if($(this).prop('checked') == true){
+          read_access = 1;
+        }
+      });
+      if(read_access != 1){
+        alert("閱讀權限不可為空");
+        return;
+      }
+    }
+    if(show == 'chos_time'){
+      if($(".start_time").val() == ''){
+        alert("指定日期不可為空");
+        return;
+      }
+      if(length == '2'){
+        if($(".end_time").val() == ''){
+          alert("指定日期不可為空");
+          return;
+        }
+      }
+    }
+
+    // 新增/編輯文章
+    $.ajax({
+      type: "POST",
+      dataType:'json',
+      url: "{:U('Km/addfile', ['type'=>$fileCode])}",
+      processData: false,
+      contentType : false,
+      data: formData,
+      beforeSend: function(XMLHttpRequest){
+        Vue.toasted.show('上傳中，請稍候', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+        $('#body_block').css('display','flex');
+      },
+      complete: function(XMLHttpRequest,textStatus){
+        $('#body_block').css('display','none');
+      },
+      success: function(data) {
+        if(data.status==1){
+          check_renew = false;
+          location.href = data.url;
+        }else{
+          Vue.toasted.show(data.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+        }
+      },
+  });
+  };
+  $(".choose_group").click(function(){
+    var check = document.getElementById("special").checked;
+    if(check == true){
+      $(".people_showbox").animate({
+        opacity: 1
+      },500);
+      $(".people_showbox").css("display","block");
+      $(".tab0").click();
+    }
+    else{
+      $(".people_showbox").animate({
+        opacity: 0
+      },500);
+      $(".people_showbox").css("display","none");
+    }
+  });
+  function openQ(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("Q_dep");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" this_dep", "");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " this_dep";
+  };
+  $(".display").click(function(){
+    $(".display").css("display","none");
+    $(".undisplay").css("display","block");
+    $("#full_history").css("display","block");
+  });
+  $(".undisplay").click(function(){
+    $(".display").css("display","block");
+    $(".undisplay").css("display","none");
+    $("#full_history").css("display","none");
+  });
+  $(".upload").click(function(){
+    $(".file_select").append('\
+      <div class="file_select_block">\
+        <input type="file" name="file[]" /><span class="del_btn" onclick="cancel_file(this)"><i	class="far fa-trash-alt"></i></span>\
+        <br>\
+      </div>\
+    ');
+  });
+  function cancel_file(item){
+    $(item).parent().remove();
+  }
+  function delete_file(item, index){
+    $("input.delete_file"+index).val(1);
+    $(item).parent().remove();
+  }
+  $(".showtime").click(function(){
+    if($(this).val() == 'chos_time')
+      $(".during").css("display","block");
+    else
+      $(".during").css("display","none");
+  });
+  $(".time_length").click(function(){
+    if($(this).val() == '2')
+      $(".bar_end").css("display","inline");
+    else
+      $(".bar_end").css("display","none");
+  });
+  $(".time_set").datetimepicker({
+    firstDay : 0,
+    defaultDate : ""
+  });
+  $(".time_set").datetimepicker( "option", "dateFormat",'yy-mm-dd');
+  $(".time_set").datetimepicker( "option", "timeFormat",'HH:mm');
+  $("#start_time").datetimepicker( "setDate", '{$file['start_time']|date='Y-m-d H:i',###}');
+  $("#end_time").datetimepicker( "setDate", '{$file['end_time']|date='Y-m-d H:i',###}');
+  
+  var showtime = <?php echo $showtime?>;
+  if(showtime == '1')
+    $("#now").click();
+  else if(showtime == '2')
+    $("#chos_time").click();
+  else if(showtime == '3')
+    $("#stop").click();
+  var access_type = {$access_type};
+  if(access_type == '1')
+    $("#personal").click();
+  else if(access_type == '2')
+    $("#general").click();
+  else if(access_type == '3'){
+    access = <?php echo $file['access']?>;
+    apart = <?php echo $file['apart']?>;
+    for(var key in apart){
+      $("#click_"+apart[key]).click();
+    }
+    for(var key in access){
+      $("#"+access[key]).click();
+    }
+    $("#special").click();
+    $("#special").click();
+  }
+</script>
+
+<include file="Km:js" />

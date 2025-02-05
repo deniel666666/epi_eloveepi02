@@ -1,0 +1,78 @@
+<include file="Public:header2" />
+
+<section class="main  document">
+	<div class="below">
+
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<div class="document_edit">
+				<div class="edit_form" >
+					<table class="table edit_table" style="min-width: auto;" cellpadding="0" cellspacing="0" id="edm-table">
+						<thead class="edit_table_thead">
+							<tr class="edit_table tr ">
+								<th>比對對象</th>
+								<th>排除內容(請以英文逗號分隔字組)</th>
+							</tr>
+						</thead>
+						<tbody>
+							
+							<volist name="replaces" id="vo">
+								<tr>
+									<td>{$vo['title']}</td>
+									<td>
+										<input class="w-100 im_replace" type="text" im_replace_id="{$vo['id']}" value="{$vo['content']}">
+									</td>
+								</tr>
+							</volist>
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+	$("input.im_replace").on("focus", function(){
+        var myin = $(this);
+        im_replace_ori = myin.val();
+
+        myin.on("blur", function(){
+            im_replace_id = myin.attr('im_replace_id');
+            im_replace = myin.val();
+            if(im_replace_ori == im_replace){
+            	myin.off("blur");
+                return;
+            }
+
+            $.ajax({
+                method:'post',
+                data:{ 
+                    id: im_replace_id,
+                    content: im_replace, 
+                },
+                dataType:'json',
+                url:"{:U('Imcrm/do_edit_repeat')}",
+                success:function(res){
+                    if(res.status==1){
+	                    bg_class = "bg-success";
+                    	myin.off("blur");
+	                }else{
+	                    bg_class = "bg-danger";
+	                }
+	                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                }
+            });
+
+        });
+    });
+</script>
+

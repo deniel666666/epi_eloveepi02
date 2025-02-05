@@ -1,0 +1,813 @@
+<include file="Public:header2" />
+
+<section id="right">
+  <div class="container mw1920 p-4" id="schedule_div">
+    <template v-if="schedule">
+      <div class="row mb-2">
+        <div class="col-md-12 col-12">
+          <h4 class="d-flex align-items-center">
+            <span class="mr-2" v-text="schedule.name"></span>
+            <a href="###" data-toggle="modal" data-target="#schedule_main_panel" v-if="has_schedule_right_new">
+              <button type="button" class="btn btn-primary mr-2">
+                <i aria-hidden="true" class="fas fa-edit"></i>
+              </button>
+            </a>
+          </h4>
+        </div>
+        <div class="col-md-6 col-12">
+          地點：
+          <span v-text="schedule.location"></span>
+        </div>
+        <if condition="in_array(18, $use_function_top)">
+          <div class="col-md-6 col-12">
+            走期：
+            <span class="d-inline-block" v-if="schedule.start_time" v-text="schedule.start_time_format.substr(0, 16)"></span>
+            ~
+            <span class="d-inline-block" v-if="schedule.end_time" v-text="schedule.end_time_format.substr(0, 16)"></span>
+          </div>
+          <div class="col-md-6 col-12">
+            事件編號：<span v-text="schedule.evesno"></span>
+          </div>
+        </if>
+        <div class="col-md-6 col-12">
+          {$system_parameter['合約']}編號：<span v-text="schedule.sn"></span>
+        </div>
+        <div class="col-md-6 col-12">
+          {$system_parameter['客戶']}：<span v-text="schedule.show_name"></span>
+        </div>
+        <div class="col-md-6 col-12">
+          審核者：<span v-text="schedule.user_name"></span>
+        </div>
+      </div>
+    </template>
+    <div class="navi1">
+      <div class="menu-sub-btn">
+        <ol>
+          <li class="subbtn" v-if="has_schedule_right_new">
+            <a href="###" class="" @click="open_add(-1)">
+              <i class="fas fa-plus-circle"></i>
+              日程
+            </a>
+          </li>
+        </ol>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center pt-1 pb-1">
+      日期區間:
+      <input class="w100 mr-2" v-model="search_params.date_s" type="date" style="max-width: 120px;"> ~
+      <input class="w100 mr-2" v-model="search_params.date_e" type="date" style="max-width: 120px;">
+      <a href="###" class="btn addbtn mr-2" @click="get_schedule_dates">搜尋</a>
+      <a href="javascript:location.reload()" class="btn btn-light">清除搜尋</a>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table edit_table mb-2" style="min-width: 1160px;">
+        <thead>
+          <tr>
+            <th style="width: 50px;" class="text-right" valign="middle">序號</th>
+            <th style="min-width: 100px;">日期</th>
+            <th style="min-width: 100px;">當日管理者</th>
+            <th style="min-width: 99px;" class="text-right">已選人數</th>
+            <th style="min-width: 99px;" class="text-right">點名人數</th>
+            <th style="min-width: 52px;">人力名單</th>
+            <th style="min-width: 80px;">工程驗收</th>
+            <th style="min-width: 300px;">總驗收批示</th>
+            <if condition="in_array(154, $use_function_top)">
+              <th style="min-width: 100px;">轉薪資</th>
+            </if>
+            <th style="min-width: 80px;">操作</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="(schedule,schedule_index) in schedule_dates">
+            <td class="text-right"><span v-text="schedule_index+1"></span></td>
+            <td><span v-text="schedule.date"></span></td>
+            <td><span v-text="schedule.user_in_charge_name"></span></td>
+            <td class="text-right"><span v-text="schedule.user_selected"></span></td>
+            <td class="text-right"><span v-text="schedule.user_roll_called"></span></td>
+            <td>
+              <a :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank">
+                <button class="btn btn-warning">查看</button>
+              </a>
+            </td>
+            <td>
+              <a :href="'{:U('ScheduleDetail/report')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank">
+                <button class="btn btn-warning">查看</button>
+              </a>
+            </td>
+            <td>
+              <template v-if="schedule.examine_time">
+                <span v-text="schedule.examine_time_format.substr(0, 10)"></span>
+                <span v-text="schedule.examine_note"></span>
+              </template>
+            </td>
+            <if condition="in_array(154, $use_function_top)">
+              <td>
+                <span v-if="schedule.turn_salary_time" v-text="schedule.turn_salary_time_format.substr(0, 10)"></span>
+              </td>
+            </if>
+            <td>
+              <button type="button" class="btn btn-warning mr-2 text-white" @click="copy_add(schedule_index)">
+                <i aria-hidden="true" class="fas fa-copy"></i>
+              </button>
+              <button type="button" class="btn btn-primary mr-2" @click="open_add(schedule_index)">
+                <i aria-hidden="true" class="fas fa-edit"></i>
+              </button>
+              <button type="button" class="btn delate" @click="delete_schedule_date(schedule.schedule_date_primary)">
+                <i aria-hidden="true" class="far fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" class="text-right">已使用日人數</td>
+            <td class="text-right"><span v-text="user_selected"></span></td>
+            <td class="text-right"><span v-text="user_roll_called"></span></td>
+            <td colspan="6"></td>
+          </tr>
+          <template v-if="schedule">
+            <tr>
+              <td colspan="3" class="text-right">目標日人數</td>
+              <td class="text-right">
+                <span :class="[total_users>=user_selected ? 'text-success' : 'text-danger']" v-text="total_users"></span>
+              </td>
+              <td class="text-right">
+                <span :class="[total_users>=user_roll_called ? 'text-success' : 'text-danger']" v-text="total_users"></span>
+              </td>
+              <td colspan="6"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<!-- Modal -->
+<a id="copy_schedule_panel_btn" class="d-none" data-toggle="modal" data-target="#copy_schedule_panel">複製日程</a>
+<div class="modal fade" id="copy_schedule_panel" tabindex="-1" role="dialog" aria-labelledby="copy_schedule_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="copy_schedule_panelTitle">複製日程</h5>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <label class="form-label">
+              <font color="red" style="font-size: 1.1rem;">*</font>
+              複製對象：
+            </label>
+            <span class="d-inline-flex align-items-center" v-text="copy_target_date"></span>之「名單」與「驗收項目」
+          </div>
+          <div class="col-md-12 mb-2">
+            <hr class="mt-2 mb-2">
+            複製到以下所選日期：
+          </div>
+          <div class="form-group col-md-12 mb-3">
+            <label class="form-label">
+              <font color="red" style="font-size: 1.1rem;">*</font>
+              選擇日期：
+            </label>
+            <span class="d-inline-flex align-items-center">
+              <input type="date" class="form-control"
+                      v-model="copy_schedule_date.start_date">&nbsp;~&nbsp;
+              <input type="date" class="form-control" v-model="copy_schedule_date.end_date">
+            </span>
+          </div>
+          <div class="form-group col-md-12 mb-3">
+            選擇星期：<span class="text-danger" style="font-style:italic;">全不選視為全選</span><br />
+            <template v-for="item in weekdays">
+              <input type="checkbox" :id="'copy_week_id_'+ item.value" :value="item.value"
+                     v-model="copy_schedule_date.checked_days">
+              <label :for="'copy_week_id_'+ item.value"
+                     style="padding-right: 20px;">{{item.text}}</label>
+            </template>
+          </div>
+          <div class="form-group col-md-12 mb-3">
+            選擇複製人員：<span class="text-danger" style="font-style:italic;">全不選視為全選</span><br />
+            <template v-for="item in copy_users">
+              <input type="checkbox" :id="'copy_user_id_'+ item.schedule_date_user_user_id" :value="item.schedule_date_user_user_id"
+                     v-model="copy_schedule_date.users">
+              <label :for="'copy_user_id_'+ item.schedule_date_user_user_id"
+                     style="padding-right: 20px;">{{item.schedule_date_user_name}}</label>
+            </template>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer flex-wrap">
+        <span class="text-danger mr-auto" style="font-style:italic;">點擊「複製」後視窗不會關閉，可修改部份內容再次將複製對象之「名單」、「驗收項目」複製給所選日期</span><br>
+        <button type="button" class="btn btn-primary" @click="do_copy_schedule_date">複製</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<a id="schedule_panel_btn" class="d-none" data-toggle="modal" data-target="#schedule_panel">設定日程</a>
+<div class="modal fade" id="schedule_panel" tabindex="-1" role="dialog" aria-labelledby="schedule_panelTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="schedule_panelTitle">設定日程</h5>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                日期：<input type="date" v-model="schedule_date.date">
+              </div>
+              <div class="form-group">
+                當日管理者：
+                <select class="mr-2" v-model="apartmentid" @change="get_user">
+                  <option value="">全部</option>
+                  <foreach name="eip_apart" key="key" item="vo">
+                    <option value="{$vo['id']}">{$vo['name']}</option>
+                  </if>
+                  </foreach>
+                </select>
+                <select v-model="schedule_date.user_in_charge" id="mens"></select>
+              </div>
+              <div class="form-group">
+                提醒事項：
+                <textarea class="form-control" rows="6" v-model="schedule_date.date_note"></textarea>
+              </div>
+              <div class="text-right">
+                  <button class="btn btn-primary" @click="set_schedule_date">
+                    送出
+                  </button>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="schedule_main_panel" tabindex="-1" role="dialog" aria-labelledby="schedule_main_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="schedule_main_panelTitle">設定日程組</h5>
+      </div>
+      <div class="modal-body" v-if="schedule">
+        <div class="form-group">
+          名稱：<input type="text" v-model="schedule.name" class="w100">
+        </div>
+        <div class="form-group">
+          地點：<input type="text" v-model="schedule.location" class="w100">
+        </div>
+        <!-- <div class="form-group">
+          地點GPS：<input type="text" v-model="schedule.location_gps" class="w100">
+        </div> -->
+        <section id="use_function_top-153" class="{$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}">
+          預估人力：<span class="text-danger">假設需5人施作8小時，預估工時請輸入40</span>
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 450px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 90px">
+                    <label class="mb-0">
+                      項次
+                      <a class="btn addbtn text-white" href="###" data-toggle="modal" data-target="#user_skills_panel">
+                        <i aria-hidden="true" class="fas fa-plus-circle"></i>
+                      </a>
+                    </label>
+                  </th>
+                  <th style="min-width: 100px;">工種名稱</th>
+                  <th style="min-width: 100px;" class="text-right">工種時薪</th>
+                  <th style="min-width: 100px;" class="text-right">預估工時(H)</th>
+                  <th style="min-width: 60px;">操作</th>
+                </tr>	
+              </thead>
+              <tbody>
+                <tr v-for="(item,key) in schedule.units">
+                  <td>
+                    <label v-text="key+1"></label>
+                    <input type="hidden" v-model="item['id']">
+                    <input type="hidden" v-model="item['name']">
+                    <input type="hidden" v-model="item['hour_pay']">
+                    <input type="hidden" v-model="item['user_skill_id']">
+                  </td>
+                  <td><span v-text="item.name"></span></td>
+                  <td class="text-right"><span v-text="item.hour_pay"></span></td>
+                  <td class="text-right">
+                    <input type="number" min="0" step="1" class="text-right w-100" :name="'units3['+key+'][hour_predict]'" 
+                           v-model="item.hour_predict" @change="count_total_uints">
+                  </td>
+                  <td>
+                    <!-- 選擇 -->
+                    <a href="###" class="btn delate" @click="cancel_unit(key)">
+                      刪除
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2"></td>
+                  <td class="text-right">總計</td>
+                  <td class="text-right" v-text=total_uints></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="text-right">
+            <button class="btn btn-primary" @click="set_schedule">
+              送出
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="user_skills_panel" tabindex="-1" role="dialog"
+	 aria-labelledby="user_skills_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="user_skills_panelTitle">選擇工種</h5>
+      </div>
+      <div class="modal-body">
+        <section class="main">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 300px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 70px">
+                    <input id="ck_all3" type="checkbox">
+                    <label class="mb-0" for="ck_all3">項次</label>
+                  </th>
+                  <th style="min-width: 150px;">工種名稱</th>
+                  <th style="min-width: 100px;" class="text-right">工種時薪</th>
+                  <th style="min-width: 50px;">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item,key) in units">
+                  <td>
+                    <input :id="'ck3_'+item.id" type="checkbox" class="groups3" :index="key">
+                    <label :for="'ck3_'+item.id" v-text="(currentPage-1)*countOfPage + key+1"></label>
+                  </td>
+                  <td><span class="item" v-text="item.name"></span></td>
+                  <td class="text-right"><span class="item" v-text="item.hour_pay"></span></td>
+                  <td>
+                    <!-- 選擇 -->
+                    <a href="###" class="btn sendbtn" @click="select_unit(key)">
+                      選擇
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <a href="###" class="btn sendbtn" @click="select_units(3)">
+            批次選擇
+          </a>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const schedule_id = '{$schedule_id}';
+  const copy_schedule_date_empty = {
+    schedule_date_primary:0,
+    schedule_id: 0,
+    start_date: '',
+    end_date: '',
+    checked_days: [1,2,3,4,5],
+    users: [],
+  };
+  const schedule_date_empty = {
+    schedule_id: schedule_id,
+    date: '',
+    user_in_charge: 0,
+    date_note: '',
+  };
+  const schedule_div_data = {
+    has_schedule_right_new: '{$has_schedule_right_new}',
+
+    copy_target_date: '',
+    copy_schedule_date: JSON.parse(JSON.stringify(copy_schedule_date_empty)),
+    weekdays: [
+      { value: 0, text: '日' },
+      { value: 1, text: '一' },
+      { value: 2, text: '二' },
+      { value: 3, text: '三' },
+      { value: 4, text: '四' },
+      { value: 5, text: '五' },
+      { value: 6, text: '六' },
+    ],
+    copy_users: [],
+
+    schedule_date: JSON.parse(JSON.stringify(schedule_date_empty)),
+    
+    schedule_id: schedule_id,
+    schedule: null,
+    total_uints: 0,
+    total_users:0,
+    apartmentid: '',
+
+    search_params: {
+      schedule_id: schedule_id,
+      date_s: '',
+      date_e: '',
+    },
+    schedule_dates: [],
+  };
+  const schedule_divVM = new Vue({
+    el:'#schedule_div',
+    data: schedule_div_data,
+    computed: {
+      user_selected: function(){
+        let num = 0;
+        for (let index = 0; index < this.schedule_dates.length; index++) {
+          const element = this.schedule_dates[index];
+          num += element.user_selected;
+        }
+        return num;
+      },
+      user_roll_called: function(){
+        let num = 0;
+        for (let index = 0; index < this.schedule_dates.length; index++) {
+          const element = this.schedule_dates[index];
+          num += element.user_roll_called;
+        }
+        return num;
+      },
+    },
+    methods: {
+      copy_add: function(schedule_index=-1){
+        copy_chedule_panelVM.set_schedule_date_panel(schedule_index);
+      },
+      open_add: function(schedule_index=-1){
+        chedule_panelVM.set_schedule_date_panel(schedule_index);
+      },
+      get_schedules: function(){
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: {schedule_id: schedule_divVM.search_params.schedule_id},
+          url: "{:u('Schedule/get_schedules')}",
+          success:function(res){
+            chedule_panelVM.schedule = res.list ? res.list[0] : null;
+            chedule_panelVM.schedule.units = [];
+            chedule_panelVM.schedule.units_del = [];
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      get_schedule_dates: function(){
+        data = JSON.parse(JSON.stringify(schedule_divVM.search_params));
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('Schedule/get_schedule_dates')}",
+          success:function(res){
+            schedule_divVM.schedule_dates = res.list;
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      delete_schedule_date: function(schedule_date_primary){
+        if(!confirm('確定刪除?')){ return; }
+        $('#body_block').show();
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: {
+            schedule_date_primary: schedule_date_primary,
+          },
+          url: "{:u('Schedule/delete_schedule_date')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_divVM.get_schedule_dates();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+    
+      get_schedule_user_skill: function(schedule_id){
+        schedule_divVM.schedule.units = [];
+        return $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U('Schedule/get_schedule_user_skill')}",
+          data:{
+            schedule_id: schedule_id,
+          },
+          success:function(res){
+            // console.log(res)
+            schedule_divVM.schedule.units=res.schedule_user_skills;
+            schedule_divVM.count_total_users();
+            schedule_main_panelVM.$forceUpdate()
+          }
+        });
+      },
+      count_total_users: function(){
+				let temp = 0;
+				for (var i = 0; i < schedule_divVM.schedule.units.length; i++) {
+					const unit = schedule_divVM.schedule.units[i];
+					temp += Number(unit['hour_predict']);
+				}
+        schedule_divVM.total_users = temp / 8;
+			},
+    },
+  });
+  const copy_chedule_panelVM = new Vue({
+    el:'#copy_schedule_panel',
+    data: schedule_div_data,
+    methods: {
+      async set_schedule_date_panel(index=-1){
+        if(index==-1){
+          temp_data = JSON.parse(JSON.stringify(temp_data));
+          this.copy_schedule_date = temp_data;
+        }
+        $('#body_block').show();
+        if(this.copy_target_date!=schedule_divVM.schedule_dates[index].date){ /*紀錄的複製日期與選擇的複製日期不相同*/
+          this.copy_users = [];
+          this.copy_schedule_date.users = [];
+          /*載入該日程名單*/
+          res = await $.ajax({
+            type: 'GET',
+            dataType:'json',
+            data: {
+              schedule_id: schedule_divVM.schedule_dates[index].schedule_id,
+              schedule_date_primary: schedule_divVM.schedule_dates[index].schedule_date_primary,
+            },
+            url: "{:u('ScheduleDetail/get_schedule_date_users')}",
+          });
+          schedule_date_users = res.list;
+          var temp_user = {};
+          for (let idx = 0; idx < schedule_date_users.length; idx++) {
+            const user = schedule_date_users[idx];
+            if(!temp_user[user.schedule_date_user_user_id]){
+              temp_user[user.schedule_date_user_user_id] = true;
+              this.copy_users.push(user);
+            }
+          }
+        }
+        this.copy_target_date = schedule_divVM.schedule_dates[index].date;
+        this.copy_schedule_date.schedule_date_primary = schedule_divVM.schedule_dates[index].schedule_date_primary;
+        this.copy_schedule_date.schedule_id = schedule_divVM.schedule_dates[index].schedule_id;
+        this.$forceUpdate();
+        $('#body_block').hide();
+        $('#copy_schedule_panel_btn').click();
+      },
+      async do_copy_schedule_date(){
+        // 檢查欄位
+        if (!this.copy_schedule_date.start_date || !this.copy_schedule_date.end_date) {
+          Vue.toasted.show("請設定日期區間", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+          return;
+        }
+        if (this.copy_schedule_date.start_date > this.copy_schedule_date.end_date) {
+          Vue.toasted.show("開始日期需小於或等於結束日期", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+          return;
+        }
+        postData = JSON.parse(JSON.stringify(this.copy_schedule_date));
+        $('#body_block').show();
+        res = await $.ajax({
+          method: 'post',
+          dataType: 'json',
+          url: "{:u('Schedule/copy_date')}",
+          data: postData,
+        });
+        bg_class = res.status ? 'bg-success' : 'bg-danger';
+        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        if(res.status){
+          await schedule_divVM.get_schedule_dates();
+        }
+        $('#body_block').hide();
+      },
+    }
+  });
+  const chedule_panelVM = new Vue({
+    el:'#schedule_panel',
+    data: schedule_div_data,
+    methods: {
+      set_schedule_date_panel: function(index=-1){
+        $('#schedule_panel_btn').click();
+        if(index==-1){
+          temp_data = schedule_date_empty;
+        }else{
+          temp_data = {
+            schedule_date_primary: schedule_divVM.schedule_dates[index].schedule_date_primary,
+            schedule_id: schedule_divVM.schedule_dates[index].id,
+            date: schedule_divVM.schedule_dates[index].date,
+            user_in_charge: schedule_divVM.schedule_dates[index].user_in_charge,
+            date_note: schedule_divVM.schedule_dates[index].date_note,
+          }
+        }
+        chedule_panelVM.schedule_date = JSON.parse(JSON.stringify(temp_data));
+        chedule_panelVM.$forceUpdate();
+      },
+      set_schedule_date: function(){
+        console.log(chedule_panelVM.schedule_date);
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: chedule_panelVM.schedule_date,
+          url: "{:u('Schedule/set_schedule_date')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              $('#schedule_panel').modal('hide');
+              chedule_panelVM.set_schedule_date_panel();
+              schedule_divVM.get_schedule_dates();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+
+      get_user: function(){
+        return $.ajax({
+          type:'POST',
+          data:{apartmentid:chedule_panelVM.apartmentid},
+          dataType:'text',
+          url:"{:U('Ajax/aj_getmean')}",
+          success:function(res){
+            $("#mens").html(res);
+            chedule_panelVM.$forceUpdate();
+          }
+        });
+      },
+    },
+  });
+
+  const schedule_main_panelVM = new Vue({
+    el:'#schedule_main_panel',
+    data: schedule_div_data,
+    methods: {
+      set_schedule: function(){
+        $('#body_block').show();
+        $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: chedule_panelVM.schedule,
+          url: "{:u('Schedule/set_schedule')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              $('#schedule_panel').modal('hide');
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+  
+      count_price: function(index){
+				if(schedule_divVM.schedule.units[index]['sale_price']){
+					price = schedule_divVM.schedule.units[index]['sale_price'] * schedule_divVM.schedule.units[index]['num'];
+					schedule_divVM.schedule.units[index]['total'] = price;
+					schedule_divVM.schedule.units[index]['total_dis'] = price;
+				}
+				chedule_panelVM.count_total_uints();
+			},
+      cancel_unit: function(index){
+        const item = schedule_divVM.schedule.units[index];
+				if(item['id']){
+					schedule_divVM.schedule.units_del.push(item['id']);
+				}
+				schedule_divVM.schedule.units.splice(index, 1);
+				schedule_main_panelVM.count_total_uints();
+        schedule_main_panelVM.$forceUpdate();
+			},
+      count_total_uints: function(){
+				schedule_divVM.total_uints = 0;
+				for (var i = 0; i < schedule_divVM.schedule.units.length; i++) {
+					const unit = schedule_divVM.schedule.units[i];
+					schedule_divVM.total_uints += Number(unit['hour_pay'])*Number(unit['hour_predict']);
+				}
+        schedule_divVM.count_total_users();
+			},
+    },
+  });
+  async function init_data(){
+    await schedule_divVM.get_schedules();
+    await schedule_divVM.get_schedule_dates();
+    await schedule_divVM.get_schedule_user_skill(schedule_id);
+    schedule_main_panelVM.count_total_uints();
+    await chedule_panelVM.get_user();
+  }
+  init_data();
+</script>
+<script type="text/javascript">
+	// 預估人力
+	var user_skills_panel_data = {
+		units: [],
+
+		searchKeyword:"",
+
+		countOfPage: 0,
+		currentPage: 1,
+    totalPage: 1,
+    pages: [],
+    p_prev: "",
+    p_next: "",
+	};
+	var user_skills_panelVM = new Vue({
+		el: '#user_skills_panel', 
+		data: user_skills_panel_data,
+		computed: {
+		},
+		methods: {
+			change_page: function(p){
+				this.currentPage = p;
+				get_cat_unit();
+			},
+			select_unit: function(index){
+				unit = Object.assign({}, this.units[index]);
+				unit['user_skill_id'] = unit['id'];
+				unit['id'] = 0;
+				unit['hour_predict'] = 0;
+				schedule_divVM.schedule.units.push(unit);
+				Vue.toasted.show('已選擇', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+        schedule_main_panelVM.$forceUpdate();
+			},
+			select_units: function(index=''){
+				units = $('input.groups'+index+':checked');
+				for (var i = 0; i < units.length; i++) {
+					var index = $(units[i]).attr('index');
+					this.select_unit(index);
+				}
+			},
+		},
+	});
+
+	function get_cat_unit3(){
+		user_skills_panelVM.units = [];
+		$.ajax({
+			method:'post',
+			dataType:'json',
+			url:"{:U('Ajax/get_user_skill_ajax')}",
+			data:{
+				cond: {
+					currentPage: user_skills_panelVM.currentPage,
+					searchKeyword: user_skills_panelVM.searchKeyword,
+				},
+			},
+			success:function(res){
+				// console.log(res)
+				user_skills_panelVM.units=res;
+				
+				// user_skills_panelVM.countOfPage = res.countOfPage;
+				// user_skills_panelVM.currentPage = res.currentPage;
+				// user_skills_panelVM.totalPage = res.totalPage;
+				// user_skills_panelVM.pages = res.pages;
+				// user_skills_panelVM.p_prev = res.p_prev;
+				// user_skills_panelVM.p_next = res.p_next;
+
+				init_checkbox_event('3');
+			}
+		});
+	}
+	get_cat_unit3();
+
+  function init_checkbox_event(group=''){
+		$("#ck_all"+group).off();
+		$("#ck_all"+group).click(function(){
+			if($(this).prop('checked'))
+			{
+				$('.groups'+group).prop('checked',true);
+			}else
+			{
+				$('.groups'+group).prop('checked',false);
+			}
+		});
+	}
+</script>

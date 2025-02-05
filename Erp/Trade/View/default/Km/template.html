@@ -1,0 +1,119 @@
+<include file="Public:header2" />
+
+  <section class="main document">
+      <!-- 共用路徑 -->
+      <div class="top_bar">
+        <if condition="$page_title eq '我的文件'">
+          <!-- 我的文件 -->
+          <div class="ms_swich">
+            <a class="swich_on Km_auto_no" href="">我的文件</a>
+            <a href="{:u('Filecate/index')}">
+              共用文件
+              <if condition="$file_share_num neq 0">({$file_share_num})</if>
+            </a>
+          </div>
+        </if>
+      </div>
+
+      <!-- 共用+這裡 -->
+      <div class="below">
+        <!-- 共用階層列表 -->
+        <include file="Km:leftlist" />
+        <!-- END 共用階層列表 -->
+        <div class="right">
+          <div class="document_edit">
+            <div class="document-mode">					
+              <form action={:U('Km/addfile', ['type'=>$fileCode])}search')}" method="get">
+                <div class="d-flex flex-wrap">
+                  <label for="">搜尋文章：</label>
+                  <div class="search_bar" style="width:250px">
+                    <input class="text w100" type="text" name="title" value="{$_GET['title']}"
+                      placeholder="請輸入文章/階層標題或內容">
+                    <input class="submit submit_button" type="submit" value="">
+                  </div>
+                </div>
+              </form>
+
+              <include file="Km:public_file_location_btn"/>
+            </div>
+
+            <!-- <div class="search_select">
+                <label for="">排序：</label>
+                <div class="inbox">
+                  <select name="" id="">
+                    <option value="">篩選條件</option>
+                    <option value="">時間</option>
+                  </select>
+                </div>
+              </div> -->
+            <!--<a class="add_btn" href="{:U('Km/level_select', ['type'=>$fileCode])}"></a>-->
+          </div>
+
+          <!-- //////////////////////////// 搜尋頁 ////////////////////////// -->
+          <if condition="($_GET['title'] neq '') or ($_GET['title'] neq null)">
+            <table class="document_list">
+              <tr>
+                <th class="document_head">主標題</th>
+                <th class="document_time">公告日期</th>
+                <th class="document_pub">發佈者</th>
+              </tr>
+              <foreach name="file" item="vo">
+                <tr id="del{$vo.id}">
+                  <td>
+                    <a href="{:U('Km/read', ['type'=>$fileCode])}?id={$vo.id}">
+                      {$vo['title']}
+                    </a>
+                  </td>
+                  <td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+                  <td>{$vo.name}</td>
+                </tr>
+              </foreach>
+            </table>
+          </if>
+          <!-- 換頁按鈕 -->
+          <!--
+          <div class="page">
+            {$show}
+          </div>
+          -->
+          
+          <!-- ///////////////////////////// END /////////////////////////// -->
+        </div>
+      </div>		
+  </section>
+  <!-- End document_list -->
+
+<include file="Public:footer" />
+<script src="__PUBLIC__/js/custom.js?0000"></script>
+<script src="/Public/qhand/js/jquery.toaster.js"></script>
+<script>
+  // 離開頁面時是否檢確認離開
+  var check_renew = false;
+  
+  $( document ).ready(function() {
+    // 使用搜尋
+    $('input.submit_button').on('click', function(e){
+      var title = $('input[name="title"]').val();
+      url = "{:U('Km/search', ['type'=>$fileCode])}?title="+title;
+      history.pushState({}, "", url);
+
+      $.ajax({
+        method:'get',
+        dataType:'text',
+        url:url,
+        success:function(res){
+          ajax_change_right(res) //定義在Km/js.html
+        }
+      });
+      e.preventDefault();
+    })
+
+    //修改路徑
+    $('#mainPath').html(`
+      <span>></span><a class="Km_auto_no" href="{:U('Km/index', ['type'=>$fileCode])}">文章目錄</a>
+    `)
+    $('#secondPath').html(``)
+    $('#thirdPath').html(``)
+  });
+</script>
+<include file="Km:js" />

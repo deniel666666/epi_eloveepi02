@@ -1,0 +1,183 @@
+<include file="Public:header2" />
+
+<section class="main document mens">
+  <div class="below">
+    <!-- 共用階層列表 -->
+    <include file="Mens:menu" />
+    <!-- END 共用階層列表 -->
+
+    <div class="right">
+      <div class="document_edit">
+        <div class="document-mode justify-content-between">
+          <div class="text-danger">請記得調整留職停薪員工之約定薪資</div>
+          <form id="mens_search_form" action="{:u('mens/emlist')}?{$ser}" method="post" class="d-flex flex-wrap">
+            <if condition="in_array(73, $use_function_top)">
+              <label class="mr-1">
+                部門：
+                <select class="input" name="apartmentid">
+                  <option value="">請選擇</option>
+                  <foreach name="eip_apart" item="op">
+                    <if condition="$op['id'] eq $apartmentid_input">
+                      <option value="{$op.id}" selected>{$op.name}</option>
+                    <else />
+                      <option value="{$op.id}">{$op.name}</option>
+                    </if>
+                  </foreach>
+                </select>
+              </label>
+              &nbsp;&nbsp;
+              <label class="mr-1">
+                職務：
+                <select class="input" name="jobid">
+                  <option value="">請選擇</option>
+                  <foreach name="eip_jobs" item="op">
+                    <if condition="$op['id'] eq $jobid_input">
+                      <option value="{$op.id}" selected>{$op.name}</option>
+                    <else />
+                      <option value="{$op.id}">{$op.name}</option>
+                    </if>
+                  </foreach>
+                </select>
+              </label>
+              &nbsp;&nbsp;
+            </if>
+            <label class="mr-1">
+              類別：
+              <select class="input" name="right">
+                <option value="">請選擇</option>
+                <foreach name="eip_user_right_type" item="op">
+                  <option value="{$op.id}" {$op['id']|compare_return=$right_input, 'selected'}>
+                    {$op.name}
+                  </option>
+                </foreach>
+              </select>
+            </label>
+            <div class="search_bar">
+              <input class="text" type="text" value="{$Think.post.searchtext}" name="searchtext"/>
+              <input class="submit" type="submit" value="" />
+            </div>
+          </form>
+        </div>
+        <form action="{:U('mens/emops')}" method="post">
+          <div class="d-md-none d-block"><input type="checkbox" class="seleall" id="num00" /><label for="num00"> 全選</label></div>
+          <table class="apply-table hr-table w100 hr-info mb-4">
+            <thead>
+              <tr>
+                <th class="text-lg-center"><input type="checkbox" class="seleall" /> </th>
+                <th style="width: 50px;" class="text-lg-right">序號</th>
+                <th>編號</th>
+                <if condition="in_array(73, $use_function_top)">
+                  <th>部門</th>
+                </if>
+                <if condition="in_array(73, $use_function_top)">
+                  <th>職稱</th>
+                </if>
+                <if condition="in_array(5, $use_function_top)">
+                  <th>權限管理</th>
+                </if>
+                <th>姓名</th>
+                <th>別稱</th>
+                <th>手機</th>
+                <th>公司分機</th>
+                <th>系統通知mail</th>
+                <th>公司mail</th>
+                <th>到職日</th>
+              </tr>
+            </thead>
+            <foreach name="emlist" key="key" item="em">
+              <tr class="list" id="{$em.id}">
+                <td class="text-lg-center"><input type="checkbox" class="seleck" name="ids[]" value="{$em.id}"/></td>
+                <td data-th="序號" class="text-lg-right">{$key+1}</td>
+                <td data-th="編號" class="no">{$em.no}</td>
+                <if condition="in_array(73, $use_function_top)">
+                  <td data-th="部門" class="apartmentid">{$eip_apart[$em['apartmentid']]['name']}</td>
+                </if>
+                <if condition="in_array(73, $use_function_top)">
+                  <td data-th="職稱" class="jobid">{$eip_jobs[$em['jobid']][name]}</td>
+                </if>
+                <if condition="in_array(5, $use_function_top)">
+                  <td data-th="權限管理" class="usergroupid">{$access[$em['usergroupid']]['name']}</td>
+                </if>
+                <td class="name" data-th="姓名">
+                  <if condition="$my_access.mens_all eq '1'">
+                    <a href="/index.php/mens/emshow/id/{$em[id]}">{$em.name}</a>
+                  <elseif condition="$my_access.mens_all eq '0' && $em.id eq $_SESSION['adminId']" />
+                    <a href="/index.php/mens/emshow/id/{$em[id]}">{$em.name}</a>
+                  <else />
+                    {$em.name}
+                  </if>
+                </td>
+                <td class="ename" data-th="別稱">{$em.ename}</td>
+                <td class="mphone" data-th="手機">{$em.mphone}</td>
+                <td class="extension" data-th="公司分機">{$em.extension}</td>
+                <td class="email" data-th="系統通知mail">{$em.email}</td>
+                <td class="email2" data-th="公司mail">{$em.email2}</td>
+                <td class="dutday" data-th="到職日">
+                  <if condition="$em.dutday neq '0000-00-00'">{$em.dutday}</if>
+                </td>
+              </tr>
+            </foreach>
+          </table>
+
+          <input type="hidden" value="{$_GET['is_job']}" name="is_job" />
+          <if condition="$my_access['mens_edi'] eq '1'">
+            <div class="send d-flex align-items-center justify-content-between">
+              <div>
+                選擇項目:
+                <select name="ops" onChange="submit()">
+                  <option value="0">請選擇</option>
+                  <if condition="$is_job eq 1">
+                    <option value="1">離職</option>
+                    <option value="5">留職停薪</option>
+                    <elseif condition="$is_job eq '0' || $is_job eq '2'" />
+                    <option value="1">復職</option>
+                  </if>
+
+                  <if condition="$my_access['mens_hid'] eq '0'">
+                    <elseif condition="$status eq 1 || $status eq ''" />
+                    <option value="2">垃圾桶</option>
+                    <elseif condition="$status eq '0' and $my_access['mens_del'] eq '0'" />
+                    <option value="3">還原</option>
+                    <elseif condition="$status eq '0' and $my_access['mens_del'] eq '1'" />
+                    <option value="3">還原</option>
+                    <option value="4">刪除</option>
+                  </if>
+                </select>
+              </div>
+              <div>
+                <a id="export_mens_btn" href="###" class="btn sendbtn">匯出人員</a>
+              </div>
+            </div>
+          </if>
+        </form>
+      </div>	
+    </div>
+  </div>
+</section>
+
+<include file="Public:footer" />
+<script language="javascript">
+  $(function(){
+    $('.seleall').click(function(){
+      if($(this).attr('checked'))
+      $('.seleck').attr('checked',true);
+      else
+      $('.seleck').attr('checked',false);
+    })
+    $('.list').hover(function(){
+      $(this).css('background','#eeeeee');
+      },function(){
+      $(this).css('background','#ffffff');
+    });
+
+    $('#export_mens_btn').on('click', function(e){
+      var mens_search_form = $('#mens_search_form');
+      var action = mens_search_form.attr('action');
+      action = action.replace('mens/emlist', 'mens/export');
+      action = mens_search_form.attr('action', action);
+      mens_search_form.submit();
+      action = action.replace('mens/export', 'mens/emlist');
+      action = mens_search_form.attr('action', action);
+    });
+  })
+</script>	

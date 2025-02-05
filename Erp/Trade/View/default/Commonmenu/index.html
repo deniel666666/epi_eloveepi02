@@ -1,0 +1,136 @@
+<include file="Public:header2" />
+
+<section class="document p-4" id="common_menu">
+	<div class="slide_content_r">
+		<div class="container mw1920">
+			<div class="below">
+				<section class="main" >
+				    <div class="right w-100 slide_content_r" id="container">
+						<h5 class="font-weight-bold d-inline-block">
+							選擇的常用選單：<span v-text="common_menu_text"></span>
+						</h5>
+				        <div class="container mw1920">
+				            <div class="desk_menu left_col">
+								<volist name="menu_arranged" id="tvo">
+									<div class="topic_box">
+										<div class="title">{$tvo[title]}</div>
+										<div class="content">
+											<volist name="tvo[sub_menu]" id="vo" key="k">
+												<if condition="$vo['has_sub_menu'] eq 0">
+													<div>
+														<input type="checkbox" name="common_menu" class="common_menu_check d-none"
+															   id="common_menu_{$vo['id']}" value="{$vo['id']}" v-model="common_menu">
+														<label class="sub_btn" for="common_menu_{$vo['id']}">
+															<div class="topic-list">
+																<h4>{$vo[title]}</h4>
+															</div>
+														</label>
+													</div>
+												<else />
+													<div>
+														<h4 class="title font-weight-normal d-inline-block mb-0">{$vo[title]}</h4>
+														<hr class="m-0">
+													</div>
+												</if>
+												<div>
+													<volist name="vo[sub_menu]" id="vo2" key="k2">
+														<div>
+															<input type="checkbox" name="common_menu" class="common_menu_check d-none"
+																   id="common_menu_{$vo2['id']}" value="{$vo2['id']}" v-model="common_menu">
+															<label class="sub_btn" for="common_menu_{$vo2['id']}">
+																<div class="topic-list">
+																	<h4>{$vo2[title]}</h4>
+																</div>
+															</label>
+														</div>
+													</volist>
+												</div>
+											</volist>
+										</div>
+									</div>
+								</volist>
+							</div>
+						</div>
+
+						<div class="row">
+							<button class="btn btn-success col-6 offset-3" @click="save_common_menu">儲存選單</button>
+						</div>
+				    </div>
+				</section>
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+	var common_menuVM = new Vue({
+		el: '#common_menu',
+		data: {
+			common_menu: [],
+			my_can_see_menu: [],
+			my_can_see_menu_list: [],
+		},
+		computed: {
+			common_menu_text: function(){
+				var text = [];
+				for (var x = 0; x < this.common_menu.length; x++) {
+					for (var y = 0; y < this.my_can_see_menu_list.length; y++) {
+						console.log()
+						if(this.common_menu[x]==this.my_can_see_menu_list[y].id){
+							text.push(this.my_can_see_menu_list[y].title);
+						}
+					}
+				}
+				return text.join(", ");
+			},
+		},
+		methods: {
+			get_my_common_menu: function(){
+				self = this;
+				$.ajax({
+                    type: 'GET',
+                    dataType:'json',
+                    url: "{:u('Commonmenu/get_common_menu')}",
+                    success:function(res){
+                        self.common_menu = res;
+                    },
+                });
+			},
+			get_my_can_see_menu: function(){
+				self = this;
+				$.ajax({
+                    type: 'GET',
+                    dataType:'json',
+                    url: "{:u('Commonmenu/get_my_can_see_menu')}",
+                    success:function(res){
+                        self.my_can_see_menu = res.arranged;
+                        self.my_can_see_menu_list = res.list;
+                    },
+                });
+			},
+			save_common_menu: function(){
+				self = this;
+				$.ajax({
+                    type: 'POST',
+                    data: {
+                    	data: JSON.stringify (self.common_menu),
+                    },
+                    dataType:'json',
+                    url: "{:u('Commonmenu/save_common_menu')}",
+                    success:function(res){
+                        if(res.status==1){
+                            bg_class = "bg-success";
+                        }else{
+                            bg_class = "bg-danger";
+                        }
+                        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                    },
+                });
+			}
+		},
+	});
+	common_menuVM.get_my_common_menu();
+	common_menuVM.get_my_can_see_menu();
+</script>

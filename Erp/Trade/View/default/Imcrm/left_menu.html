@@ -1,0 +1,104 @@
+<label class="editmenu-open"> 
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+        fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+        <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+    </svg>
+    匯入客戶選單
+   
+</label>
+<div class="left-file-menu">
+	<div class="list_layer">
+		<div class="menu_controll">
+			<div class="position-relative">
+				<a href="javascript:leaveImport()" class="">離開匯入</a>
+			</div>
+			<div class="close-below" for="left-file-menu" >
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+					class="bi bi-x-circle" viewBox="0 0 16 16">
+					<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+					<path
+						d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+				</svg> 
+			</div>
+		</div>
+		<div class="list_group">
+			<!-- <div class="layer_1_tab">
+				<a href="javascript:leaveImport()" class="">離開匯入</a>
+			</div>
+			-->
+			<if condition="$acc['imcrm_edi'] eq '1'">
+				<div class="layer_1_tab">
+					<a href="{:U('Imcrm/edit_repeat')}">編輯比對排除字</a>
+				</div>
+			</if>
+	
+			<div class="layer_1_tab">
+				<a href="{:U('Imcrm/index')}">匯入名單</a>
+			</div>
+			<if condition="$acc['imcrm_edi'] eq '1'">
+				<div class="layer_1_tab">
+					<a href="{:U('Imcrm/others')}">其他待處理</a>
+				</div>
+	
+				<if condition="$system_parameter['經濟部替代匯入'] neq ''">
+					<div class="layer_1_tab">
+						<a href="{:U('Imcrm/me_import')}">經濟部替代匯入</a>
+					</div>
+				</if>
+			</if>
+			<if condition="$acc['imcrm_hid'] eq '1'">
+				<div class="layer_1_tab">
+					<a href="{:U('Imcrm/trash')}">批次丟棄</a>
+				</div>
+			</if>
+
+		
+		</div>
+		
+		<!-- END 共用階層列表 -->
+		
+
+	
+		
+		
+	</div>
+	
+</div>
+	
+
+
+	<script type="text/javascript">
+		$(".editmenu-open").click(function (e) {
+			$(this).toggleClass('arrow');
+			$(".left-file-menu").toggleClass('on');
+
+		});
+		$(".close-below").click(function (e) {
+			$(".left-file-menu").removeClass('on');
+			$('.editmenu-open').removeClass('arrow');
+		});
+	
+	
+		
+		//新增放棄匯入按鈕，點選後清空im_importclient
+		function leaveImport(need_check=true){
+			if(need_check){
+				var r = confirm("確定要放次本次匯入，並刪除已匯入的名單？");
+			}else{
+				r = true
+			}
+			if (r == true) {
+				//ajax傳資料到後端做新增
+				$.ajax({
+					type: "POST",
+					dataType:'json',
+					url: "{:U('Imcrm/clearList')}",
+					success: function() {
+					}
+				}); //end btnAdd ajax
+				document.location.href="{:U('Index/index')}";
+			} 
+		}
+
+	</script>

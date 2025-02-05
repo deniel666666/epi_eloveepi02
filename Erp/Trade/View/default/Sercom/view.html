@@ -1,0 +1,153 @@
+<include file="Public:header2" />
+
+<!-- .wrapAll -->
+<section class="main ">
+	<div id="right" >
+		<if condition="$page eq ''">
+			<form name="search" class="searchform" id="searchform" action="{:u('Sercom/index')}" method="get">
+		<else />
+			<form name="search" class="searchform" id="searchform" action="{:u('Sercom/index')}?p={$Think.get.p}" method="get">
+		</if>
+			<ol class="headerOl rightR">
+				<li>
+					<div class="search_bar">
+						<label for=""></label>
+						<input class="text" type="text"  placeholder="搜尋..." name="company" value="{$company}"   />
+						<input class="submit" type="submit" value="" />
+					</div>
+				</li>
+				<if condition="$access['sercom_new'] eq '1'">
+					<li style="float:right"><a href="{:u('Sercom/editor')}"><input type="button" value="新增主機廠商" class="btn addbtn"/></a></li>
+				</if>
+			</ol>
+		</form>
+		<div class="content-table d-flex flex-wrap">
+			<div class="sercom-box">
+				<ul >
+					<li><label class="name">主機名稱：</label>
+						<div class="copy text" data-clipboard-text="{$data.nick}" >
+							{$data.nick}
+						</div>
+					</li>
+				
+					<li><label class="name">管理位置：</label>
+						<div class="copy text" data-clipboard-text="{$data.url}">
+							{$data.url}
+						</div>
+					</li>
+					<li><label class="name">帳號：</label>
+						<div  class="copy text" data-clipboard-text="{$data.dnsuser}" >
+							{$data.dnsuser}
+						</div>
+					</li>
+					<li><label class="name">密碼：</label>
+						<div class="copy text" data-clipboard-text="{$data.dnspwd}" >
+							{$data.dnspwd}
+						</div>
+					</li>
+					<li><label class="name">回報mail：</label>
+						<div  class="copy text" data-clipboard-text="{$data.mail}" >
+							{$data.mail}
+						</div>
+					</li>
+				</ul>
+				<ul>
+					<li><label class="name">網址1</label>
+						<div class="copy text" data-clipboard-text="{$data.dns1}">
+							{$data.dns1}
+						</div>
+					</li>
+					<li>
+						<label class="name">ip1</label>
+						<div  class="copy text" data-clipboard-text="{$data.ip1}">
+							{$data.ip1}
+						</div>
+					</li>
+					<li>
+						<label class="name">網址2</label>
+						<div  class="copy text" data-clipboard-text="{$data.dns2}">
+							{$data.dns2}
+						</div>
+					</li>
+					<li><label class="name">ip2</label>
+						<div  class="copy text" data-clipboard-text="{$data.ip2}">
+							{$data.ip2}
+						</div>
+					</li>
+					<li><label class="name">方案名稱</label>
+						<div  class="copy text" data-clipboard-text="{$data.casename}">
+							{$data.casename}
+						</div>
+					</li>
+					<li><label class="name">主機總空間</label>
+						<div class="copy text" data-clipboard-text="{$data.space}">
+							{$data.space}
+						</div>
+
+					</li>
+					<li><label class="name">主機總流量</label>
+						<div  class="copy text" data-clipboard-text="{$data.flow}">
+							{$data.flow}
+						</div>
+					</li>
+					<li class="note"><label class="name">備註</label>
+						<div class="copy text" data-clipboard-text="{$data.bz}">
+							{$data.bz}
+						</div>
+					</li>
+				</ul>	
+			</div>
+			<div class="host-item">
+				<ul>
+					<li><label class="name">主機商名稱：</label>
+						<div class="copy text" data-clipboard-text="{$data.company}">
+							{$data.company}
+						</div>
+					</li>
+					<li><label class="name">位置：</label>
+						<div class="copy text" data-clipboard-text="{$data.dnsurl}" >
+							{$data.dnsurl}
+						</div>
+					</li>
+					<li><label class="name">帳號：</label>
+						<div class="copy text" data-clipboard-text="{$data.comname}" >
+							{$data.comname}
+						</div>
+					</li>
+					<li><label class="name">密碼：</label>
+						<div class="copy text" data-clipboard-text="{$data.compw}">
+							{$data.compw}
+						</div>
+					</li>
+					<li><label class="name">聯絡窗口</label>
+						<div class="copy text" data-clipboard-text="{$data.name}" >
+							{$data.name}
+						</div>
+					</li>
+					<li><label class="name">聯絡電話</label>
+						<div class="copy text" data-clipboard-text="{$data.moble}">
+							{$data.moble}
+						</div>
+					</li>
+					<li><label class="name">備註</label>
+						<div class="copy text" data-clipboard-text="{$data.combz}">
+							{$data.combz}
+						</div>
+					</li>
+				</ul>
+			</div>
+		
+			<if condition="$access['sercom_edi'] eq '1'">
+				<div class="send">
+					<a href="{:u('Sercom/editor')}?id={$_GET['id']}">
+						<input type="button" value="修改資料" class="sendbtn btn mt-2"/>
+					</a>
+				</div>
+			</if>
+		</div>
+	</div>
+</section>
+<!-- .wrapAll end-->
+
+<include file="Public:footer" />
+

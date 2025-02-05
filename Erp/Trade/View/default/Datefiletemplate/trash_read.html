@@ -1,0 +1,136 @@
+<include file="Public:header2" />
+<!-- Start document_template -->
+<section class="main document">
+		<div class="below">
+
+			<!-- 共用階層列表 -->
+			<include file="Datefiletemplate:leftlist" />
+			<!-- END 共用階層列表 -->
+
+			<div class="right">
+				<div class="document_read document_edit mt-3" id="print_div">
+					<div class="title_bar read-top">
+						<h3 class="edit_section_title">{$file['title']}
+							<img style="height:20px;" class="print" src="/Public/qhand/images/common/printer.jpg"
+								onclick="printer(print_div);">
+						</h3>
+						<div class="time">{$file['start_time']|date="Y-m-d H:i",###}</div>
+					</div>
+					<div class="content_box">
+						<div class="text_area" style="word-break:break-all;width:100%;max-width: 800px;">
+							{$file['note']}
+						</div>
+						<div class="more_info">
+							<ul class="download_append">
+								<li>
+									附件：
+									<if condition="$file['file'] neq ''">
+										<foreach name="file['file']" item="vo">
+											{$vo}<br>
+										</foreach>
+									<else />
+										無
+									</if>
+								</li>
+							</ul>
+							<ul class="data_info">
+								<li>公告人數：<span>{$read_num['all']}人</span></li>
+								<li>已讀取人數：<span>{$read_num['read']}人</span></li>
+								<li>未讀取人數：<span>{$read_num['unread']}人</span></li>
+								<li>讀取率：<span>{$read_num['rate']}%</span></li>
+							</ul>
+							<a class="read_person">
+								<span class="read_person_display">
+									顯示詳細資料
+								</span>
+							</a>
+						</div>
+						<div id="full_read_person" style="display:none">
+							<div style="margin:3% 3% 3% 0">可讀取人員：
+								<foreach name="read_person['all']" item="vo">
+									{$vo['name']}&nbsp;
+								</foreach>
+							</div>
+							<div style="margin:3% 3% 3% 0">已讀取人員：
+								<foreach name="read_person['read']" item="vo">
+									{$vo['name']}&nbsp;
+								</foreach>
+							</div>
+							<div style="margin:3% 3% 3% 0">未讀取人員：
+								<foreach name="read_person['unread']" item="vo">
+									{$vo['name']}&nbsp;
+								</foreach>
+							</div>
+						</div>
+					</div>
+					<div class="page_bar">
+						<div class="btn_group">
+							<div class="clearfix"></div>
+						</div>
+					</div>
+					<div class="comments_area">
+						<h5 class="message_count" count="{$count}">共{$count}則留言</h5>
+						<ul class="message_list"></ul>
+						<ul class="comments_list">
+							<foreach name="message" item="vo">
+								<li style='margin:5% 5% 0 0;list-style-type:none'>
+									<div style='margin:0 0 10% 0'>
+										<div style='width:10%;float:left;'>
+											<if condition="$vo['img'] != ''">
+												<img style='width:100%;height:auto;margin:auto' src='{$vo[' img']}' alt=''>
+												<else />
+												<img style='width:100%;height:auto;margin:auto'
+													src='_public_/images/icon.png' />
+											</if>
+										</div>
+										<div align='right'>
+											<div style='float:left;'>{$vo['name']}</div>
+											<div>{$vo['time']|date="Y-m-d H:i",###}</div>
+										</div>
+									</div>
+									<div>{$vo['message']}</div>
+								</li>
+								<hr>
+							</foreach>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+</section>
+<!-- End document_list -->
+<include file="Public:footer" />
+<script type="text/javascript">
+	var read_person_click = false;
+	$(".read_person").click(function(){
+		if(read_person_click == false){
+			read_person_click = true;
+			$(".read_person_display").html("隱藏詳細資料");
+			$("#full_read_person").css("display","block");
+		}
+		else{
+			read_person_click = false;
+			$(".read_person_display").html("顯示詳細資料");
+			$("#full_read_person").css("display","none");
+		}
+	});
+	function printer(htmlBlock){
+	    var content = htmlBlock.innerHTML;
+	    var printPage = window.open("", "printPage", "");
+	    printPage.document.open();
+	    printPage.document.write("<HTML><head>");
+	    printPage.document.write("</head><BODY onload='window.print();window.close()'>");
+	    printPage.document.write(content);
+	    printPage.document.close("</BODY></HTML>");
+	}
+
+	//修改路徑
+    if($('.breadcrumbs_add').length>0){
+    	$('.breadcrumbs_add a').html('垃圾桶');
+    }else{
+    	$('.breadcrumbs').append(`
+    		<li class="breadcrumbs_add"><a class="Km_auto_no pathBtn" href="{:u($daoModel.'/trash')}">垃圾桶</a></li>
+    	`);
+    }
+</script>

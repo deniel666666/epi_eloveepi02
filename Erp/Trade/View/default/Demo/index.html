@@ -1,0 +1,52 @@
+<include file="Public:header2" />
+
+<!-- Start main -->
+<section class="main">
+	<div class="right slide_content_r">
+		<div class="content">
+			<div id="right" class="rightR">
+				<div class="edit_form">
+					<table class="table edit_table" style="min-width: 1600px;">
+						<thead class="edit_table_thead">
+							<tr class="edit_table tr">
+								<!-- <th><input type="checkbox" class="seleall" name="all" id="all"/></th> -->
+								<th data-sort="int" class="text-left" style="width: 75px;">序號</th>
+								<th data-sort="string" class="text-left" style="width: 125px;">使用者</th>
+								<th data-sort="string" class="text-left" style="width: 175px;">時間</th>
+								<th data-sort="string" class="text-left" style="width: 175px;">ip</th>
+								<th data-sort="string" class="text-left" style="width: 200px;">控制器/方法</th>
+								<th data-sort="string" class="text-left">說明</th>
+							</tr>
+						</thead>
+						<tbody>
+							<foreach name="error_log" key="key" item="one">
+								<tr id="{$one.id}">
+									<!-- <td><input type="checkbox" class="sele" value="{$one.id}" name="sele[]"/></td> -->
+									<!-- <td>{$one.id}</td> -->
+									<td class="text-left">{$key+1}</td>
+									<td class="text-left">{$eip_user[$one[eid]]['rname']}</td>
+									<td class="text-left">{$one.create_time|date="Y-m-d h:i:s",###}</td>
+									<td class="text-left">{$one.ip}</td>
+									<td class="text-left">{$one.function}</td>
+									<td class="text-left"><textarea rows="1" readonly>{$one.log}</textarea></td>
+								</tr>
+							</foreach>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />
+<script type="text/javascript" src="__PUBLIC__/js/jquery.sieve.min.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/stupidtable.js"></script>
+<script type="text/javascript">
+	$(function(){
+		$(".content").stupidtable();
+		$('.content').sieve({
+			searchTemplate: '<div><label>搜尋: <input type="text"></label></div>'
+		});
+	});
+</script>

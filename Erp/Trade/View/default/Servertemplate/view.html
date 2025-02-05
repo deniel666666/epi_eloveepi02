@@ -1,0 +1,198 @@
+<include file="Public:header2" />
+<!-- .wrapAll -->
+<section class="main document">
+	<!---->
+	<div id="right">
+		<div class="right_cont">
+			<div class="content-table">
+				<ul class="service-items">
+					<li><label class="name">{$system_parameter["客戶"]}{$system_parameter["簡稱"]}：</label>
+						<div class="text">
+							<if condition="in_array(75, $use_function_top)">
+								<a href="{:u('Custo/view_re')}?id={$data.crm_id}" target="_blank">
+							<else />
+								<a href="{:u('Custo/addcrm')}?id={$data.crm_id}" target="_blank">
+							</if>
+								{$data.show_name}
+							</a>
+							<if condition="$data['show_name']">
+								<span class="copy" data-clipboard-text="{$data.show_name}">複製</span>
+							</if>
+						</div>
+						
+					</li>
+					<li><label class="name">{$system_parameter['合約']}號：</label>
+						<div class="text">
+							<a href="{:u('Alllist/view')}?id={$data.pid}">{$data.sn}</a>
+						</div>
+						
+					</li>
+					<li><label class="name">金額：</label>
+						<div class="text">
+							{$data.allmoney}
+						</div>
+					</li>
+					<li><label class="name">{$system_parameter['合約']}備註：</label>
+						<div class="text">
+							{$data.note}
+						</div>
+					</li>
+					<li><label class="name">設定網址：</label>
+						<div class="copy text" data-clipboard-text="{$data.h_url}">
+							{$data.h_url}
+						</div>
+					</li>
+					<li><label class="name">後台位置：</label>
+						<div class="copy text" data-clipboard-text="{$data.b_location}">
+							{$data.b_location}
+						</div>
+					</li>
+					<li><label class="name">網站後台帳號：</label>
+						<div class="copy text" data-clipboard-text="{$data.b_account}">
+							{$data.b_account}
+						</div>
+					</li>
+					<li><label class="name">網站後台密碼：</label>
+						<div class="copy text" data-clipboard-text="{$data.b_password}">
+							{$data.b_password}
+						</div>
+
+					</li>
+					
+				</ul>
+				<hr>
+				<ul class="service-items">
+					<li><label class="name">主機繳費方式：</label>
+						<div class="text">{$eip_pay_type[$data['h_givepaytype']]['rname']}</div>
+					</li>
+					<li><label class="name">存放主機名稱：</label>
+						<div class="text">
+							<foreach name="crm_hostcompany" item="op">
+								<if condition="$data['h_company'] eq $op['id']">
+									<a target="_blank" href="{:u('Sercom/view')}?id={$op.id}">{$op.nick}</a>
+									<if condition="$op.url neq ''">
+										<a target="_blank" href="{$op.url}">(主機網站)</a>
+									</if>
+								</if>
+							</foreach>
+						</div>
+					</li>
+					<li><label class="name">主機開始日期：</label>
+						<div class="text">{$data['h_betime']|date="Y-m-d",###}</div>
+					</li>
+					<li><label class="name">主機結束日期：</label>
+						<div class="text">{$data['h_endtime']|date="Y-m-d",###}</div>
+					</li>
+					<li><label class="name">主機網址1：</label>
+						<div class="copy text" data-clipboard-text="{$data.dns1}">{$data['dns1']}</div>
+					</li>
+					<li><label class="name">主機ip1：</label>
+						<div class="copy text" data-clipboard-text="{$data.ip1}">{$data['ip1']}</div>
+					</li>
+					<li class="w50"><label class="name">空間 / 流量：</label>
+						<div class="text">{$data.w_space}G / {$data.w_flow}G</div>
+					</li>
+					<li><label class="name">主機網址2：</label>
+						<div class="copy text" data-clipboard-text="{$data.dns2}">{$data['dns2']}</div>
+					</li>
+					<li><label class="name">主機ip2：</label>
+						<div class="copy text" data-clipboard-text="{$data.ip2}">{$data['ip2']}</div>
+					</li>
+					<li class="w50"></li>
+					<li><label class="name">CPANEL/ftp管理帳號：</label>
+						<div class="copy text" data-clipboard-text="{$data.h_user}">
+							{$data.h_user}	</div>
+					</li>
+					<li><label class="name">CPANEL/ftp管理密碼：</label>
+						<div class="copy text" data-clipboard-text="{$data.h_pwd}">
+							{$data.h_pwd}	</div>
+					</li>
+					<li class="w50"><label class="name">主機備註：</label>
+						<div class="text" >{$data['h_note']}</div>
+					</li>
+				</ul>
+				<hr>
+				<!-- 域名相關 -->
+				<ul class="service-items">
+					<li><label class="name">域名繳費方式：</label>
+						<div class="text">{$eip_pay_type[$data['d_givepaytype']]['rname']}</div>
+					</li>
+					<li><label class="name">由域名公司購買：</label>
+						<div class="text">
+							<foreach name="crm_domaincompany" item="op">
+								<if condition="$data['d_company'] eq $op['id']">
+									<a target="_blank" href="{:u('Domcom/view')}?id={$op.id}">{$op.nick}</a>
+									<if condition="$op.url neq ''">
+										<a target="_blank" href="{$op.url}">(域名網站)</a>
+									</if>
+								</if>
+							</foreach>
+						</div>
+					</li>
+					<li><label class="name">域名開始日期：</label>
+						<div class="text">{$data['d_betime']|date="Y-m-d",###}</div>
+					</li>
+					<li><label class="name">域名結束日期：</label>
+						<div class="text">{$data['d_endtime']|date="Y-m-d",###}</div>
+					</li>
+					<li><label class="name">域名管理帳號：</label>
+						<div class="copy text" class="copy" data-clipboard-text="{$data.d_user}">
+							{$data.d_user}</div>
+					</li>
+					<li><label class="name">域名管理密碼：</label>
+						<div class="copy text" data-clipboard-text="{$data.d_pwd}">
+							{$data.d_pwd}</div>
+					</li>
+					<li class="w50"><label class="name">域名備註：</label>
+						<div class="text ">
+							{$data['d_note']}</div>
+					</li>
+				</ul>
+				<hr>
+				<!-- SSL相關 -->
+				<ul class="service-items">
+					<li><label class="name">SSL繳費方式：</label>
+						<div class="text">{$eip_pay_type[$data['s_givepaytype']]['rname']}</div>
+					</li>
+					<li><label class="name">由SSL公司購買：</label>
+						<div class="text">
+							<foreach name="crm_hostcompany" item="op">
+								<if condition="$data['s_company'] eq $op['id']">
+									<if condition="$op.url neq ''">
+										<a target="_blank" href="{$op.url}">{$op.nick}</a>
+									<else/>
+										{$op.nick}
+									</if>
+								</if>
+							</foreach>
+						</div>
+					</li>
+					<li><label class="name">SSL開始日期：</label>
+						<div class="text">{$data['s_betime']|date="Y-m-d",###}</div>
+					</li>
+					<li><label class="name">SSL結束日期：</label>
+						<div class="text">{$data['s_endtime']|date="Y-m-d",###}</div>
+					</li>
+					<li class="w50"><label class="name">SSL備註：</label>
+						<div class="text">{$data['s_note']}</div>
+					</li>
+				</ul>
+				<if condition="$access[$controller_lower.'_edi'] eq '1'">
+					<div class="send">
+						<a href="{:u($controller.'/editor')}?id={$_GET['id']}">
+							<input type="button" class="btn sendbtn" value="修改資料" />
+						</a>
+					</div>
+				</if>
+
+			</div>
+		
+
+			
+		</div>
+	</div>
+</section>
+<!-- .wrapAll end-->
+<include file="Public:footer" />
+
+

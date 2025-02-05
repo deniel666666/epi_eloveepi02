@@ -1,0 +1,631 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{$eip_company_custom['name']} {$outer_title}</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <!--提示視窗css -->
+    <link rel="stylesheet" href="/Public/qhand/css/alert.css">
+
+    <link href="/Public/qhand/css/jquery-ui.css" rel="stylesheet" type="text/css" />
+
+    <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+    <script src="__PUBLIC__/js/ui/jquery-ui.js" type="text/javascript"></script>
+    <!--提示視窗-->
+
+    <!-- Vue -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+    <script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+      <script>Vue.use(Toasted);</script>
+
+    <style type="text/css">
+      .w100{
+        width: 100%;
+      }
+      th,td,.check_note{font-size: 1rem;}
+      th,td{padding:3px;}
+      .table2 th {
+      border: 1px solid #555555;
+      line-height: 20px;
+      text-align: center;
+      }
+      .table th {
+      background: none repeat scroll 0 0 #F6FBFD;
+      font-size: 14px;
+      font-weight: 400;
+      text-align: left;
+      }
+      #out2 td{
+      border: 1px solid #555555;
+      }
+      li{
+      list-style:none;}
+      .noborder li {
+      width: 95px;
+      float: left;
+      display: block;
+      line-height: 3.5em;
+      border-right-width: 1px;
+      border-right-style: double;
+      border-right-color: #000;
+      }
+      td.nopadding {
+      padding: 0px;
+      }
+      li.nobord {
+      border-top-style: none;
+      border-right-style: none;
+      border-bottom-style: none;
+      border-left-style: none;
+      }
+      .noborder {
+      width: 100%;
+      }
+      li.noword {
+      text-indent: -9999em;
+      }
+      #out2 .noborder td {
+      width: 90px;
+      border-top-style: none;
+      border-bottom-style: none;
+      border-left-style: none;
+      border-right-style: none;
+      }
+      h3 {
+      font-size: 1.3em;
+      }
+      .check_note {
+      width: 1024px;
+      margin-right: auto;
+      margin-left: auto;
+      margin-bottom: 10px;
+      line-height: 1.2em;
+      }
+    </style>
+  </head>
+  <body style="font-size:12px;">
+    <div id="txt">
+      <table width="1024" border="0" align="center" cellpadding="0" cellspacing="0">
+        <tr>
+          <td height="33" colspan="2" align="center">
+            <h3>{$eip_company_custom['name']}</h3>
+          </td>
+        </tr>
+        <tr>
+          <td width="25%" height="33">
+            {$outer_title}
+            &nbsp;&nbsp;
+            {$contract.sn}-{$money['qh']}-{$money['count']}
+          </td>
+          <td width="50%" align="right">
+            <!--一聯 客戶聯/二聯 公司聯-->
+            <div id="showcc"></div>
+          </td>
+        </tr>
+      </table>
+      <table width="1024" border="1" align="center" cellpadding="1" cellspacing="1" style="border: 1px solid #555555;">
+        <tr>
+          <td width="80" bgcolor="#CCCCCC">{$system_parameter['合約']}號:</td>
+          <td width="120" bgcolor="#e9e9e9" id="sn">{$contract.sn} {$contract.topic}</td>
+          <if condition="$system_parameter['送貨單額外資訊']">
+            <td width="80" bgcolor="#CCCCCC">{$出貨}編號:</td>
+            <td width="120" bgcolor="#e9e9e9">
+              <input type="text" class="w100" name="sale_code" value="{$print_txt.sale_code}">
+            </td>
+            <td width="100" bgcolor="#CCCCCC">宅配單號:</td>
+            <td width="120" bgcolor="#e9e9e9">
+              <input type="text" class="w100" name="shipping_code" value="{$print_txt.shipping_code}">
+            </td>
+            <td width="120" bgcolor="#CCCCCC">到貨日期:</td>
+            <td width="100" bgcolor="#e9e9e9">
+              <input type="date" class="w100" name="shipping_date" value="{$print_txt.shipping_date}">
+            </td>
+          </if>
+        </tr>
+        <tr>
+          <td bgcolor="#CCCCCC">{$system_parameter['公司名稱']}:</td>
+          <td bgcolor="#e9e9e9">{$crm_crm.name}</td>
+          <if condition="$system_parameter['送貨單額外資訊']">
+            <td bgcolor="#CCCCCC">{$system_parameter['公司核准日']}:</td>
+            <td bgcolor="#e9e9e9">{$crm_crm.hzrq}</td>
+            <td bgcolor="#CCCCCC">代收人姓名:</td>
+            <td bgcolor="#e9e9e9">
+              <input type="text" class="w100" name="receive_name" value="{$print_txt.receive_name}">
+            </td>
+            <td bgcolor="#CCCCCC">電話/手機:</td>
+            <td bgcolor="#e9e9e9">
+              <input type="text" class="w100" name="receive_phone" value="{$print_txt.receive_phone}">
+            </td>
+          </if>
+        </tr>
+        <tr>
+          <td bgcolor="#CCCCCC">{$system_parameter['送貨地址']}:</td>
+          <td colspan="5" bgcolor="#e9e9e9">{$crm_crm.show_addr}</td>
+
+          <if condition="$system_parameter['送貨單額外資訊']">
+            <td bgcolor="#CCCCCC">來電時間:</td>
+            <td colspan="" bgcolor="#e9e9e9">
+              <input type="checkbox" value="早" name="phone_time" id="phone_time_morning">
+              <label for="phone_time_morning">早</label>&nbsp;&nbsp;
+              <input type="checkbox" value="中" name="phone_time" id="phone_time_afternoon">
+              <label for="phone_time_afternoon">午</label>&nbsp;&nbsp;
+              <input type="checkbox" value="晚" name="phone_time" id="phone_time_evening">
+              <label for="phone_time_evening">晚</label>
+            </td>
+          </if>
+        </tr>
+      </table>
+      <table width="1024" align="center" cellpadding="0" cellspacing="1" id="out2" 
+           style="border: 1px solid #555555;font-size:14px;">
+        <if condition="$contract['cate'] eq 1 && $prepaid neq 1">
+          <!-- SEO 且非預收款 所需要的表格格式 -->
+          <tr>
+            <td width="40" align="center">項次</td>
+            <td colspan="5" align="center">交易內容</td>
+            <td align="center">排名網址</td>
+            <td align="center">計費期間</td>
+            <td width="70" colspan="2" align="center">計費天數</td>
+            <td width="75" align="center">單價/月</td>
+            <td align="center">金額</td>
+          </tr>
+          <volist name="salelist" id="list" key="num">
+            <tr>
+              <td width="40" align="center">{$num}</td>
+              <td colspan="5" align="center" bgcolor="#FFFFFF">
+                <div style="position:absolute;background:{$list.color};width:15px;height:15px;margin-left:5px">
+                </div>
+                {$list.key_name}
+              </td>
+              <td align="center" bgcolor="#FFFFFF" style="font-size:12px">
+                {$list.url1}
+              </td>
+              <td align="center" style="font-size:12px">
+                {$datespan}
+              </td>
+              <td colspan="2" align="center">{$list.day}</td>
+              <td align="center" >
+                <if condition="$control_money_input eq 0">
+                  <div style="text-align: right;" class="pp2 change" 
+                       money="{$list['price']*$fix|number_format=2}" 
+                       fmoney="{$list['price']|number_format=2}"
+                       nmoney="{$list['price']|number_format=0}">
+                  </div>
+                <else />
+                  <div style="text-align: right;" class="pp2 change" 
+                       money="{$list['price']|count_money_pre_tax=$control_money_input}" 
+                       fmoney="{$list['price']|number_format=0}" 
+                       nmoney="{$list['price']|number_format=0}">
+                  </div>
+                </if>
+              </td>
+              <td>
+                <if condition="$control_money_input eq 0">
+                  <div class="mm1 change" style="text-align: right;" id="imoney{$list.i}"
+                       money="{$list['tprice']*$fix|number_format=2}" 
+                       fmoney="{$list['tprice']|number_format=2}"
+                       nmoney="{$list['tprice']|number_format=0}">
+                  </div>
+                <else />
+                  <div class="mm1 change" style="text-align: right;" id="imoney{$list.i}"
+                       money="{$list['tprice']|count_money_pre_tax=$control_money_input}"
+                       fmoney="{$list['tprice']|number_format=0}" 
+                       nmoney="{$list['tprice']|number_format=0}">
+                  </div>
+                </if>
+              </td>
+            </tr>
+          </volist>
+        <else />
+          <tr>
+            <td width="40" align="center">項次</td>
+            <td width="92" align="center">開出日期</td>
+            <td colspan="3" align="center">名稱</td>
+            <td colspan="4" align="center">規格</td>
+            <td align="center" width="100">數量</td>
+            <td align="center" width="100">單位</td>
+            <td colspan="2" width="221" align="center">金額</td>
+          </tr>
+          <foreach name="salelist" item="list" key="num">
+            <tr>
+              <td align="center">{$num+1}</td>
+              <td width="92" height="25" align="center">{$list.time|date="Y/m",###}</td>
+              <td colspan="3" align="center" bgcolor="#FFFFFF">{$list.name}</td>
+              <td colspan="4" align="center">{$list.content}</td>
+              <td align="center">{$list.num}</td>
+              <td align="center">{$list.unit}</td>
+              <td colspan="2" width="221">
+                <if condition="$control_money_input eq 0">
+                  <div style="text-align: right;" class="itemmoney change"
+                       money="{$list['money']|number_format=2}" 
+                       fmoney="{$list['money']*$fix|number_format=2}" 
+                       nmoney="{$list['money']|number_format=0}">
+                  </div>
+                <else />
+                  <div style="text-align: right;" class="itemmoney change"
+                       money="{$list['money']|count_money_pre_tax=$control_money_input}" 
+                       fmoney="{$list['money']|number_format=0}" 
+                       nmoney="{$list['money']|number_format=0}">
+                  </div>
+                </if>
+              </td>
+            </tr>
+          </foreach>
+        </if>
+
+        <tr>
+          <td colspan="10" align="center"></td>
+          <td align="center" class="sh">合計 </td>
+          <td style="text-align: right;" width="70">
+            <if condition="$control_money_input eq 0">
+              <div style="text-align: right;" class="sh change"
+                   money="{$all['money_real']|number_format=2}" 
+                   fmoney="{$all['money_real']*$fix|number_format=0}" 
+                   nmoney="{$all['money_real']|number_format=0}">
+              </div>
+            <else />
+              <div style="text-align: right;" class="sh change"
+                   money="{$all['money_real']|count_money_pre_tax=$control_money_input}" 
+                   fmoney="{$all['money_real']|number_format=0}" 
+                   nmoney="{$all['money_real']|number_format=0}">
+              </div>
+            </if>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="10" align="right">
+            發票：
+            <span style="margin-right: 25px;">
+              <input id="invoice1" name="invoice" type="radio" value="二聯"/>
+              <label for="invoice1">二聯</label>
+            </span>
+            <span style="margin-right: 25px;">
+              <input id="invoice2" name="invoice" type="radio" value="三聯"/>
+              <label for="invoice2">三聯</label>
+            </span>
+            <span style="margin-right: 25px;">
+              <input id="invoice0" name="invoice" type="radio" value="無"/>
+            </span>
+            <!-- <span style="margin-right: 25px;">
+              <input id="invoice" name="invoice" type="radio" value="未決定"/>
+              <label for="invoice">未決定</label>
+            </span> -->
+          </td>
+          <td align="center" class="sh">營業稅</td>
+          <td style="text-align: right;" width="221">
+            <if condition="$control_money_input eq 0">
+              <div style="text-align: right;" class="sh change rax"
+                   money="{$all['money_real']*($fix-1)|number_format=2}" 
+                   fmoney="應稅" 
+                   nmoney=" ">
+              </div>
+            <else />
+              <div style="text-align: right;" class="sh change rax"
+                   money="{$all['money_real']|count_tax=$control_money_input}"
+                   fmoney="應稅"
+                   nmoney=" ">
+              </div>
+            </if>
+          </td>
+        </tr>
+        <tr>
+          <td height="70"  rowspan="4" align="center">注意事項</td>
+          <td colspan="9" rowspan="4">
+            <textarea name="outnote" cols="80" rows="3" id="outnote">{$print_txt.bz}</textarea>
+          </td>
+          <td align="center">總金額</td>
+          <td width="70" style="text-align: right;">
+            <if condition="$control_money_input eq 0">
+              <span id="total1" class="change" 
+                    money="{$all['money_real']*$fix|number_format=0}" 
+                    fmoney="{$all['money_real']*$fix|number_format=0}" 
+                    nmoney="{$all['money_real']|number_format=0}">
+              </span>
+            <else />
+              <span id="total1" class="change" 
+                    money="{$all['money_real']|number_format=0}" 
+                    fmoney="{$all['money_real']|number_format=0}" 
+                    nmoney="{$all['money_real']|number_format=0}">
+              </span>
+            </if>
+          </td>
+        </tr>
+        <tr>
+          <if condition="$contract['cate'] eq 1 && $prepaid neq 1">
+            <td align="center">收費上限</td>
+            <td style="text-align: right;" width="70">
+              <if condition="$control_money_input eq 0">
+                <span id="total1" class="change" id="limitSeoMoney"
+                      money="{$crm_contract_seo_upmoney*$fix|number_format=0}" 
+                      fmoney="{$crm_contract_seo_upmoney*$fix|number_format=0}" 
+                      nmoney="{$crm_contract_seo_upmoney|number_format=0}">
+                </span>
+              <else />
+                <span id="total1" class="change" id="limitSeoMoney"
+                      money="{$crm_contract_seo_upmoney|number_format=0}" 
+                      fmoney="{$crm_contract_seo_upmoney|number_format=0}"
+                      nmoney="{$crm_contract_seo_upmoney|number_format=0}">
+                </span>
+              </if>
+            </td>
+          </if>
+        </tr>
+        <tr>
+          <if condition="$money['xdj'] neq 0">
+            <td align="center">{$預收}抵扣</td>
+            <td style="text-align: right;" width="70">
+              <if condition="$control_money_input eq 0">
+                <div class="change"
+                     money="{$money['xdj']*$fix|number_format=0}" 
+                     fmoney="{$money['xdj']*$fix|number_format=0}"
+                     nmoney="{$money['xdj']|number_format=0}">
+                </div>
+              <else />
+                <div class="change"
+                     money="{$money['xdj']|number_format=0}" 
+                     fmoney="{$money['xdj']|number_format=0}"
+                     nmoney="{$money['xdj']|number_format=0}">
+                </div>
+              </if>
+            </td>
+          </if>
+        </tr>
+        <tr>
+          <td align="center">本單{$應收}款</td>
+          <td width="70" style="text-align: right;">
+            <if condition="$control_money_input eq 0">
+              <div class="change"
+                   money="{$money['xqj']*$fix|number_format=0}" 
+                   fmoney="{$money['xqj']*$fix|number_format=0}"
+                   nmoney="{$money['xqj']|number_format=0}">
+              </div>
+            <else />
+              <div class="change"
+                   money="{$money['xqj']|number_format=0}" 
+                   fmoney="{$money['xqj']|number_format=0}" 
+                   nmoney="{$money['xqj']|number_format=0}">
+              </div>
+            </if>
+          </td>
+        </tr>
+        <if condition="$system_parameter['送貨單額外資訊']">
+          <tr>
+            <td height="70" colspan="12" align="center" class="nopadding">
+              <table width="100%" cellpadding="3" cellspacing="1" class="noborder">
+                <tr>
+                  <td align="right">銀行:</td>
+                  <td>
+                    <input type="text" class="w100" name="bank" value="{$print_txt.bank}">
+                  </td>
+                  <td align="right">卡號/帳號:</td>
+                  <td>
+                    <input type="text" class="w100" name="card" value="{$print_txt.card}">
+                  </td>
+                  <td align="right">未三碼:</td>
+                  <td>
+                    <input type="text" class="w100" name="card_end_code" value="{$print_txt.card_end_code}">
+                  </td>
+                  <td align="right"></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td align="right">持卡人:
+                  <td>
+                    <input type="text" class="w100" name="card_name" value="{$print_txt.card_name}">
+                  </td>
+                  <td align="right">有效期限:
+                  <td>
+                    <input type="text" class="w100" name="card_date" value="{$print_txt.card_date}">
+                  </td>
+                  <td align="right">分幾期:
+                  <td>
+                    <input type="text" class="w100" name="card_period" value="{$print_txt.card_period}">
+                  </td>
+                  <td align="right">發票號:
+                  <td>
+                    <input type="text" class="w100" name="invoice_code" value="{$print_txt.invoice_code}">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </if>
+        <tr>
+          <td height="70" colspan="12" align="center" class="nopadding">
+            <table width="100%" cellpadding="3" cellspacing="1" class="noborder">
+              <tr>
+                <td>會計:</td>
+                <td></td>
+                <td>主辦:</td>
+                <td></td>
+                <td>出貨:</td>
+                <td></td>
+                <td>key單:{$money['create_user_name']}</td>
+                <td></td>
+                <td>核單:{$money['audit_user_name']}</td>
+                <td></td>
+                <if condition="$system_parameter['送貨單額外資訊']">
+                  <td>諮詢師:</td>
+                  <td></td>
+                </if>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <br>
+      <div class="check_note">{$note}</div>
+    </div>
+    <table width="1024" border="0" align="center" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center">
+          <input type="hidden" id="caseid" value="{$contract.id}" />
+          <input type="hidden" id="moneyid" value="{$moneyid}" />
+          <if condition="$money.ship_status eq '1'">
+            <if condition="$access[strtolower($CONTROLLER_NAME).'_del'] eq '1'">
+              <input type="button" name="button" value="取消申請並修改單據" id="alterbtn">
+            </if>
+          <else />
+            <if condition="$access[strtolower($CONTROLLER_NAME).'_new'] eq '1'">
+              <input type="button" name="button" value="確認並進入{$收款}申請步驟" id="savebtn">
+            </if>
+          </if>
+          <input type="button" name="button" value="公司聯" onclick="javascript:printall('company');">
+          <input type="button" name="button" value="客戶聯" onclick="javascript:printall('customer');">
+        </td>
+      </tr>
+    </table>
+    <!-- <div class="box"></div> -->
+    <!-- 為了不顯示URL，特別在分開來列印出來!!! jimmy 20141104 -->
+  </body>
+
+  <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+  <script src="__PUBLIC__/js/ui/jquery-ui.js" type="text/javascript"></script>
+  <!--提示視窗-->
+  <script src="__PUBLIC__/js/jquery.toaster.js"></script>
+  <script>
+    $(window).load(function() {
+      /*自動勾選來電時間*/
+      var phone_time = '{$print_txt.phone_time}' ? JSON.parse('{$print_txt.phone_time}') : [];
+      for (var i = 0; i < phone_time.length; i++) {
+        $('[name="phone_time"][value="'+phone_time[i]+'"]').prop('checked', 'checked');
+      }
+      
+      /*自動勾選發票*/
+      $("#invoice{$invoice_type}").attr("checked",true);
+      change_price($("#invoice{$invoice_type}").val());
+    });
+
+    /*依發票顯示價格*/
+    function change_price(invoice_name){
+      switch(invoice_name){
+        case "三聯":
+          $(".change").each(function(){
+            $(this).html($(this).attr("money"));
+          });
+          break;
+        case "二聯":
+          $(".change").each(function(){
+            $(this).html($(this).attr("fmoney"));
+          });
+          break;
+        default:
+          $(".change").each(function(){
+            $(this).html($(this).attr("nmoney"));
+          });
+      }
+    }
+    //修改聯數
+    $('[name="invoice"]').change(function(){
+      change_price($(this).val());
+    });
+
+    /*設定不可修改*/
+    if("{$money.ship_status}"=='1'){
+      $('input, textarea').attr('readonly', 'readonly');
+      $('[type="radio"], [type="checkbox"]').attr('disabled', 'disabled');
+    }
+
+    //列印
+    $("#invoice{$invoice_type}").prop("checked",true);
+    function printall(ctype){
+      if(ctype=="customer"){
+        $(".sh").show();
+        $("#showcc").html("一聯  客戶聯");
+      } else {
+        $("#showcc").html("二聯  公司聯");
+        $(".sh").show();
+      }
+      $('input[type="button"]').hide();
+
+      $('input[type="text"]').each(function(item){
+        input_target = $('input[type="text"]:first');
+        input_parent = input_target.parent();
+        input_parent.html(input_target.val());
+      });
+      $('input[type="date"]').css({'border': 0, 'background': 'unset'});
+      $('textarea').css({'border': 0, 'resize': 'none'});
+      window.print();
+      window.location.href=window.location;
+    }
+
+    /*核可出貨*/
+    $("#savebtn").click(function(){
+      var obj=new Object();
+      obj.caseid=$('#caseid').val();
+      obj.moneyid=$('#moneyid').val();
+      
+      obj.outnote=$('#outnote').val();			
+      obj.invoice=$.trim($("input[name=invoice]:checked").val());
+      obj.sale_code = $('input[name="sale_code"]').val();
+      obj.shipping_code = $('input[name="shipping_code"]').val();
+      obj.shipping_date = $('input[name="shipping_date"]').val();
+      obj.receive_name = $('input[name="receive_name"]').val();
+      obj.receive_phone = $('input[name="receive_phone"]').val();
+      phone_time = [];
+      var phone_times = $('input[name="phone_time"]:checked');
+      for (var i = 0; i < phone_times.length; i++) {
+        phone_time.push($(phone_times[i]).val());
+      }
+      obj.phone_time = JSON.stringify(phone_time);
+      obj.bank = $('input[name="bank"]').val();
+      obj.card = $('input[name="card"]').val();
+      obj.card_end_code = $('input[name="card_end_code"]').val();
+      obj.card_name = $('input[name="card_name"]').val();
+      obj.card_date = $('input[name="card_date"]').val();
+      obj.card_period = $('input[name="card_period"]').val();
+      obj.invoice_code = $('input[name="invoice_code"]').val();
+
+      obj.txt=$('#txt').html();
+
+      // console.log(obj);return;
+      $.ajax({
+        type:"POST",
+        dataType:'json',
+        url:"{:u($CONTROLLER_NAME.'/confirm_sale')}",
+        data:obj,
+        success:function(res){
+          if(res.status==1){
+            bg_class = "bg-success";
+            if(parent){
+              parent.shipment_need_renew = true;
+            }
+            window.location.reload();
+          }else{
+            bg_class = "bg-danger";
+          }
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        }
+      })
+    });
+    /*取消出貨*/
+    $("#alterbtn").click(function(){
+      var obj=new Object();
+      obj.caseid=$('#caseid').val();
+      obj.moneyid=$('#moneyid').val();
+
+      $.ajax({
+        type:"POST",
+        dataType:'json',
+        url:"{:u($CONTROLLER_NAME.'/cancel_sale')}",
+        data:obj,
+        success:function(res){
+          if(res.status==1){
+            bg_class = "bg-success";
+            msg = "取消成功";
+            if(parent){
+              parent.shipment_need_renew = true;
+            }
+            window.location.reload();
+          }else{
+            bg_class = "bg-danger";
+            msg = res.info;
+          }
+          Vue.toasted.show(msg, { duration: 1500, className: ["toasted-primary", bg_class] });
+        }
+      })
+    });
+  </script>
+</html>

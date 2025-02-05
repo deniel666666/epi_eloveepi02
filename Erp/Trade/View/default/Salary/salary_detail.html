@@ -1,0 +1,243 @@
+<include file="Public:header2" />
+
+<div class="container mw1920 pl-4 pr-4">
+  <h3>{$salary['year']}-{$salary['month']}月</h3>
+
+  <h5 class="mt-3">本薪</h5>
+  <div class="edit_form">
+    <if condition="$salary['pay_hour'] neq '0'">
+      <!-- 時薪計薪 -->
+      <!--
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 500px; width: auto;">
+        <thead class="edit_table_thead">
+          <tr class="edit_table tr">
+            <th style="width: 100px;" class="text-right">時薪</th>
+            <th style="width: 100px;" class="text-right">時數</th>
+            <th style="width: 100px;" class="text-right">總計</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-right">{$salary['pay_hour']}</td>
+            <td class="text-right">{$salary['hour_count']}</td>
+            <td class="text-right"><b>{$salary['total_pay_hour']}</b></td>
+          </tr>
+        </tbody>
+      </table>
+      -->
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1000px;">
+        <thead class="edit_table_thead">
+          <tr class="edit_table tr">
+            <th style="width: 80px;" valign="middle" class="text-left">日期</th>
+            <th style="width: 100px;" valign="middle" class="text-left">日程名稱</th>
+            <th style="width: 150px;" valign="middle" class="text-left">日程地點</th>
+            <th style="width: 60px;" valign="middle" class="text-left">工種</th>
+            <th style="width: 60px;" valign="middle" class="text-right">時薪</th>
+            <th style="width: 60px;" valign="middle" class="text-right">正規工時</th>
+            <th style="width: 60px;" valign="middle" class="text-right">加班時薪</th>
+            <th style="width: 60px;" valign="middle" class="text-right">加班工時</th>
+            <th style="width: 60px;" valign="middle" class="text-right">獎懲調薪</th>
+            <th style="width: 60px;" valign="middle" class="text-right">應付薪資</th>
+            <th style="width: 150px;" valign="middle" class="text-left">備註</th>
+          </tr>
+        </thead>
+        <tbody>
+          <foreach name="hour_count_detail" item="detail">
+            <tr>
+              <td valign="middle" class="text-left">{$detail['date']}</td>
+              <td valign="middle" class="text-left" >{$detail['name']}</td>
+              <td valign="middle" class="text-left">{$detail['location']}</td>
+              <td valign="middle" class="text-left">{$detail['user_skill_name']}</td>
+              <td valign="middle" class="text-right">{$detail['user_hour_pay']}</td>
+              <td valign="middle" class="text-right">{$detail['do_hour']}</td>
+              <td valign="middle" class="text-right">{$detail['user_hour_pay_over']}</td>
+              <td valign="middle" class="text-right">{$detail['do_hour_overtime']}</td>
+              <td valign="middle" class="text-right">{$detail['change_num']}</td>
+              <td valign="middle" class="text-right">{$detail['total_pay_hour']}</td>
+              <td valign="middle" class="text-left">{$detail['note']}</td>
+            </tr>
+          </foreach>
+          <tr v-if="pay_page_detail.length>0">
+            <td valign="middle" class="text-right" colspan="9">小計</td>
+            <td valign="middle" class="text-right">{$salary['total_pay_hour']}</td>
+            <td valign="middle" class="text-left"></td>
+          </tr>
+        </tbody>
+      </table>
+    </if>
+    <if condition="$salary['pay_month'] neq '0'">
+      <!-- 月薪計薪 -->
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 800px; width: auto;">
+        <thead class="edit_table_thead">
+          <tr class="edit_table tr">
+            <th style="width: 100px;" class="text-right">月本薪</th>
+            <foreach name="salary['bonus_detail']" key="vo_key" item="vo">
+              <if condition="$vo['type'] eq '1'">
+                <th style="width: 100px;" class="text-right">{$vo['name']}</th>
+              </if>
+            </foreach>
+            <th style="width: 100px;" class="text-right">總計</th>
+            <th style="width: 100px;" class="text-right">在職率</th>
+            <th style="width: 100px;" class="text-right">可領月薪</th>
+            <th style="width: 100px;" class="text-right">調薪基準</th>
+            <th style="width: 100px;" class="text-right">1小時本薪</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-right">{$salary['pay_month']}</td>
+            <foreach name="salary['bonus_detail']" key="vo_key" item="vo">
+              <if condition="$vo['type'] eq '1'">
+                <td class="text-right">{$vo['num']}</td>
+              </if>
+            </foreach>
+            <td class="text-right">
+              <b>{$salary['pay_month'] + $salary['total_bonus']}</b>
+            </td>
+            <td class="text-right">{$salary['month_count']*100|round=2}%</td>
+            <td class="text-right">{$salary['total_pay_month']}</td>
+            <td class="text-right">{$salary['month_day']}日</td>
+            <td class="text-right">{$salary['salary_base_hour']}</td>
+          </tr>
+        </tbody>
+      </table>
+    </if>
+  </div>
+
+  <h5 class="mt-3">勤務 / 假勤異動</h5>
+  <div class="edit_form">
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 650px; width: auto;">
+        <thead class="edit_table_thead">
+          <tr class="edit_table tr">
+            <th style="width: 80px;">名稱</th>
+            <th style="width: 150px;">期間</th>
+            <th style="width: 80px;" class="text-right">時數</th>
+            <th style="width: 80px;" class="text-right">異動比率</th>
+            <th style="width: 100px;" class="text-right">異動金額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <foreach name="salary['rest_detail']" key="vo_key" item="vo">
+            <tr>
+              <td>{$vo['rt_name']}</td>
+              <td>{$vo['rest_day_s']}~{$vo['rest_day_e']}</td>
+              <td class="text-right">{$vo['hours_h']}小時{$vo['hours_m']}分</td>
+              <td class="text-right">{$vo['deduct_percent']}%</td>
+              <td class="text-right">{$vo['deduct_pay']}</td>
+            </tr>
+          </foreach>
+          <tr>
+            <td colspan="4">合計</td>
+            <td class="text-right">
+              <b>{$salary['total_rest_deduct']}</b>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  </div>
+
+  <h5 class="mt-3">自付保額</h5>
+  <div class="edit_form">
+    <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 650px; width: auto;">
+      <thead class="edit_table_thead">
+        <tr class="edit_table tr">
+          <th style="width: 100px;" class="">項目</th>
+          <th style="width: 100px;" class="text-right">金額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <foreach name="salary['insurance']" key="vo_key" item="vo">
+          <tr>
+            <td class="">{$vo['name']}</td>
+            <td class="text-right">{$vo['insurance_personal_pay']}</td>
+          </tr>
+        </foreach>
+        <tr>
+          <td class="">總計應扣</td>
+          <td class="text-right">
+            <b>{$salary['insurance_personal_pay']}</b>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h5 class="mt-3">非本薪加給(獎金)</h5>
+  <div class="edit_form">
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 650px; width: auto;">
+          <thead class="edit_table_thead">
+              <tr class="edit_table tr">
+                  <foreach name="salary['bonus_detail']" key="vo_key" item="vo">
+                    <if condition="$vo['type'] eq '0'">
+                      <th style="width: 100px;" class="text-right">{$vo['name']}</th>
+                    </if>
+                  </foreach>
+                  <th style="width: 100px;" class="text-right">總計</th>
+              </tr>
+          </thead>
+          <tbody>
+                <tr>
+                  <foreach name="salary['bonus_detail']" key="vo_key" item="vo">
+                    <if condition="$vo['type'] eq '0'">
+                      <td class="text-right">{$vo['num']}</td>
+                    </if>
+                  </foreach>
+                  <td class="text-right">
+                    <b>{$salary['total_bonus_award']}</b>
+                  </td>
+                </tr>
+          </tbody>
+      </table>
+  </div>
+
+  <h5 class="mt-3">應領薪資</h5>
+  <div class="edit_form">
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 650px; width: auto;">
+          <thead class="edit_table_thead">
+              <tr class="edit_table tr">
+                <th style="width: 100px;" class="text-right">總計</th>
+              </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-right">
+                <b>{$salary['total_salary'] - $salary['insurance_personal_pay']}</b>
+              </td>
+            </tr>
+          </tbody>
+      </table>
+  </div>
+  備註：<br>
+  <textarea class="form-control" rows="4" style="min-height: 2rem;" readonly>{$salary['note']}</textarea>
+
+  <hr class="mt-4">
+  <h5 class="mt-3">顧主應付保額</h5>
+  <div class="edit_form">
+    <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 650px; width: auto;">
+      <thead class="edit_table_thead">
+        <tr class="edit_table tr">
+          <th style="width: 100px;" class="">項目</th>
+          <th style="width: 100px;" class="text-right">金額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <foreach name="salary['insurance']" key="vo_key" item="vo">
+          <tr>
+            <td class="">{$vo['name']}</td>
+            <td class="text-right">{$vo['insurance_company_pay']}</td>
+          </tr>
+        </foreach>
+        <tr>
+          <td class="">總計應付</td>
+          <td class="text-right">
+            <b>{$salary['insurance_company_pay']}</b>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<include file="Public:footer" />
+<script type="text/javascript">
+</script>

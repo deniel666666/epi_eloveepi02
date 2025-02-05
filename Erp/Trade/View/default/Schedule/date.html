@@ -1,0 +1,386 @@
+<include file="Public:header2" />
+
+<section id="right">
+  <div class="container mw1920 p-4" id="schedule_div">
+    <div class="navi1 justify-content-start">
+      <div class="menu-sub-btn">
+        <ol>
+          <li class="">
+            <a href="{:U('Schedule/index')}" class="">
+              依日程組查看
+            </a>
+          </li>
+          <li class="">
+            <a href="{:U('Schedule/date')}" class="current">
+              依日期查看
+            </a>
+          </li>
+        </ol>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center pt-1 pb-1">
+      <input class="w100 mr-2" v-model="search_params.searchtext" placeholder="名稱/地點" style="max-width: 300px;">
+      <if condition="in_array(18, $use_function_top)">
+        <input class="w100 mr-2" v-model="search_params.evesno" placeholder="事件編號" style="max-width: 150px;">
+      </if>
+      <input class="w100 mr-2" v-model="search_params.sn" placeholder="{$system_parameter['合約']}編號" style="max-width: 150px;">
+      <input class="w100 mr-2" v-model="search_params.crm_text" placeholder="{$system_parameter['客戶']}{$system_parameter['名稱']}/{$system_parameter['簡稱']}" style="max-width: 150px;">
+      <span class="ml-4">
+        日期區間：
+        <input class="w100 mr-2" v-model="search_params.date_s" type="date" style="max-width: 120px;" @change="search_schedule_dates">~
+        <input class="w100 mr-2" v-model="search_params.date_e" type="date" style="max-width: 120px;" @change="search_schedule_dates">
+      </span>
+      
+      <a href="###" class="btn addbtn mr-2" @click="search_schedule_dates">搜尋</a>
+      <a href="javascript:location.reload()" class="btn btn-light">清除搜尋</a>
+    </div>
+    <div class="send d-flex justify-content-between">
+      <button class="btn btn-success" @click="create_money_search">依搜尋參數生成人力請款</button>
+      <crm_index_pages 
+        :change_page="change_page"
+        :current_page="search_params.current_page" 
+        :count_of_items="count_of_items" 
+        :count_of_page="search_params.count_of_page"
+      ></crm_index_pages>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table edit_table mb-2" style="min-width: 1750px;">
+        <thead>
+          <tr>
+            <th style="min-width: 40px;" class="text-right" valign="middle">序號</th>
+            <th style="min-width: 100px;">日期</th>
+            <th style="min-width: 400px;">名稱-地點</th>
+            <th style="min-width: 175px;">查看</th>
+            <if condition="in_array(18, $use_function_top)">
+              <th style="min-width: 200px;">走期</th>
+              <th style="min-width: 150px;">事件編號</th>
+            </if>
+            <th style="min-width: 175px;">{$system_parameter['合約']}編號</th>
+            <th style="min-width: 100px;">{$system_parameter['客戶']}</th>
+            <th style="min-width: 100px;">審核者</th>
+            <th style="min-width: 100px;">當日管理者</th>
+            <th style="min-width: 100px;">驗收日</th>
+            <th style="min-width: 100px;">轉薪日</th>
+            <th style="min-width: 95px;">排班請款</th>
+            <th style="min-width: 50px;">操作</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="(schedule,schedule_index) in schedule_dates">
+            <td class="text-right"><span v-text="(search_params.current_page-1)*search_params.count_of_page + schedule_index+1"></span></td>
+            <td><a href="###" @click="open_add(schedule_index)" v-text="schedule.date"></a></td>
+            <td><span v-text="schedule.name+'-'+schedule.location"></span></td>
+            <td>
+              <a :href="'{:U('Schedule/index_date')}?schedule_id='+schedule.id" target="_blank">
+                <button class="btn btn-warning">全部日程</button>
+              </a>
+              <a :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank">
+                <button class="btn btn-warning">名單</button>
+              </a>
+              <a :href="'{:U('ScheduleDetail/report')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank">
+                <button class="btn btn-warning">驗收</button>
+              </a>
+            </td>
+            <if condition="in_array(18, $use_function_top)">
+              <td>
+                <span v-if="schedule.start_time" v-text="schedule.start_time_format.substr(0, 10)"></span>
+                ~
+                <span v-if="schedule.end_time" v-text="schedule.end_time_format.substr(0, 10)"></span>
+              </td>
+              <td><span v-text="schedule.evesno"></span></td>
+            </if>
+            <td>
+              <template v-if="schedule.caseid!=0">
+                <a :href="'{:U('Alllist/view')}?id='+schedule.caseid" target="_blank">
+                  <span v-text="schedule.sn"></span>
+                </a>
+                (<a :href="'{:U('Getmoney/records')}?id='+schedule.caseid" target="_blank">查單</a>)
+              </template>
+            </td>
+            <td><span v-text="schedule.show_name_full"></span></td>
+            <td><span v-text="schedule.user_name"></span></td>
+            <td><span v-text="schedule.user_in_charge_name"></span></td>
+            <td>
+              <template v-if="schedule.examine_time">
+                <span v-text="schedule.examine_time_format.slice(0,10)"></span>
+              </template>
+            </td>
+            <td>
+              <template v-if="schedule.turn_salary_time">
+                <span class="d-inline-block mr-2" v-text="schedule.turn_salary_time_format.slice(0,10)"></span>
+                <if condition="$my_access['schedule_all'] eq 1">
+                  <span class="d-inline-block" v-text="schedule.turn_salary_time_name"></span>
+                </if>
+              </template>
+            </td>
+            <td>
+              <template v-if="schedule.caseid==0">無合約</template>
+              <template v-else-if="schedule.moneyid==0">
+                <button v-if="schedule.auto_money==1" class="btn btn-success" @click="create_money_one(schedule_index)">人力請款</button>
+                <template v-else>非人力請款</template>
+              </template>
+              <template v-else>
+                <a :href="'{:U('Getmoney/outer')}?caseid='+schedule.caseid+'&moneyid='+schedule.moneyid" 
+                   class="d-inline-block mr-2" target="_blank" 
+                   v-text="schedule.qh_count"></a>
+                <if condition="$my_access['schedule_all'] eq 1">
+                  <span class="d-inline-block" v-text="schedule.create_money_name"></span>
+                </if>
+              </template>
+            </td>
+            <td>
+              <button type="button" class="btn delate" @click="delete_schedule_date(schedule.schedule_date_primary)">
+                <i aria-hidden="true" class="far fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="send d-flex justify-content-between">
+      <!-- <button class="btn btn-success" @click="create_money_search">依搜尋參數生成人力請款</button> -->
+      <crm_index_pages 
+        :change_page="change_page"
+        :current_page="search_params.current_page" 
+        :count_of_items="count_of_items" 
+        :count_of_page="search_params.count_of_page"
+      ></crm_index_pages>
+    </div>
+  </div>
+</section>
+<!-- Modal -->
+<a id="schedule_panel_btn" class="d-none" data-toggle="modal" data-target="#schedule_panel">設定日程</a>
+<div class="modal fade" id="schedule_panel" tabindex="-1" role="dialog" aria-labelledby="schedule_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="schedule_panelTitle">設定日程</h5>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          日期：<input type="date" v-model="schedule_date.date">
+        </div>
+        <div class="form-group">
+          當日管理者：
+          <select class="mr-2" v-model="apartmentid" @change="get_user">
+            <option value="">全部</option>
+            <foreach name="eip_apart" key="key" item="vo">
+              <option value="{$vo['id']}">{$vo['name']}</option>
+            </if>
+            </foreach>
+          </select>
+          <select v-model="schedule_date.user_in_charge" id="mens"></select>
+        </div>
+        <div class="form-group">
+          提醒事項：
+          <textarea class="form-control" rows="6" v-model="schedule_date.date_note"></textarea>
+        </div>
+        <div class="text-right">
+          <button class="btn btn-primary" @click="set_schedule_date">
+            送出
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+<script type="text/javascript">
+  const schedule_date_empty = {
+    schedule_id: 0,
+    date: '',
+    user_in_charge: 0,
+    date_note: '',
+  };
+  const schedule_div_data = {
+    schedule_date: JSON.parse(JSON.stringify(schedule_date_empty)),
+
+    apartmentid: '',
+
+    count_of_items: 0,
+    search_params: {
+      current_page: 1, 
+      count_of_page: 20,
+      searchtext: '',
+      evesno: '',
+      sn: '',
+      crm_text: '',
+      date_s: '',
+      date_e: '',
+    },
+    schedule_dates: [],
+  };
+  const schedule_divVM = new Vue({
+    el:'#schedule_div',
+    data: schedule_div_data,
+    methods: {
+      open_add: function(schedule_index=-1){
+        schedule_panelVM.set_schedule_date_panel(schedule_index);
+        $('#schedule_panel_btn').click();
+      },
+      change_page: function(page){ /*配合分頁元件*/
+        schedule_divVM.search_params.current_page = page;
+        schedule_divVM.get_schedule_dates();
+      },
+      search_schedule_dates: function(){
+        schedule_divVM.search_params.current_page = 1;
+        schedule_divVM.get_schedule_dates();
+      },
+      get_schedule_dates: function(){
+        schedule_divVM.schedule_dates = [];
+        data = JSON.parse(JSON.stringify(schedule_divVM.search_params));
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('ScheduleDetail/get_schedule_dates')}",
+          success:function(res){
+            schedule_divVM.schedule_dates = res.list;
+            schedule_divVM.count_of_items = res.count_of_items;
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      delete_schedule_date: function(schedule_date_primary){
+        if(!confirm('確定刪除?')){ return; }
+        $('#body_block').show();
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: {
+            schedule_date_primary: schedule_date_primary,
+          },
+          url: "{:u('Schedule/delete_schedule_date')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_divVM.get_schedule_dates();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+
+      create_money_one: async function(schedule_index){
+        schedule_date_primary = schedule_divVM.schedule_dates[schedule_index].schedule_date_primary;
+        post_data = {
+          schedule_date_primary: schedule_date_primary,
+        };
+        try {
+          res = await schedule_divVM.create_money(post_data);
+          if(res.status==1){
+            Vue.toasted.show('操作成功', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+            schedule_divVM.get_schedule_dates();
+          }else{
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          }
+          $('#body_block').hide();
+        } catch (error) {
+          console.log(error)
+          $('#body_block').hide();
+        }
+      },
+      create_money_search: async function(){
+        try {
+          post_data = JSON.parse(JSON.stringify(schedule_divVM.search_params));
+          delete post_data.current_page;
+          delete post_data.count_of_page;
+          res = await schedule_divVM.create_money(post_data);
+          if(res.status==1){
+            Vue.toasted.show('操作成功', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+            schedule_divVM.get_schedule_dates();
+          }else{
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          }
+          $('#body_block').hide();
+        } catch (error) {
+          $('#body_block').hide();
+        }
+      },
+      create_money: function(post_data){
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: post_data,
+          url: "{:u('Getmoney/create_money_schedule')}",
+        });
+      },
+    },
+  });
+  
+  const schedule_panelVM = new Vue({
+    el:'#schedule_panel',
+    data: schedule_div_data,
+    methods: {
+      set_schedule_date_panel: function(index=-1){
+        if(index==-1){
+          temp_data = schedule_date_empty;
+        }else{
+          temp_data = {
+            schedule_date_primary: schedule_divVM.schedule_dates[index].schedule_date_primary,
+            schedule_id: schedule_divVM.schedule_dates[index].id,
+            date: schedule_divVM.schedule_dates[index].date,
+            user_in_charge: schedule_divVM.schedule_dates[index].user_in_charge,
+            date_note: schedule_divVM.schedule_dates[index].date_note,
+          }
+        }
+        schedule_panelVM.schedule_date = JSON.parse(JSON.stringify(temp_data));
+        schedule_panelVM.$forceUpdate();
+      },
+      set_schedule_date: function(){
+        console.log(schedule_panelVM.schedule_date);
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: schedule_panelVM.schedule_date,
+          url: "{:u('Schedule/set_schedule_date')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              $('#schedule_panel').modal('hide');
+              schedule_panelVM.set_schedule_date_panel();
+              schedule_divVM.get_schedule_dates();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+
+      get_user: function(){
+        return $.ajax({
+          type:'POST',
+          data:{apartmentid:schedule_panelVM.apartmentid},
+          dataType:'text',
+          url:"{:U('Ajax/aj_getmean')}",
+          success:function(res){
+            $("#mens").html(res);
+            schedule_panelVM.$forceUpdate();
+          }
+        });
+      },
+    },
+  });
+
+  schedule_divVM.get_schedule_dates();
+  schedule_panelVM.get_user();
+</script>

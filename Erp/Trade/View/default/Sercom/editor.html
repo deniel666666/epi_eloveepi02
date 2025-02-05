@@ -1,0 +1,246 @@
+<include file="Public:header2" />
+
+<section class="main">
+	<!---->
+	<div id="right" >
+		<if condition="$page eq ''">
+			<form name="search" id="searchform"  class="searchform" action="{:u('Sercom/index')}" method="get">
+		<else />
+			<form name="search" id="searchform" class="searchform"  action="{:u('Sercom/index')}?p={$Think.get.p}" method="get">
+		</if>
+			<ol class="headerOl rightR">
+				<li>
+					<div class="search_bar">
+						<label for=""></label>
+						<input class="text" type="text"  placeholder="搜尋..." name="company" value="{$company}"   />
+						<input class="submit" type="submit" value="" />
+					</div>
+				</li>
+				<if condition="$access['sercom_new'] eq '1'">
+					<li style="float:right"><a href="{:u('Sercom/editor')}"><input type="button" class="btn addbtn" value="新增主機廠商" /></a></li>
+				</if>
+			</ol>
+		</form>
+		<form action="{:u('Sercom/dosave')}" class="form_save" method="post">
+			<div class="content-table d-flex flex-wrap">
+				<div class="sercom-box">
+					<ul >
+						<li><label class="name">主機名稱</label><input type="text" name="nick" class="subdis" value="{$data.nick}" placeholder="簡稱..." /></li>
+						<li><label class="name">管理位置</label><input type="text" name="url" class="subdis" value="{$data.url}" placeholder="管理位置..." /></li>
+						<li><label class="name">帳號</label><input type="text" name="dnsuser" class="subdis" value="{$data.dnsuser}" placeholder="帳號..." /></li>
+						<li><label class="name">密碼</label><input type="text" name="dnspwd" class="subdis" value="{$data.dnspwd}" placeholder="密碼..." /></li>
+						<li><label class="name">回報mail</label><input type="text" name="mail" class="subdis" value="{$data.mail}" placeholder="回報mail..." /></li>
+						
+					</ul>
+					<ul>
+						<li><label class="name">網址1</label><input type="text" name="dns1" class="subdis" value="{$data.dns1}" placeholder="網址1..." /></li>
+						<li><label class="name">ip1</label><input type="text" name="ip1" class="subdis" value="{$data.ip1}" placeholder="ip1..." /></li>
+						<li><label class="name">網址2</label><input type="text" name="dns2" class="subdis" value="{$data.dns2}" placeholder="網址2..." /></li>
+						<li><label class="name">ip2</label><input type="text" name="ip2" class="subdis" value="{$data.ip2}" placeholder="ip2..."/></li>
+						<li><label class="name">方案名稱</label><input type="text" name="casename" class="subdis" value="{$data.casename}" placeholder="方案名稱..." /></li>
+						<li><label class="name">主機總空間</label><input type="text" name="space" class="subdis" value="{$data.space}" placeholder="主機總空間..." /></li>
+						<li><label class="name">主機總流量</label><input type="text" name="flow" class="subdis" value="{$data.flow}" placeholder="主機總流量..." /></li>
+						<li class="note"><label class="name">備註</label><textarea name="bz" placeholder="備註..." >{$data.bz}</textarea></li>	
+					</ul>
+				</div>
+				
+				<div class="host-item">
+					<ul>
+						<li><label class="name">主機商名稱</label><input type="text" name="company" class="subdis" value="{$data.company}" placeholder="主機商名稱..." /></li>
+						<li><label class="name">位置</label><input type="text" name="dnsurl" class="subdis" value="{$data.dnsurl}" placeholder="位置..." /></li>
+						<li><label class="name">帳號</label><input type="text" name="comname" class="subdis" value="{$data.comname}" placeholder="帳號..." /></li>
+						<li><label class="name">密碼</label><input type="text" name="compw" class="subdis" value="{$data.compw}" placeholder="密碼..." /></li>
+						<li><label class="name">聯絡窗口</label><input type="text" name="name" class="subdis" value="{$data.name}" placeholder="聯絡窗口..." /></li>
+						<li><label class="name">聯絡電話</label><input type="text" name="moble" class="subdis" value="{$data.moble}" placeholder="聯絡電話..." /></li>
+						<li class="note"><label class="name">備註</label><textarea name="combz" placeholder="備註...">{$data.combz}</textarea></li>
+					</ul>
+				</div>
+				<!-- <div class="edit_form">
+					<table cellpadding="0" cellspacing="0" class="table edit_table" style="min-width: 1200px;">
+						<tr>
+							<td align="left" class="gray" width="100">
+								主機名稱：
+							</td>
+							<td align="left" colspan="3">
+								<input type="text" name="nick" class="subdis" value="{$data.nick}" placeholder="簡稱..." />
+							</td>
+							<td align="left" class="gray" width="100">
+								主機商名稱：
+							</td>
+							<td align="left" width="250">
+								<input type="text" name="company" class="subdis" value="{$data.company}" placeholder="主機商名稱..." />
+
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								管理位置
+							</td>
+							<td colspan="3">
+								<input type="text" name="url" class="subdis" value="{$data.url}" placeholder="管理位置..." />
+							</td>
+							<td align="left" class="gray" width="100">
+								位置
+							</td>
+							<td>
+								<input type="text" name="dnsurl" class="subdis" value="{$data.dnsurl}" placeholder="位置..." />
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								帳號
+							</td>
+							<td align="left" colspan="3">
+								<input type="text" name="dnsuser" class="subdis" value="{$data.dnsuser}" placeholder="帳號..." />
+							</td>
+							<td align="left" class="gray" width="100">
+								帳號
+							</td>
+							<td align="left" width="250">
+								<input type="text" name="comname" class="subdis" value="{$data.comname}" placeholder="帳號..." />
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								密碼
+							</td>
+							<td align="left" colspan="3">
+								<input type="text" name="dnspwd" class="subdis" value="{$data.dnspwd}" placeholder="密碼..." />
+							</td>
+							<td align="left" class="gray" width="100">
+								密碼
+							</td>
+							<td align="left" width="250">
+								<input type="text" name="compw" class="subdis" value="{$data.compw}" placeholder="密碼..." />
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								回報mail
+							</td>
+							<td align="left" colspan="3">
+								<input type="text" name="mail" class="subdis" value="{$data.mail}" placeholder="回報mail..." />
+							</td>
+							<td align="left" class="gray" width="100">
+								聯絡窗口
+							</td>
+							<td align="left" width="250">
+								<input type="text" name="name" class="subdis" value="{$data.name}" placeholder="聯絡窗口..." />
+							</td>
+
+						</tr>
+
+						<tr>
+							<td align="left" class="gray" width="100">
+								網址1
+							</td>
+							<td align="left">
+								<input type="text" name="dns1" class="subdis" value="{$data.dns1}" placeholder="網址1..."
+									style="width:100%" />
+							</td>
+							<td align="left" class="gray" width="100">
+								ip1
+							</td>
+							<td align="left">
+								<input type="text" name="ip1" class="subdis" value="{$data.ip1}" placeholder="ip1..."
+									style="width:100%" />
+							</td>
+							<td align="left" class="gray" width="100">
+								聯絡電話
+							</td>
+							<td align="left" width="250">
+								<input type="text" name="moble" class="subdis" value="{$data.moble}" placeholder="聯絡電話..." />
+							</td>
+						</tr>
+
+						<tr>
+							<td align="left" class="gray" width="100">
+								網址2
+							</td>
+							<td align="left">
+								<input type="text" name="dns2" class="subdis" value="{$data.dns2}" placeholder="網址2..."
+									style="width:100%" />
+							</td>
+							<td align="left" class="gray" width="100">
+								ip2
+							</td>
+							<td align="left">
+								<input type="text" name="ip2" class="subdis" value="{$data.ip2}" placeholder="ip2..."
+									style="width:100%" />
+							</td>
+							<td align="left" class="gray" width="100">
+								備註
+							</td>
+							<td align="left" width="250">
+								<textarea name="combz" placeholder="備註..." style="width:100%">{$data.combz}</textarea>
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								方案名稱
+							</td>
+							<td align="left">
+								<input type="text" name="casename" class="subdis" value="{$data.casename}" placeholder="方案名稱..." />
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								主機總空間
+							</td>
+							<td align="left">
+								<input type="text" name="space" class="subdis" value="{$data.space}" placeholder="主機總空間..." />
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								主機總流量
+							</td>
+							<td align="left">
+								<input type="text" name="flow" class="subdis" value="{$data.flow}" placeholder="主機總流量..." />
+							</td>
+
+						</tr>
+						<tr>
+							<td align="left" class="gray" width="100">
+								備註
+							</td>
+							<td align="left" colspan="5">
+								<textarea name="bz" placeholder="備註..." style="width:100%">{$data.bz}</textarea>
+							</td>
+
+						</tr>
+					</table>
+				</div> -->
+				<div class="send">
+					<input type="hidden" value="{$_GET['id']}" name="id" />
+					<input type="submit" class="sendbtn btn mt-2"/>
+				</div>
+
+			</div>	
+			
+			
+			
+			<!--content end-->
+		</form>
+	</div>
+</section>
+<!-- .wrapAll end-->
+<include file="Public:footer" />
+
+<script>
+	$(".form_save").submit(function(){
+		if($(".subdis").val()==""){
+			
+			$.toaster({ message : '公司名不能是空值'});
+			return false;
+		}
+	});
+	
+</script>

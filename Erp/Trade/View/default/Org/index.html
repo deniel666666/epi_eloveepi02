@@ -1,0 +1,171 @@
+<include file="Public:header2" />
+
+
+<section class="document main">
+	<div class="below">
+		<!-- 共用階層列表 -->
+		<include file="Org:menu" />
+		<!-- END 共用階層列表 -->		
+		<div class="right">
+			<div class="document_edit">
+				<form action="{:u('Org/add_new_team')}" method="POST">
+					<div class="edit_form">
+						<table class="table edit_table" style="min-width:1200px">
+							<thead>
+								<tr>
+									<th style="width:200px">新增組別名</th>
+									<th colspan="4">新增組長</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><input id="team_name" name="name" style="font-size:16px; width:100%" type="text"></td>
+									<td>部門：
+										<select id="apart" style="font-size:16px; width:calc(100% - 65px); height:25px">
+											<option value="">請選擇</option>
+											
+											<foreach name="eip_apart" key="key" item="vo">
+												<option value="{$vo['id']}">{$vo['name']}</option>
+											</foreach>
+										</select>
+									</td>
+									<td>職稱：
+										<select id="eip_jobs" style="font-size:16px; width:calc(100% - 65px); height:25px">
+											<option value="">請選擇</option>
+											
+											<foreach name="eip_jobs" key="key" item="vo">
+												<option value="{$vo['id']}">{$vo['name']}</option>
+											</foreach>
+										</select>
+									</td>
+									<td>姓名：
+										<select id="mens" name="boss_id" style="font-size:16px; width:calc(100% - 65px); height:25px">
+											<option>請選擇</option>
+											<foreach name="eip_user" key="key" item="vo">
+												<option value="{$vo['id']}">{$vo['name']}</option>
+											</foreach>
+										</select>
+									</td>
+									<td>
+										<button class="btn pl-4 pr-4 btn-lg addbtn">確認</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+				</form>
+				<div class="edit_form col-lg-6">
+					<div class="row">
+						<table id="content-table" class="table edit_table" style="min-width:600px">
+							<thead>
+								<tr >
+									<th>序列</th>
+									<th style="width: 100px;">
+										<label class="mb-0" for="all"><input type="checkbox" class="allaparts" name="allaparts" id="all" />
+										選擇全部</label>
+									</th>
+									<th>組別名稱</th>
+									<th style="width: 80px;">組長名稱</th>
+									<th>組員列表</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php  if($_GET['p'] < 0 || empty($_GET['p'])) $_GET['p'] = '1';?>
+								<foreach name="apartlist" key="key" item="vo">
+									<tr >
+										
+										<td onclick="editer({$vo.id})" class="p-2" style="cursor:pointer"><?php echo ($key+1)+(($_GET['p']-1)*20) ?></td>
+										<td><input style="width:15px; height:15px" type="checkbox" class="check_id" value="{$vo.id}"></td>
+										<td onclick="editer({$vo.id})" class="p-2" style="cursor:pointer">{$vo.name}</td>
+										<td onclick="editer({$vo.id})" class="p-2" style="cursor:pointer">{$vo.boss_name}</td>
+										<td onclick="editer({$vo.id})" class="p-2" style="cursor:pointer">{$vo.childeid}</td>
+									</tr>
+								</foreach>
+							</tbody>
+							
+						</table>
+					</div>
+					
+				</div>
+				<div class="mt-2">
+					<if condition="$access['org_hid'] eq '1'">
+					<div>
+						<button onclick="trash()" class="btn typeBtn delate pl-4 pr-4">清除到垃圾桶</button>
+					</div>
+					</if>
+					
+					<div id="page" >
+						{$show}
+					</div>								
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />
+
+<script language="javascript">
+	$('#apart, #eip_jobs').change(function(){
+		$.ajax({
+			type:'POST',
+			dataType:'text',
+			url:"{:U('Ajax/aj_getmean')}",
+			data:{
+				apartmentid:$('#apart').val(),
+				jobid:$('#eip_jobs').val(),
+				ck:"{$user_id}"
+			},
+			success:function(res){
+				$("#mens").html("<option value=''>全部</option>"+res);
+			}
+		});
+	});
+
+	function editer(x){
+		location.href = "{:U('Org/editer')}?id="+x;
+	}
+
+	function trash(){
+		var trash_id = new Array();
+		$('input:checkbox:checked[class="check_id"]').each(function(i){
+			trash_id[i] = this.value;
+		});
+
+		$.ajax({
+			type:'POST',
+			data:{
+				id:trash_id,
+			},
+			url:"{:U('Org/trash')}",
+			success:function(res){
+				if(res.status==1){
+                    location.reload();
+                }else{
+                    bg_class = "bg-danger";
+                }
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+			}
+		});
+	}
+
+	for(let i = 2 ; i<=21; i++){
+		if(i % 2 == 0){
+			$('#content-table').find('tr:nth-child('+i+')').css('background','#b0cda1')
+		}
+		else{
+			$('#content-table').find('tr:nth-child('+i+')').css('background','#69b758')
+		}
+	}
+
+	$(function () {
+	    $(".allaparts").click(function () {
+	        if ($(this).attr("checked")) {
+	            $(".check_id").attr("checked", true);
+	        } else {
+	            $(".check_id").attr("checked", false);
+	        }
+	    });
+	});
+</script>																																																												

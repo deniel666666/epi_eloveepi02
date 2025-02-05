@@ -1,0 +1,39 @@
+<include file="Public:header2" />
+<div class="main document">
+    <br>
+    <form action="{:u('Salesetting/setting_save')}" method="post">
+        <div class="container mb-4">
+           <input type="hidden" name="note" id="note" value="{$note|htmlspecialchars}">
+            <br>
+    
+            <div class="row">
+                <input class="btn btn-success col-6 offset-3" type="submit" value="修改" /></div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<include file="Public:footer" />
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script>
+    var editor;
+    KindEditor.ready(function(K) {
+        editor = K.create('#note', {
+            afterBlur: function(){this.sync();},
+            langType : 'zh_TW',
+            items:[
+                    'source', '|',
+                    'undo', 'redo', '|', 'preview', 'cut', 'copy', 'paste','plainpaste', 'wordpaste', '|',
+                    'justifyleft', 'justifycenter', 'justifyright','justifyfull', 'selectall', '|',
+                    'fontname', 'fontsize', '|',
+                    'forecolor', 'bold', 'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 
+                    'table', 'hr',  '|',
+                    'about'],
+            width:'100%',
+            height:'300px',
+            resizeType:0
+        });
+    });
+</script>

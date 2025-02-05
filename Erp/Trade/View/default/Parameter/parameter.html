@@ -1,0 +1,187 @@
+
+<include file="Public:header2" />
+
+<!-- .wrapAll -->
+<section class="p-4">
+	<div class="container mw1920">
+		<if condition="$Think.session.adminId eq $top_adminid">
+			<h5 class="font-weight-bold d-inline-block">系統商資料：</h5>
+			<form name="eip_company_1" action="{:U('Parameter/update')}" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="id" value="1">
+				<div class="row">
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">系統名稱：</label>
+						<input class="form-control" type="text" name="eip_name" value="{$eip_company_data[0].eip_name}">
+					</div>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">系統英文名稱：</label>
+						<input class="form-control" type="text" name="eip_en_name" value="{$eip_company_data[0].eip_en_name}">
+					</div>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">系統版本號：</label>
+						<input class="form-control" type="text" name="version" value="{$eip_company_data[0].version}">
+					</div>
+					<div class="col-12"></div>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">公司名稱：</label>
+						<input class="form-control" type="text" name="name" value="{$eip_company_data[0].name}">
+					</div>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">公司英文名稱：</label>
+						<input class="form-control" type="text" name="en_name" value="{$eip_company_data[0].en_name}">
+					</div>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">電話：</label>
+						<input class="form-control" type="text" name="tel" value="{$eip_company_data[0].tel}">
+					</div>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">傳真：</label>
+						<input class="form-control" type="text" name="fax" value="{$eip_company_data[0].fax}">
+					</div>
+					<div class="col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">地址：</label>
+						<input class="form-control" type="text" name="addr" value="{$eip_company_data[0].addr}">
+					</div>
+					<div class="col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">地址連結：</label>
+						<input class="form-control" type="text" name="addr_link" value="{$eip_company_data[0].addr_link}">
+					</div>
+					<div class="col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">登入畫面圖示：</label>
+						<small class="text-danger">建議尺寸：250*170px</small>
+						<input class="form-control preview_input" type="file"  name="login_logo">
+						<img id="login_logo" class="preview" src="/Uploads/parameter/1/{$eip_company_data[0].login_logo}">
+					</div>
+					<div class="col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">系統logo：</label>
+						<small class="text-danger">建議尺寸：305*55px</small>
+						<input class="form-control preview_input" type="file" name="head_logo">
+						<img id="head_logo" class="preview" src="/Uploads/parameter/1/{$eip_company_data[0].head_logo}">
+					</div>
+
+					<h5 class="col-12 font-weight-bold d-inline-block">員工類型設定：</h5>
+					<div class="col-12 edit_form">
+						<table class="table w-100 form-group">
+							<thead>
+								<tr>
+									<th>名稱</th>
+									<th>編號代碼<span class="text-danger">(限1字)</span></th>
+									<th>數量上限<span class="text-danger">(-1為無上限)</span></th>
+								</tr>
+							</thead>
+							<tbody>
+								<volist name="eip_user_right_type" id="vo" key="key">
+									<tr>
+										<td>
+											<input type="hidden" name="right_type[{$key}][id]" value="{$vo.id}">
+											<input type="text" name="right_type[{$key}][name]" value="{$vo.name}">
+										</td>
+										<td>
+											<input type="text" name="right_type[{$key}][nick]" value="{$vo.nick}" maxlength="1">
+										</td>
+										<td>
+											<input type="number" name="right_type[{$key}][limit_num]" value="{$vo.limit_num}" min="-1" step="1">
+										</td>
+									</tr>
+								</volist>
+							</tbody>
+						</table>
+					</div>
+
+					<h5 class="col-12 font-weight-bold d-inline-block">客戶設定：</h5>
+					<div class="col-lg-3 col-md-6 col-12 mb-3">
+						<label class="form-group mb-0">數量上限<span class="text-danger">(-1為無上限)</span></label>
+						<input type="hidden" name="system_parameter_customer_data[id]" value="{$system_parameter_customer_data.id}">
+						<input type="text" class="form-control" name="system_parameter_customer_data[data]" value="{$system_parameter_customer_data.data}">
+					</div>
+
+					<div class="col-12 mt-4">
+						<button class="btn btn-success col-6 offset-3">儲存系統商資料</button>
+					</div>
+				</div>
+			</form>
+			<br><br>
+			<hr class="mt-4 mb-4">
+		</if>
+
+		<h5 class="font-weight-bold d-inline-block">客戶資料資料：</h5><small class="text-danger">顯示於客戶簽名頁</small>
+		<form name="eip_company_2" action="{:U('Parameter/update')}" method="post" enctype="multipart/form-data">
+			<input type="hidden" name="id" value="2">
+			<div class="row">
+				<!-- <div class="col-lg-3 col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">系統名稱：</label>
+					<input class="form-control" type="text" name="eip_name" value="{$eip_company_data[1].eip_name}">
+				</div>
+				<div class="col-lg-3 col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">系統英文名稱：</label>
+					<input class="form-control" type="text" name="eip_en_name" value="{$eip_company_data[1].eip_en_name}">
+				</div> -->
+				<div class="col-lg-3 col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">公司名稱：</label>
+					<input class="form-control" type="text" name="name" value="{$eip_company_data[1].name}">
+				</div>
+				<div class="col-lg-3 col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">公司英文名稱：</label>
+					<input class="form-control" type="text" name="en_name" value="{$eip_company_data[1].en_name}">
+				</div>
+				<div class="col-lg-3 col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">電話：</label>
+					<input class="form-control" type="text" name="tel" value="{$eip_company_data[1].tel}">
+				</div>
+				<div class="col-lg-3 col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">傳真：</label>
+					<input class="form-control" type="text" name="fax" value="{$eip_company_data[1].fax}">
+				</div>
+				<div class="col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">地址：</label>
+					<input class="form-control" type="text" name="addr" value="{$eip_company_data[1].addr}">
+				</div>
+				<div class="col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">地址連結：</label>
+					<input class="form-control" type="text" name="addr_link" value="{$eip_company_data[1].addr_link}">
+				</div>
+				<!-- <div class="col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">登入畫面圖示：</label>
+					<small class="text-danger">建議尺寸：250*170px</small>
+					<input class="form-control preview_input" type="file"  name="login_logo">
+					<img id="login_logo" class="preview" src="/Uploads/parameter/2/{$eip_company_data[1].login_logo}">
+				</div>
+				<div class="col-md-6 col-12 mb-3">
+					<label class="form-group mb-0">系統logo：</label>
+					<small class="text-danger">建議尺寸：305*55px</small>
+					<input class="form-control preview_input" type="file" name="head_logo">
+					<img id="head_logo" class="preview" src="/Uploads/parameter/2/{$eip_company_data[1].head_logo}">
+				</div> -->
+
+				<button class="btn btn-success col-6 offset-3">儲存客戶資料</button>
+			</div>
+		</form>
+		<br><br>
+	</div>
+</div>
+</section>
+<include file="Public:footer" />
+
+<script type="text/javascript">
+	$('.preview_input').on('change', function(event){
+		var files = $(event.currentTarget)[0].files;
+		if(!files){ return; }
+		file = files[0];
+
+		var extension = file.name.split('.').pop().toLowerCase(),  //file extension from input file
+		isSuccess = ['png', 'jpg', 'jpeg', 'gif', 'tif'].indexOf(extension) > -1;
+
+		if (isSuccess) { //yes
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#' + $(event.currentTarget).attr('name') ).attr('src', e.target.result);
+            }
+            reader.readAsDataURL(file);
+        }
+        else{
+            Vue.toasted.show('請上傳圖片',{duration:1500});
+            $(event.currentTarget).attr('value', '');
+
+        }
+	});
+</script>

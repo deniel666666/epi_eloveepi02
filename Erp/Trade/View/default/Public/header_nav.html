@@ -1,0 +1,107 @@
+
+    <header id="header" class="crm-header">
+      <nav class="navbar navbar-default bootsnav p-0">
+        <div class="navbar-header">
+          <div class="nav-left">
+            <a href="{:u('Index/index')}" target="_blank">
+              <h1 class="logo" style="background-image:url(/Uploads/parameter/1/{$eip_company.head_logo});">
+                {$eip_company['eip_name']}
+              </h1>
+            </a>
+            <p class="ml-2">{$eip_company['version']}版</p>
+          </div>
+          
+          <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav" data-in data-out>
+              <volist name="menu_arranged" id="tvo">
+                <li class="nav-item dropdown parent_powercat_{$tvo['id']}">
+                  <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">{$tvo[title]}</a>
+                  
+                  <ul class="dropdown-menu" role="menu">
+                    <volist name="tvo[sub_menu]" id="vo" key="k">
+                      <li>
+                        <a href="{$vo[url]}" class="Km_auto_no">
+                          <text>{$vo[title]}</text>
+                          <if condition="$vo['read_ck'] neq 0">
+                            <text class="read_ck text-danger font-weight-bold">
+                              {$vo[read_ck]}
+                            </text>
+                          </if>
+                        </a>
+                      </li>
+                    </volist>
+                  </ul>
+                </li>
+              </volist>
+            </ul>
+            <div class="nav-right">
+              <p class="user">管理者：{$Think.session.userName}</p>
+              <a href="{:u('Public/logout')}">系統登出</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 手機選單 -->
+        <div class="brand">
+          <div class="menu-icon navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+            <input class="menu-icon__cheeckbox" type="checkbox" />
+            <div>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <div class="bottom">
+          <ul class="breadcrumbs">
+            <li><a href="/">首頁</a></li>
+            <li><a class="Km_auto_no" href="{$page_model_link}">{$page_model}</a></li>
+            <li id="last_breadcrumb">
+              <if condition="$page_title_link_self">
+                <a class="Km_auto_no" href="{$page_title_link_self}">
+              <else/>
+                <a class="Km_auto_no" href="{$page_title_link}">
+              </if>
+                {$page_title}
+              </a>
+            </li>
+          </ul>
+        <if condition="$page_model_link && $page_model && $page_title">
+        </if>
+
+        <!-- <h2>{$eip_company['eip_en_name']}</h2> -->
+        <div class="scroll_box">
+          <ul class="menu">
+            <volist name="menu_list" id="tvo">		
+              <if condition="$myparent eq $tvo['id']">
+                <volist name="tvo['sub_menu']" id="vo" key="k">
+                  <li>
+                    <a target="_self" href="{$vo['url']}" class="
+                      <if condition='$vo[id] eq $page_title_active'>
+                        active
+                      </if>
+                    ">
+                      <text>{$vo[title]}</text>
+                      <if condition="$vo['read_ck'] neq 0">
+                        <text class="read_ck text-danger font-weight-bold">
+                          {$vo[read_ck]}
+                        </text>
+                      </if>
+                    </a>
+                  </li>
+                </volist>
+              </if>
+            </volist>
+          </ul>
+          <a class="slide_left"><i class="fas fa-chevron-left"></i></a>
+          <a class="slide_right"><i class="fas fa-chevron-right"></i></a>
+        </div>
+      </div>
+    </header>
+    <div id="body_block" class="body_block position-fixed w-100 h-100 bg-dark">
+      <div class="loader">
+          <span></span>
+      </div>
+    </div>
+    <div class="body_leave_blank"></div>

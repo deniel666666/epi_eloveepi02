@@ -1,0 +1,314 @@
+<include file="Public:header2" />
+
+<div class="container mw1920 pl-4 pr-4" id="salary_table">
+    <form class="mb-4" action="{:U('Salary/set_salary')}" method="post" enctype="multipart/form-data">
+        <h5 class="font-weight-bold mb-0">匯入薪資：</h5>
+        <div class="mb-2">
+            請選擇計薪年月：
+            <select v-model="salary_ym" @change="change_salary_ym">
+                <!-- <option value="">切換年月</option> -->
+                <volist name="salary_ym" id="ym">
+                    <option value="{$ym}">{$ym}</option>
+                </volist>
+            </select>
+            <input type="hidden" name="salary_ym" v-model="salary_ym">
+            <h5 class="d-inline-block" v-text="salary_ym"></h5>
+        </div>
+        <div class="mb-2">
+            <span class="mr-2">
+                請上傳月薪格式檔案：
+                <input type="file" name="month_pay">
+                (<a :href="'{:U('Salary/example_month_salary')}?salary_ym='+salary_ym" download="月薪格式範例">月薪範例</a>)
+            </span>
+            <span class="mr-2">
+                請上傳加給格式檔案：
+                <input type="file" name="bonus">
+                (<a :href="'{:U('Salary/example_bonus_salary')}?salary_ym='+salary_ym" download="加給格式範例">加給範例</a>)
+            </span>
+            <span class="mr-2 text-danger">
+                (時薪資料將統計「時薪付薪」中「核可日期」為此計薪年月的資料)
+            </span>
+            <input class="btn btn-primary" type="submit" value="匯入檔案">
+        </div>
+    </form>
+
+    <div id="right">
+        <div class="content-table">
+            <div class="navi1">
+                <div class="menu-sub-btn d-flex align-items-center">
+                    <input type="hidden" name="salary_ym" value="{$salary_ym_selected}">
+                    薪資區間:&nbsp;&nbsp;
+                    <input type="date" v-model="salary_date_s"> ~
+                    <input type="date" v-model="salary_date_e">
+                    &nbsp;&nbsp;
+                    員工:
+                    <select v-model="user_id">
+                        <option value="0">全部</option>
+                        <option v-for="vo in user_is_options" :value="vo.user_id" v-text="vo.name">
+                        </option>
+                    </select>
+                    &nbsp;&nbsp;
+                    <button class="btn btn-primary pt-1 pb-1 mr-2" @click="get_salarys">搜尋</button>
+                    <a href="###" @click="search_clean">
+                        清除搜尋
+                    </a>
+                </div>
+                <ol class="mb-2 mb-md-0">
+                    <li><a href="{:u('Salary/excel_bank',$_GET)}" class="">匯出支薪列表</a></li>
+                </ol>
+            </div>
+            <div class="edit_form">
+                <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1300px;">
+                    <thead class="edit_table_thead">
+                        <tr class="edit_table tr">
+                            <th style="width: 50px;" class="text-center">序號</th>
+                            <th style="width: 80px;" class="text-center">月份</th>
+                            <th style="width: 120px;">員工編號</th>
+                            <th style="width: 100px;">姓名</th>
+                            <th style="width: 100px;" class="text-right">薪時時數</th>
+                            <th style="width: 100px;" class="text-right">總時薪</th>
+                            <th style="width: 100px;" class="text-right">月在職率</th>
+                            <th style="width: 100px;" class="text-right">總月薪</th>
+                            <th style="width: 100px;" class="text-right">獎金加給</th>
+                            <th style="width: 100px;" class="text-right">假勤異動</th>
+                            <th style="width: 100px;" class="text-right">總薪資</th>
+                            <th style="width: 100px;" class="text-right">員工應負保額</th>
+                            <th style="width: 100px;" class="text-right">實領薪資</th>
+                            <th style="width: 100px;" class="text-right">雇主應負保額</th>
+                            <th style="width: 150px;" class="text-left">備註</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(vo, vo_key) in salary">
+                            <td class="text-center"><span v-text="vo_key+1"></span></td>
+                            <td class=""><span v-text="vo.year+'-'+vo.month"></span></td>
+                            <td class=""><span v-text="vo.no"></span></td>
+                            <td class=""><span v-text="vo.name"></span></td>
+                            <td class="text-right"><span v-text="vo.hour_count"></span></td>
+                            <td class="text-right"><span v-text="vo.total_pay_hour"></span></td>
+                            <td class="text-right">
+                                <template v-if="vo.month_count">
+                                    <span v-text="(vo.month_count*100).toLocaleString('en-US')"></span>%
+                                </template>
+                            </td>
+                            <td class="text-right"><span v-text="vo.total_pay_month"></span></td>
+                            <td class="text-right"><span v-text="vo.total_bonus_award"></span></td>
+                            <td class="text-right"><span v-text="vo.total_rest_deduct"></span></td>
+                            <td class="text-right"><span v-text="vo.total_salary"></span></td>
+                            <td class="text-right"><a href="###" v-text="vo.insurance_personal_pay" @click="open_editor(vo_key)"></a></td>
+                            <td class="text-right"><span v-text="vo.total_salary - vo.insurance_personal_pay"></span></td>
+                            <td class="text-right"><a href="###" v-text="vo.insurance_company_pay" @click="open_editor(vo_key)"></a></td>
+                            <td class="text-left"><span v-text="vo.note"></span></td>
+                            <td class="">
+                                <if condition="$access['salary_edi'] eq '1'">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <a class="btn btn-primary" :href="'{:u('Salary/salary_detail')}?id='+vo.id" target="_blank">
+                                            <i aria-hidden="true" class="fas fa-eye"></i>
+                                        </a>
+
+                                        <a v-if="vo.confirm_time==0"
+                                            class="btn btn-success" :href="'{:u('Salary/confirm_salary')}?id='+vo.id">
+                                            核可
+                                        </a>
+                                        <span v-else v-text="formatDate(vo.confirm_time*1000)"></span>
+                                    </div>
+                                </if>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">總計</td>
+                            <td class=""></td>
+                            <td class=""></td>
+                            <td class=""></td>
+                            <td class="text-right"></td>
+                            <td class="text-right"><span v-text="salary_all.total_pay_hour"></span></td>
+                            <td class="text-right"></td>
+                            <td class="text-right"><span v-text="salary_all.total_pay_month"></span></td>
+                            <td class="text-right"><span v-text="salary_all.total_bonus_award"></span></td>
+                            <td class="text-right"><span v-text="salary_all.total_rest_deduct"></span></td>
+                            <td class="text-right"><span v-text="salary_all.total_salary"></span></td>
+                            <td class="text-right"><span v-text="salary_all.insurance_personal_pay"></span></td>
+                            <td class="text-right"><span v-text="salary_all.total_salary_can_get"></span></td>
+                            <td class="text-right"><span v-text="salary_all.insurance_company_pay"></span></td>
+                            <td class=""></td>
+                            <td class=""></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <a id="salary_editor_btn" data-toggle="modal" data-target="#salary_editor"></a>
+    <div class="modal fade" id="salary_editor" tabindex="-1" role="dialog"
+        aria-labelledby="salary_editorTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="modal-header">
+            <h5 class="modal-title" id="salary_editorTitle">保險內容及備註</h5>
+        </div>
+        <div class="modal-body">
+            <template v-if="editor">
+                <table class="table edit_table mb-2" style="min-width: unset">
+                    <thead>
+                        <tr>
+                        <th>項目名稱</th>
+                        <th class="text-right">個人負擔額</th>
+                        <th class="text-right">公司負擔額</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, item_index) in editor.insurance">
+                            <td><span v-text="item.name"></span></td>
+                            <td>
+                                <input type="number" step="1" min="0" class="w100 text-right" 
+                                        :readonly="editor.confirm_time!=0"
+                                        v-model="item.insurance_personal_pay">
+                            </td>
+                            <td>
+                                <input type="number" step="1" min="0" class="w100 text-right" 
+                                        :readonly="editor.confirm_time!=0"
+                                        v-model="item.insurance_company_pay">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <textarea class="form-control" rows="4" :readonly="editor.confirm_time!=0" v-model="editor.note"></textarea>
+                <div class="text-center mt-3" v-if="editor.confirm_time==0">
+                    <a href="###" class="btn sendbtn pl-4 pr-4" @click="save_salary">更新</a>
+                </div>
+            </template>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<include file="Public:footer" />
+<script>
+    const salary_table_data = {
+        salary_ym: '{$salary_ym_selected}',
+        salary_date_s: '',
+        salary_date_e: '',
+        user_id: '0',
+
+        salary: [],
+        salary_all: {
+            'insurance_company_pay': 0,
+            'insurance_personal_pay': 0,
+            'total_bonus': 0,
+            'total_bonus_award': 0,
+            'total_pay_hour': 0,
+            'total_pay_month': 0,
+            'total_rest_deduct': 0,
+            'total_salary': 0,
+            'total_salary_can_get': 0,
+        },
+        user_is_options: [],
+
+        editor:null,
+        editor_index: '',
+    };
+    const salary_tableVM = new Vue({
+        el: '#salary_table',
+        data: salary_table_data,
+        methods: {
+            change_salary_ym: function(){
+                salary_tableVM.salary_date_s ='';
+                salary_tableVM.salary_date_e ='';
+                salary_tableVM.get_salarys();
+            },
+            search_clean: function(){
+                salary_tableVM.salary_date_s ='';
+                salary_tableVM.salary_date_e ='';
+                salary_tableVM.user_id = '0';
+                salary_tableVM.get_salarys();
+            },
+            get_salarys: function(){
+                var salary_ym = salary_tableVM.salary_ym;
+                if(salary_table_data.salary_date_s){
+                    var salary_date_s= salary_table_data.salary_date_s;
+                }else{
+                    var salary_date_s= salary_ym.substr(0, 4)+'-'+salary_ym.substr(4, 2).padStart(2, '0') +'-01';
+                }
+                if(salary_table_data.salary_date_e){
+                    var salary_date_e= salary_table_data.salary_date_e;
+                }else{
+                    var salary_date_e= salary_ym.substr(0, 4)+'-'+salary_ym.substr(4, 2).padStart(2, '0') +'-01';
+                }
+                return $.ajax({
+                    type: 'GET',
+                    dataType:'json',
+                    data: {
+                        salary_ym: salary_ym,
+                        salary_date_s: salary_date_s,
+                        salary_date_e: salary_date_e,
+                        user_id: salary_tableVM.user_id,
+                    },
+                    url: "{:U('Salary/get_salarys')}",
+                    success:function(res){
+                        salary_tableVM.salary = res.salary;
+                        salary_tableVM.salary_all = res.salary_all;
+                        salary_tableVM.user_is_options = res.user_is_options;
+                    },
+                });
+            },
+            open_editor: function(index){
+                salary_data = JSON.parse(JSON.stringify(salary_tableVM.salary[index]));
+                salary_data.insurance = JSON.parse(salary_data.insurance);
+                salary_tableVM.editor = salary_data;
+                salary_tableVM.editor_index = index;
+
+                $('#salary_editor_btn').click();
+            },
+            save_salary: async function(){
+                salary_data = JSON.parse(JSON.stringify(salary_tableVM.editor));
+                $('#body_block').show();
+                try {
+                    res = await $.ajax({
+                        type: 'POST',
+                        dataType:'json',
+                        data: {
+                            user_id: salary_data.user_id,
+                            year: salary_data.year,
+                            month: salary_data.month,
+                            insurance: JSON.stringify(salary_data.insurance),
+                            note: salary_data.note,
+                        },
+                        url: "{:U('Salary/update_salary')}",
+                    });
+                } catch (error) {
+                    $('#body_block').hide();
+                    Vue.toasted.show(error.statusText, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                    return;
+                }
+                if(res.status==1){
+                    $('#salary_editor').modal('hide');
+                    await salary_tableVM.get_salarys();
+                    salary_tableVM.editor = null;
+                    salary_tableVM.editor_index = '';
+                }else{
+                    Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                }
+                $('#body_block').hide();
+            },
+
+            formatDate: function(date) {
+                var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+                if (month.length < 2) 
+                    month = '0' + month;
+                if (day.length < 2) 
+                    day = '0' + day;
+                return [year, month, day].join('-');
+            },
+        },
+    });
+    salary_tableVM.get_salarys();
+</script>

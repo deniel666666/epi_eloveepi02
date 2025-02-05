@@ -1,0 +1,107 @@
+<include file="Public:header2" />
+
+<section class="main">
+	<!---->
+	<div id="right">
+		<div class="right_cont">
+			<if condition="$page eq ''">
+				<form name="search" id="searchform" action="{:u('Sercom/index')}" method="get" class="searchForm">
+			<else />
+				<form name="search" id="searchform" action="{:u('Sercom/index')}?p={$Think.get.p}" method="get">
+			</if>
+				<ol class="headerOl rightR">
+					<li>
+						<div class="search_bar">
+							<label for=""></label>
+							<input class="text" type="text"  name="company" value="{$input_company}"  placeholder="搜尋..."    />
+							<input class="submit" type="submit" value="" />
+						</div>
+					</li>
+					<if condition="$access['sercom_new'] eq '1'">
+						<li><a href="{:u('Sercom/editor')}"><input type="button" value="新增主機廠商" class="btn addbtn"/></a></li>
+					</if>
+				</ol>
+			</form>
+			<div class="content-table">
+				<div class="page justify-content-end">
+					{$show}
+				</div>
+				<form action="{:u('Sercom/patchupdate')}" method="post">
+					<div class="edit_form">
+						<table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1600px;">
+							<thead class="edit_table_thead">
+								<tr class="edit_table tr ">
+									<th style="width: 20px" class="text-center">
+										<input type="checkbox" class="seleall" name="all" id="all" />
+									</th>
+									<th style="width:50px" class="text-right">序號</th>
+									<th style="width:150px"  class="text-left"><a href="{:u('Sercom/index')}?order=company">廠商名</a></th>
+									<th style="width:100px"  class="text-left">方案</th>
+									<th style="width:100px"  class="text-left">主機名稱</th>
+									<th style="width:75px"  class="text-right">空間</th>
+									<th style="width:75px"  class="text-right">流量</th>
+									<th style="width:75px"  class="text-right">網站數</th>
+									<th style="width:75px"  class="text-right">使用空間</th>
+									<th style="width:75px"  class="text-right">使用流量</th>
+									<th style="width:150px" class="text-left"><a href="{:u('Sercom/index')}?order=url">方案位置</a></th>
+									<th style="width:150px" class="text-left"><a href="{:u('Sercom/index')}?order=user">帳號</a></th>
+									<th style="width:150px" class="text-left">密碼</th>
+									<th style="width:300px"class="text-left">備註</th>
+								</tr>
+							</thead>
+							<tbody>
+								<foreach name="data" key="num" item="one">
+									<tr id="{$one.id}">
+										<td class="text-center">
+											<input type="checkbox" class="seleck" value="{$one.id}" name="sele[]" />
+										</td>
+										<td class="text-right">{$num+1+$linit}</td>
+										<td>
+											<a href="{:u('Sercom/view')}?id={$one.id}" target="_blank">{$one.company}</a>
+										</td>
+										<td>{$one.casename}</td>
+										<td>{$one.nick}</td>
+										<td class="text-right">{$one.space}</td>
+										<td class="text-right">{$one.flow}</td>
+										<td class="text-right">{$one.number}</td>
+										<td class="text-right">{$one.u_space}G</td>
+										<td class="text-right">{$one.u_flow}G</td>
+										<td class="copy" data-clipboard-text="{$one.url}">
+											{$one.url}
+										</td>
+										<td class="copy" data-clipboard-text="{$one.dnsuser}">
+											{$one.dnsuser}
+										</td>
+										<td class="copy" data-clipboard-text="{$one.dnspwd}">{$one.dnspwd}</td>
+										<td><textarea rows="1" readonly>{$one.bz}</textarea></td>
+									</tr>
+								</foreach>
+							</tbody>
+						</table>
+					</div>
+					<div class="page">
+						<if condition="$access['sercom_edi'] eq '1'">
+							<select id="flag" class="flag mr-2" name="status">
+								<option value="0">移除</option>
+							</select>
+							<input type="submit" class="btn sendbtn" value="確定修改" />
+						</if>
+						{$show}
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>		
+</section>
+<include file="Public:footer" />
+	
+<script language="javascript">
+	$(function(){
+		$('.seleall').click(function(){
+			if($(this).attr('checked'))
+			$('.seleck').attr('checked',true);
+			else
+			$('.seleck').attr('checked',false);
+		});
+	})
+</script>

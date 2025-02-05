@@ -1,0 +1,92 @@
+<include file="Public:header2" />
+
+<section class="document main">
+	<div class="below">
+
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<div class="document_edit">
+				<p class="norText">
+					經濟部替代匯入說明：<br />
+					本匯入程式功能可將其他客戶名單匯入至您的客戶資料庫，匯入檔案格式為excel檔(副檔名.xls或.xlsx或.xlsm)，文件請依照下面欄位格式製作。然後點及下方選擇檔案鈕上傳檔案即可。
+				</p>
+				<p class="norText">注意：<br />
+					1. 此匯入與一般匯入不同，只比對{$system_parameter["統編"]}及{$system_parameter["公司名稱"]}，完全一樣則替換特定欄位資料<br />
+					2. 若比對後發現沒此{$system_parameter["客戶"]}，則會新增{$system_parameter["客戶"]}，並設定{$system_parameter["類別"]}為開放<br />
+					3. 替帶資料時只會替代有填入值的欄位，而{$system_parameter["公司核准日"]}如果比系統紀錄的晚，則不會更新系統資料<br />
+					<span style="color:red;">
+						4. 請注意資本額的格式，資本額請以元為單位，且無需千分位分隔<br />
+						5. 請注意建立時間的格式，年份為民國，月、日需兩碼，以斜線(/)分隔年月日<br />
+					</span>
+				</p>
+				<a href='/Uploads/Events/Import_customer_list_me.xlsx' download='經濟部匯入範本.xlsx'><img src='/Public/qhand/images/save.png' />匯入範本</a><br><br>
+	
+				<form method="post" action="{:u('Imcrm/me_import_show')}" enctype="multipart/form-data">
+					<h3 class="excel bgBlue"><img src="__PUBLIC__/images/icon_doc.png" />匯入經濟部替代名單(第1欄請不要放資料也勿刪除)</h3>
+					<input type="file" name="file1" id="fileField" style="width:160px;" />
+					<input style="width:150px;" class="btn btn-primary" type="submit" name="submit" onclick="showWait()" value="匯入" />
+					<p class="importwait" hidden="true">資料匯入中請稍候...</p>
+					<br />
+	
+					<hr style="margin-top: 5px; color: #000; width: 100%;">
+					<br />
+					<p style="font-size:14px;">※請參照下列 excel 匯入之格式來排版並匯入檔案：</p>
+				</form>
+				<div class="edit_form">
+					<table cellpadding="0" cellspacing="0" id="edm-table" class="table edit_table" style="min-width:1200px">
+						<tbody>
+							<tr style="background:#DDD">
+								<td align="center">A</td>
+								<td align="center">B</td>
+								<td align="center">C</td>
+								<td align="center">D</td>
+								<td align="center">E</td>
+								<td align="center">F</td>
+								<td align="center">G</td>
+								<td align="center">H</td>
+							</tr>
+							<tr class="gray">
+								<td align="center">序號<br>(無用但須留著欄位)</td>
+								<td align="center">{$system_parameter["統編"]}</td>
+								<td align="center">{$system_parameter["公司名稱"]}</td>
+								<td align="center">郵遞區號</td>
+								<td align="center">{$system_parameter["地址"]}</td>
+								<td align="center">{$system_parameter["負責人"]}{$system_parameter["名稱"]}</td>
+								<td align="center">{$system_parameter["資本額"]}<br>(單位:元)</td>
+								<td align="center">{$system_parameter["公司核准日"]} <br>(民國/月/日)</td>
+							</tr>
+		
+							<tr>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">xxx</td>
+								<td align="center">5000000</td>
+								<td align="center">110/01/01</td>
+							</tr>
+							<tr>
+								<td colspan="17" align="center" class="nonBorder">&nbsp;</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+
+<include file="Public:footer" />
+<script language="javascript">
+	function showWait()
+	{
+		$('.importwait').show();
+	}
+	</script>

@@ -1,0 +1,218 @@
+<include file="Public:header2" />
+  <head>
+    <style type="text/css">
+      .edit_table td.td_head{
+        background-color: #f6f6f6;
+        padding-top: 0.8rem;
+      }
+    </style>
+  </head>
+
+  <section class="main" id="balance_sheet">
+    <div id="right">
+      <div class="searchForm">
+      </div>
+      <div class="content-table row m-0">
+        <div class="col-xl-9 col-lg-8 col-12">
+          <h5><b>相關合約：</b></h5>
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 950px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 80px"><label class="mb-0">項次</label></th>
+                  <th style="width: 200px">{$system_parameter['合約']}號</th>
+                  <th style="width: 150px">合約類型</th>
+                  <th style="width: 250px">主題</th>
+                  <th style="width: 80px">狀態</th>
+                  <th style="width: 120px">簽約日期</th>
+                  <th class="text-right" style="width: 150px">總金額</th>
+                  <th style="width: 80px">操作</th>
+                </tr>
+              </thead>
+              <body>
+                <template v-for="(contract, contract_idx) in contract_main">
+                  <contract_tr :contract="contract" :contract_idx_str="'本約：'"></contract_tr>
+                </template>
+                <template v-if="contract_main.length>0">
+                  <template v-if="contract_main[0].belongs_to==0 && contract_main[0].pay_to==0">
+                    <tr class=""><td colspan="8">副約：</td></tr>
+                    <template v-for="(contract, contract_idx) in contract_belongs_to">
+                      <contract_tr :contract="contract" :contract_idx_str="String(contract_idx+1)"></contract_tr>
+                    </template>
+                  </template>
+                </template>
+                <template v-if="contract_main.length>0">
+                  <template v-if="contract_main[0].get_or_pay==0">
+                    <tr class=""><td colspan="8">支出合約：</td></tr>
+                    <template v-for="(contract, contract_idx) in contract_pay_to">
+                      <contract_tr :contract="contract" :contract_idx_str="String(contract_idx+1)"></contract_tr>
+                    </template>
+                  </template>
+                </template>
+              </body>
+            </table>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-12">
+          <h5><b>收支統計：</b></h5>
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="width: unset; min-width: max-content;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr">
+                  <th style="width: 200px;" class="text-left" valign=" middle">項目</th>
+                  <th style="width: 100px;" class="text-right">金額</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="td_head" :colspan="2">收入部分</td></tr>
+                <template v-for="column in in_columns">
+                  <tr class="cursor_pointer" @click="slide_toggle(column.id, 'in_columns')">
+                    <td><span v-text="column.name"></span></td>
+                    <td class="text-right" v-text="column['num']"></td>
+                  </tr>
+                  <tr v-for="sub in column.sub" :class="'in_columns child_tr_'+column.id" style="display: none;">
+                    <td><span class="ml-4" v-text="sub.name"></span></td>
+                    <td style="width: 100px;" class="text-right">
+                      <span v-text="sub['num']"></span>
+                    </td>
+                  </tr>
+                </template>
+                <tr><td :colspan="2"><hr class="mt-2 mb-2"></td></tr>
+                <tr>
+                  <td class="text-right">小計</td>
+                  <td style="width: 100px;" class="text-right">
+                    <span v-text="in_total"></span>
+                  </td>
+                </tr>
+  
+                <tr><td class="td_head" :colspan="2">支出部分</td></tr>
+                <template v-for="column in out_columns">
+                  <tr class="cursor_pointer" @click="slide_toggle(column.id, 'out_columns')">
+                    <td><span v-text="column.name"></span></td>
+                    <td class="text-right" v-text="column['num']"></td>
+                  </tr>
+                  <tr v-for="sub in column.sub" :class="'out_columns child_tr_'+column.id" style="display: none;">
+                    <td><span class="ml-4" v-text="sub.name"></span></td>
+                    <td style="width: 100px;" class="text-right">
+                      <span v-text="sub['num']"></span>
+                    </td>
+                  </tr>
+                </template>
+                <tr><td :colspan="2"><hr class="mt-2 mb-2"></td></tr>
+                <tr>
+                  <td class="text-right">小計</td>
+                  <td style="width: 100px;" class="text-right">
+                    <span v-text="out_total"></span>
+                  </td>
+                </tr>
+  
+                <tr><td class="td_head" :colspan="2">利潤部分</td></tr>
+                <tr>
+                  <td>利潤</td>
+                  <td style="width: 100px;" class="text-right">
+                    <span v-text="Math.round(in_total-out_total)"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>利潤率</td>
+                  <td style="width: 100px;" class="text-right">
+                    <span v-if="in_total!=0" v-text="((in_total-out_total) * 100 / in_total).toFixed(2)"></span>%
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-danger">薪資支出部分僅計算日程名單中的「時薪」與「獎懲調薪」</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <include file="Public:footer" />
+
+  <script type="text/javascript">
+    Vue.component('contract_tr', {
+      template: `
+      <tr class="tr">
+        <td v-text="contract_idx_str"></td>
+        <td>
+          <a target="_blank" 
+              :href="(contract.get_or_pay==0 ? '{:U('Alllist/view')}' : '{:U('Alllistpay/view')}') + '?id=' + contract.id">
+            <span v-text="contract.sn"></span>
+          </a>
+        </td>
+        <td v-text="$parent.crm_cum_cat[contract.cate].name"></td>
+        <td v-text="contract.topic"></td>
+        <td v-text="$parent.crm_cum_flag[contract.flag].name"></td>
+        <td v-text="contract.sign_date_f"></td>
+        <td class="text-right" v-text="contract.allmoney"></td>
+        <td>
+          <a class="btn btn-primary" :href="'{:u('Balance/contract')}?caseid='+contract.id" target="_blank">
+            收支
+          </a>
+        </td>
+      </tr>
+      `,
+      props: {
+        contract: Object,
+        contract_idx_str: String,
+      },
+      methods:{
+      }
+    });
+
+    const balance_sheet_data = {
+      caseid: "{$caseid}",
+      in_total: 0,
+      in_columns: [],
+      out_total: 0,
+      out_columns: [],
+      
+      crm_cum_cat: [],
+      crm_cum_flag: [],
+      contract_main:[],
+      contract_belongs_to:[],
+      contract_pay_to:[],
+    }
+    const balance_sheetVM = new Vue({
+      el: '#balance_sheet',
+      data: balance_sheet_data,
+      methods: {
+        get_mcontract_data: async function(){
+          self = this;
+          $('#body_block').show();
+          get_data = {};
+          get_data.caseid = self.caseid;
+          await $.ajax({
+            method: "GET",
+            dataType:'json',
+            url: "{:u('Balance/contract_data_ajax')}",
+            data: get_data,
+            success: function(res){
+              self.in_columns = res.in_columns;
+              self.out_columns = res.out_columns;
+              self.in_total = res.in_total;
+              self.out_total = res.out_total;
+              
+              self.crm_cum_cat = res.crm_cum_cat;
+              self.crm_cum_flag = res.crm_cum_flag;
+              self.contract_main = res.contract_main;
+              self.contract_belongs_to = res.contract_belongs_to;
+              self.contract_pay_to = res.contract_pay_to;
+            },
+            error: function(res){
+              Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            },
+          });
+          $('#body_block').hide();
+        },
+
+        slide_toggle: function(column_id, class_name){
+          self = this;
+          const selector = $('.'+class_name+'.child_tr_'+column_id);
+          selector.slideToggle('fast');
+        },
+      },
+    });
+    balance_sheetVM.get_mcontract_data();
+  </script>

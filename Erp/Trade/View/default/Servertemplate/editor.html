@@ -1,0 +1,286 @@
+<include file="Public:header2" />
+<!-- .wrapAll -->
+<section class="main ">
+	<!---->
+	<div id="right" >
+		<div class="right_cont">
+			<div class="content-table">
+				<form action="{:u($controller.'/dosave')}" method="post">
+					<ul class="service-items">
+						<li><label class="name">{$system_parameter["客戶"]}{$system_parameter["簡稱"]}：</label>
+							<div class="text">
+								<if condition="in_array(75, $use_function_top)">
+									<a href="{:u('Custo/view_re')}?id={$data.crm_id}" target="_blank">
+								<else />
+									<a href="{:u('Custo/addcrm')}?id={$data.crm_id}" target="_blank">
+								</if>
+									{$data.show_name}
+								</a>
+								<if condition="$data['show_name']">
+									<span class="copy" data-clipboard-text="{$data.show_name}">複製</span>
+								</if>
+							</div>
+						</li>
+						<li><label class="name">{$system_parameter['合約']}號：</label>
+							<div class="text"><a href="{:u('Alllist/view')}?id={$data.pid}">{$data.sn}</a></div>
+						</li>
+						<li><label class="name">金額：</label>
+							<div class="text">{$data.allmoney}</div>
+						</li>
+						<li><label class="name">{$system_parameter['合約']}備註：</label>
+							<div class="text">{$data.note}</div>
+						</li>
+						<li><label class="name">設定網址：</label>
+							<div class="text"><input name="h_url" type="text" id="h_url" value="{$data.h_url}"/></div>
+							
+						</li>
+						<li><label class="name">後台位置：</label>
+							<div class="text copy"><input type="text" name="b_location" id="b_location" value="{$data.b_location}"/></div>
+						</li>
+						<li><label class="name">網站後台帳號：</label>
+							<div class="text copy"><input type="text" name="b_account" id="b_account" value="{$data.b_account}"/></div>
+						</li>
+						<li><label class="name">網站後台密碼：</label>
+							<div class="text copy"><input type="text" name="b_password" id="b_password" value="{$data.b_password}"/></div>
+						</li>
+					</ul>
+					<hr>
+					<ul class="service-items">
+						<li><label class="name">主機繳費方式：</label>
+							<div class="text">
+								<select name="h_givepaytype" id="h_givepaytype">
+									<option value="">無</option>
+									<foreach name="eip_pay_type" item="op">
+										<if condition="$op['name'] neq ''">
+											<if condition="$op['id'] eq $data['h_givepaytype']">
+												<option value="{$op.id}" selected>{$op.name}</option>
+											<else />
+												<option value="{$op.id}">{$op.name}</option>
+											</if>
+										</if>
+									</foreach>
+								</select>
+							</div>
+						</li>
+						<li><label class="name">存放主機名稱：</label>
+							<div class="text">
+								<select name="h_company" class="dns">
+									<option value="">無</option>
+									<foreach name="crm_hostcompany" item="op">
+										<if condition="$op['company'] neq ''">
+											<if condition="$op['id'] eq $data['h_company']">
+												<option value="{$op.id}" selected>
+													{$op.nick}
+												</option>
+												<else />
+												<option value="{$op.id}">
+													{$op.nick}
+												</option>
+											</if>
+										</if>
+									</foreach>
+								</select>
+							</div>
+						</li>
+						<li><label class="name">主機開始日期：</label>
+							<div class="text">
+								<input type="text" name="h_betime" class="chats Wdate stdate" />
+							</div>
+						</li>
+						<li><label class="name">主機結束日期：</label>
+							<div class="text">
+								<input type="text" name="h_endtime" class="chats Wdate stdate" />
+							</div>
+						</li>
+						<li><label class="name">主機網址1：</label>
+							<div class="text">
+								{$data['dns1']}
+							</div>
+						</li>
+						<li><label class="name">主機ip1：</label>
+							<div class="text">
+								{$data['ip1']}
+							</div>
+						</li>
+						<li class="w50"><label class="name">空間 / 流量：</label>
+							<div class="text">
+								<input name="w_space" type="text" id="w_space" value="{$data.w_space}"/>&nbsp;G / 
+								<input name="w_flow" type="text" id="w_flow" value="{$data.w_flow}"/>&nbsp;G
+							</div>
+						</li>
+						<li><label class="name">主機網址2：</label>
+							<div class="text">
+								{$data['dns2']}
+							</div>
+						</li>
+						<li><label class="name">主機ip2：</label>
+							<div class="text">
+								{$data['ip2']}
+							</div>
+						</li>
+						<li class="w50"></li>
+						<li><label class="name">CPANEL/ftp管理帳號：</label>
+							<div class="text">
+								<input name="h_user" type="text" id="h_user" value="{$data.h_user}"/>
+							</div>
+						</li>
+						<li><label class="name">CPANEL/ftp管理密碼	：</label>
+							<div class="text">
+								<input name="h_pwd" type="text" id="h_pwd" value="{$data.h_pwd}"/>
+							</div>
+						</li>
+						<li class="w50"><label class="name">主機備註：</label>
+							<div class="text">
+								<input style="width:100%;" type="text" name="h_note" id="h_note" value="{$data['h_note']}"/>
+							</div>
+						</li>
+						
+					</ul>
+					<hr>
+					<ul class="service-items">
+						<li><label class="name">域名繳費方式：</label>
+							<div class="text">
+								<select name="d_givepaytype" id="d_givepaytype">
+									<option value="">無</option>
+									<foreach name="eip_pay_type" item="op">
+										<if condition="$op['name'] neq ''">
+											<if condition="$op['id'] eq $data['d_givepaytype']">
+												<option value="{$op.id}" selected>{$op.name}</option>
+											<else />
+												<option value="{$op.id}">{$op.name}</option>
+											</if>
+										</if>
+									</foreach>
+								</select>
+							</div>
+						</li>
+						<li><label class="name">由域名公司購買：</label>
+							<div class="text">
+								<select name="d_company">
+									<option value="">無</option>
+									<foreach name="crm_domaincompany" item="op">
+										<if condition="$op['nick'] neq ''">
+											<if condition="$data['d_company'] eq $op['id']">
+												<option value="{$op.id}" selected>{$op.nick}</option>
+											<else />
+												<option value="{$op.id}">{$op.nick}</option>
+											</if>
+										</if>
+									</foreach>
+								</select>
+							</div>
+						</li>
+						<li><label class="name">域名開始日期：</label>
+							<div class="text"><input type="text" name="d_betime" class="chats Wdate stdate" /></div>
+						</li>
+						<li><label class="name">域名結束日期	：</label>
+							<div class="text"><input type="text" name="d_endtime" class="chats Wdate stdate" /></div>
+						</li>
+						<li><label class="name">域名管理帳號：</label>
+							<div class="text"><input type="text" name="d_user" id="d_user" value="{$data.d_user}"/></div>
+						</li>
+						<li><label class="name">域名管理密碼：</label>
+							<div class="text"><input type="text" name="d_pwd" id="d_pwd" value="{$data.d_pwd}"/></div>
+						</li>
+						<li><label class="name">域名備註：</label>
+							<div class="text"><input style="width:100%;" type="text" name="d_note" id="d_note" value="{$data['d_note']}"/></div>
+						</li>
+					</ul>
+					<hr>
+					<!-- SSL相關 -->
+					<ul class="service-items">
+						<li><label class="name">SSL繳費方式：</label>
+							<div class="text">
+								<select name="s_givepaytype" id="s_givepaytype">
+									<option value="">無</option>
+									<foreach name="eip_pay_type" item="op">
+										<if condition="$op['name'] neq ''">
+											<if condition="$op['id'] eq $data['s_givepaytype']">
+												<option value="{$op.id}" selected>{$op.name}</option>
+											<else />
+												<option value="{$op.id}">{$op.name}</option>
+											</if>
+										</if>
+									</foreach>
+								</select>
+							</div>
+						</li>
+						<li><label class="name">由SSL公司購買：</label>
+							<div class="text"><select name="s_company">
+								<option value="">無</option>
+								<foreach name="crm_hostcompany" item="op">
+									<if condition="$op['company'] neq ''">
+										<if condition="$op['id'] eq $data['s_company']">
+											<option value="{$op.id}" selected></option>
+										<else />
+											<option value="{$op.id}">{$op.nick}</option>
+										</if>
+									</if>
+								</foreach>
+							</select></div>
+						</li>
+						<li><label class="name">SSL開始日期：</label>
+							<div class="text"><input type="text" name="s_betime" class="chats Wdate stdate" /></div>
+						</li>
+						<li><label class="name">SSL結束日期：</label>
+							<div class="text"><input type="text" name="s_endtime" class="chats Wdate stdate" /></div>
+						</li>
+						<li><label class="name">SSL備註：</label>
+							<div class="text"><input style="width:100%;" type="text" name="s_note" id="s_note" value="{$data['s_note']}"/></div>
+						</li>
+					
+					</ul>
+	
+	
+					<if condition="$access[$controller_lower.'_edi'] eq '1'">
+						<div class="send" >
+							<input type="hidden" value="{$_GET['id']}" name="id"/>
+							<input  type="submit" class="btn sendbtn" value="確定送出" />
+						</div>
+					</if>
+				</form>
+			</div>
+			
+		</div>
+	</div>
+</section>
+<!-- .wrapAll end-->
+<include file="Public:footer" />
+
+<script language="javascript">
+	$(function(){
+		$('.Wdate').datepicker({
+			firstDay : 0,
+			defaultDate : "-7d"
+		});
+		$('.Wdate').datepicker( "option", "dateFormat",'yy-mm-dd');
+		$('[name="h_betime"]').datepicker( "setDate","{$data['h_betime']|date='Y-m-d',###}");
+		$('[name="h_endtime"]').datepicker( "setDate","{$data['h_endtime']|date='Y-m-d',###}");
+		$('[name="d_betime"]').datepicker( "setDate","{$data['d_betime']|date='Y-m-d',###}");
+		$('[name="d_endtime"]').datepicker( "setDate","{$data['d_endtime']|date='Y-m-d',###}");
+		$('[name="s_betime"]').datepicker( "setDate","{$data['s_betime']|date='Y-m-d',###}");
+		$('[name="s_endtime"]').datepicker( "setDate","{$data['s_endtime']|date='Y-m-d',###}");
+		
+
+		$("td").on("change",".dns",function(){
+			var myin=$(this);
+			value = myin.val();
+			get_dns(value);
+		});
+		get_dns("{$data['h_company']}");
+		function get_dns(value){
+			$.ajax({
+				method:'post',
+				dataType:'json',
+				url:"{:u($controller.'/dns')}",
+				data:{id:value},
+				success:function(res){
+					$("table .dns1").html(res['dns1']);
+					$("table .ip1").html(res['ip1']);
+					$("table .dns2").html(res['dns2']);
+					$("table .ip2").html(res['ip2']);
+				}
+			});
+		}
+	});
+</script>

@@ -1,0 +1,234 @@
+<include file="Public:header2" />
+
+<section class="main document">
+	<div class="below">
+		<label class="editmenu-open">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up"
+				viewBox="0 0 16 16">
+				<path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+			</svg>
+			權限選單
+		</label>
+		<!-- 共用階層列表 -->
+		<div class="left-file-menu">
+			<div class="list_layer">
+				<div class="menu_controll d-md-none justify-content-end">
+					<div class="close-below" for="left-file-menu">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle"
+							viewBox="0 0 16 16">
+							<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+							<path
+								d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+						</svg>
+					</div>
+				</div>
+				<div class="upwards">
+					<div class="list_group">
+						<form id="del_form" action="{:U('access/delete')}" method="POST">
+							<input type="hidden" name="operate" value="delete" />
+							<volist id="vo" name="glist">
+								<div class="layer_1_tab access_tab">
+									<label for='{$vo[id]}'>
+										<input type='checkbox' name='id[]' value='{$vo[id]}' id="{$vo[id]}">{$vo[name]}
+									</label>
+									<a class='icon-edit' href="{:U('access/index')}?group={$vo[id]}"><i class="fas fa-pen"></i></a>
+								</div>
+							</volist>
+							<if condition="$access['access_del'] eq '1'">
+								<div class="layer_1_tab">
+									<div class="bt-list"><input type="button" class="delate btn m-2" id="del_btn" value="刪除所選"></div>
+								</div>
+							</if>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- END 共用階層列表 -->
+		<div class="right">
+			<if condition="$access['access_new'] eq '1'">
+				<form action="{:U('Access/add')}" method="post" class="mb-2">
+					<label class="smallText">新增權限：</label>
+					<input type="text" value="" name="name" placeholder="新增權限">
+					<input type="submit" name="adddata" class="btn addbtn" value="新增" id="">
+				</form>
+			</if>
+
+			<form id="access_form" action="{:u('Access/update')}" method="POST">
+				<input type="hidden" value="{$group}" name="id" />
+				<div class="document_edit pt-0">
+					<div class="title_bar d-flex flex-wrap justify-content-between align-items-center">
+						<h3 class="edit_section_title access-top">
+							<i class="fas fa-pencil-alt"></i>
+							<input type="text" value="{$access_edit['name']}" name="name"/>
+						</h3>
+						<a class="btn addbtn text-white mr-3"
+							href="javascript:$('#menu2 .left_menu').css({'max-height':'unset'})">
+							顯示全部
+						</a>
+					</div>
+					<div class="w100">
+						<div id="menu2" class="menuTree auth w100">
+							<ul class="left_menu" style="max-height: calc(100vh - 215px - 75px); overflow-x: hidden;">
+								<template v-for="group in all_menu">
+									<li class="parent expanded">
+										<a href="#" v-text="group.title"></a>
+										<ul>
+											<li class='chlid'>
+												<table border='0' cellpadding='0' cellspacing='0' class='mtTable'>
+													<thead>
+														<tr>
+															<th style='text-align:left;'>
+																<input type=checkbox @click="change_group(group, $event)"/><label>項目</label>
+															</th>
+															<th><label>可新增</label></th>
+															<th><label>指定瀏覽</label></th>
+															<th><label>可編輯</label></th>
+															<th><label>移到垃圾桶</label></th>
+															<th><label>資料庫刪除</label></th>
+															<th><label>看全部</label></th>
+														</tr>
+													</thead>
+													<tbody>
+														<template v-for="sub in group.sub_menu">
+															<tr v-if="need_controll_access(sub)">
+																<td class='mtTable-Ltitle' style='width:16%'>
+																	<span v-text="sub.title"></span>
+																</td>
+																<template v-for="power in poweritem">
+																	<td style='width:14%'>
+																		<template v-if="all_access_keys.indexOf(sub.codenamed.toLowerCase()+'_'+power)!=-1">
+																			<template v-if="sub.type=='km'">
+																				<input :name="'km_access['+sub.codenamed.toLowerCase()+'_'+power+']'" 
+																					   v-model="access_edit[sub.codenamed.toLowerCase()+'_'+power]"
+																					   :true-value="1" :false-value="0" value="1" type="checkbox">
+																			</template>
+																			<template v-else>
+																				<input :name="sub.codenamed.toLowerCase()+'_'+power" 
+																					   v-model="access_edit[sub.codenamed.toLowerCase()+'_'+power]"
+																					   :true-value="1" :false-value="0" value="1" type="checkbox">
+																			</template>
+																		</template>
+																	</td>
+																</template>
+															</tr>
+														</template>
+													</tbody>
+												</table>
+											</li>
+										</ul>
+									</li>
+								</template>
+							</ul>
+						</div>
+
+						<div class="bt-list">
+							<input class="reset btn send-btn" type="button" value="清除重填" @click="reset">
+
+							<if condition="$access['access_edi'] eq '1'">
+								<input class="btn addbtn" type="submit" name="write" value="確認送出">
+							</if>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+<include file="Public:footer" />
+<script type="text/javascript">
+	const access_edit_temp = '{$access_edit|json_encode=JSON_UNESCAPED_UNICODE}';
+	var menuTree_need_init = true;
+	access_form_data = {
+		access_edit: JSON.parse(access_edit_temp),
+		all_menu: [],
+		all_access_keys: {},
+		poweritem: [],
+	};
+	var access_formVM = new Vue({
+		el: '#access_form',
+		data: access_form_data,
+		updated: function(){
+			if(menuTree_need_init){
+				$('#menu2').menuTree({
+					multiOpenedSubMenu:true,
+				});
+			}
+		},
+		methods: {
+			get_access_content: function(){
+				self = this;
+				$.ajax({
+                    type: 'GET',
+                    dataType:'json',
+                    url: "{:u('Access/get_access_content')}",
+                    success:function(res){
+                    	self.all_menu = res.all_menu;
+                    	self.all_access_keys = Object.keys(res.all_access);
+                    	self.poweritem = res.poweritem;
+                    },
+                });
+			},
+			need_controll_access: function(nav){
+				self = this;
+				var need_controll = false;
+				for (var i = 0; i < self.poweritem.length; i++) {
+					const power = self.poweritem[i];
+					if(self.all_access_keys.indexOf(nav.codenamed.toLowerCase()+'_'+power)!=-1){
+						need_controll = true;
+						break;
+					}
+				}
+				return need_controll;
+			},
+			change_group: function(group, $event){
+				self = this;
+				var checked = $($event.currentTarget).prop('checked');
+				if(checked){ /*全選*/
+					checked_value = 1;
+				}else{ /*全取消*/
+					checked_value = 0;
+				}
+				for (var g = 0; g < group.sub_menu.length; g++) {
+					const sub = group.sub_menu[g];
+					for (var i = 0; i < self.poweritem.length; i++) {
+						const power = self.poweritem[i];
+						if(self.all_access_keys.indexOf(sub.codenamed.toLowerCase()+'_'+power)!=-1){
+							self.access_edit[sub.codenamed.toLowerCase()+'_'+power] = checked_value;
+						}
+					}	
+				}
+			},
+			reset: function(){	// 清除重填
+				self = this;
+				$(".sel_reset").prop("checked", false);
+				for (var i = 0; i < self.all_access_keys.length; i++) {
+					if(typeof(self.access_edit[self.all_access_keys[i]]!='undefined')){
+						self.access_edit[self.all_access_keys[i]] = 0;
+					}
+				}
+			},
+		},
+	});
+	access_formVM.get_access_content();
+</script>
+
+<script type="text/javascript">
+	// 左選單
+	$(".editmenu-open").click(function (e) {
+		$(this).toggleClass('arrow');
+		$(".left-file-menu").toggleClass('on');
+
+	});
+	$(".close-below").click(function (e) {
+		$(".left-file-menu").removeClass('on');
+		$('.editmenu-open').removeClass('arrow');
+	});
+	// 刪除模組
+	$("#del_btn").click(function(){
+		if(confirm("確定刪除？")){
+			$('#del_form').submit();
+		}
+	});
+</script>

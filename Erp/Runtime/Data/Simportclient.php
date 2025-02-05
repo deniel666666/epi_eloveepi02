@@ -1,0 +1,1 @@
+O:18:"Photonic\Microcore":5:{s:7:"version";i:2;s:12:"fields_array";N;s:12:"fields_cksum";s:32:"37a6259cc0c1dae299a7866489dff0bd";s:10:"table_name";s:15:"im_importclient";s:11:"show_action";b:1;}

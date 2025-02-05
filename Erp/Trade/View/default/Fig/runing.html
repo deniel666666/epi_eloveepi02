@@ -1,0 +1,364 @@
+<include file="Public:header2" />
+<style>
+    #step_style{
+        border: 1px solid #000;
+        border-radius:5px;left:0;
+        height:25px;width:25px;
+        background: linear-gradient(to bottom, #7db9e8 0%,#1e5799 50%);background-color:#C63300;
+        color:#FFF;
+        font-size:1em;
+    }
+    .eve_content{
+        display: inline-block;
+        resize: vertical;
+        width: 100%;
+        max-width: 50vw;
+        min-height: 2.75rem;
+        height: 2.75rem;
+        overflow: scroll;
+        padding: 0;
+    }
+    .eve_content p{
+        margin-bottom: 0;
+    }
+</style>
+<section class="document main">
+    <div id="right">
+        <include file="Fig:top_menu" />
+        <div class="content-table">
+            <div class="eventsContainer">
+                <div class="events-nav">
+                    <div class="scroll_box">
+                        <div class="menu">
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="events-nav-tab" data-toggle="tab" href="#events-nav"
+                                    role="tab" aria-controls="events-nav" aria-selected="true">進行項目<span class="text-danger"></span></a>
+                                <a class="nav-item nav-link " id="events-nav2-tab" data-toggle="tab" href="#events-nav2"
+                                    role="tab" aria-controls="events-nav2" aria-selected="false">延遲項目<span class="text-danger"></span></a>
+                                <a class="nav-item nav-link" id="events-nav3-tab" data-toggle="tab" href="#events-nav3"
+                                    role="tab" aria-controls="events-nav3" aria-selected="false">未排定時間<span class="text-danger"></span></a>
+                                <a class="nav-item nav-link" id="events-nav4-tab" data-toggle="tab" href="#events-nav4"
+                                    role="tab" aria-controls="events-nav4" aria-selected="false">完成待驗<span class="text-danger"></span></a>
+                                <a class="nav-item nav-link" id="events-nav5-tab" data-toggle="tab" href="#events-nav5"
+                                    role="tab" aria-controls="events-nav5" aria-selected="false">已竣工<span class="text-danger"></span></a>
+                                <a class="nav-item nav-link" id="events-nav6-tab" data-toggle="tab" href="#events-nav6"
+                                    role="tab" aria-controls="events-nav6" aria-selected="false">已暫停<span class="text-danger"></span></a>
+                            </div>
+                        </div>
+                        <a class="slide_left"><i class="fas fa-chevron-left"></i></a>
+                        <a class="slide_right"><i class="fas fa-chevron-right"></i></a>
+                    </div>
+                </div>        
+                <!-- ////////////////////////// events_List ////////////////////////// -->
+                <div class="tab-content events-content" id="nav-tabContent">
+                    <!-- 進行項目 -->
+                    <div class="tab-pane fade show active" id="events-nav" role="tabpanel"
+                        aria-labelledby="events-nav-tab">
+                        <div class="cardContainer">
+                            <h3 class="casesubtitle mb-2">我的進度-進行項目</h3>
+                            <div class="edit_form">
+                                <table class="myFormTheme table edit_table" style="min-width: 1400px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px" class="text-right">序號</th>
+                                            <include file="Fig:eve_step_thead" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <foreach name="make" key="key" item="em">
+                                            <tr>
+                                                <td class="text-right">{$key+1}</td>
+                                                <td>
+                                                    <if condition="in_array(75, $use_function_top)">
+                                                        <a href="{:u('Custo/view_re')}?id={$em[cum_id]}" target="_blank">
+                                                    <else />
+                                                        <a href="{:u('Custo/addcrm')}?id={$em[cum_id]}" target="_blank">
+                                                    </if>
+                                                        {$em.show_name}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <if condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+                                                        <a style="color:red;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <elseif
+                                                            condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+                                                        <a style="color:blue;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <else />
+                                                        <a href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                    </if>
+                                                </td>
+                                                <td><div class="eve_content">{$em.eve_content}</div></td>
+                                                <td>{$em.evesno}</td>
+                                                <td>{$eip_user[$em[eid]][rname]}</td>
+                                                <td>{$em.steps_content}</td>
+                                                <td class="text-right">{$em.schedule}</td>
+                                            </tr>
+                                        </foreach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade " id="events-nav2" role="tabpanel" aria-labelledby="events-nav2-tab">
+                        <div class="cardContainer">
+                            <h3 class="casesubtitle mb-2">我的進度-延遲項目</h5>
+                                <div class="edit_form">
+                                    <table class="myFormTheme table edit_table" style="min-width: 1400px;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 50px" class="text-right">序號</th>
+                                                <include file="Fig:eve_step_thead" />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <foreach name="delay" key="key" item="em">
+                                                <tr>
+                                                    <td class="text-right">{$key+1}</td>
+                                                    <td>
+                                                        <if condition="in_array(75, $use_function_top)">
+                                                            <a href="{:u('Custo/view_re')}?id={$em[cum_id]}" target="_blank">
+                                                        <else />
+                                                            <a href="{:u('Custo/addcrm')}?id={$em[cum_id]}" target="_blank">
+                                                        </if>
+                                                            {$em.show_name}
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <if
+                                                            condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+                                                            <a style="color:red;"
+                                                                href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                            <elseif
+                                                                condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+                                                            <a style="color:blue;"
+                                                                href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                            <else />
+                                                            <a
+                                                                href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        </if>
+                                                    </td>
+                                                    <td><div class="eve_content">{$em.eve_content}</div></td>
+                                                    <td>{$em.evesno}</td>
+                                                    <td>{$eip_user[$em[eid]][rname]}</td>
+                                                    <td>{$em.steps_content}</td>
+                                                    <td class="text-right">{$em.schedule}</td>
+                                                </tr>
+                                            </foreach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade " id="events-nav3" role="tabpanel" aria-labelledby="events-nav3-tab">
+                        <div class="cardContainer">
+                            <h3 class="casesubtitle mb-2">我的進度-未排定時間</h3>
+                            <div class="edit_form">
+                                <table class="myFormTheme table edit_table" style="min-width: 1400px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px" class="text-right">序號</th>
+                                            <include file="Fig:eve_step_thead" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <foreach name="notime" key="key" item="em">
+                                            <tr>
+                                                <td class="text-right">{$key+1}</td>
+                                                <td>
+                                                    <if condition="in_array(75, $use_function_top)">
+                                                        <a href="{:u('Custo/view_re')}?id={$em[cum_id]}" target="_blank">
+                                                    <else />
+                                                        <a href="{:u('Custo/addcrm')}?id={$em[cum_id]}" target="_blank">
+                                                    </if>
+                                                        {$em.show_name}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <if condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+                                                        <a style="color:red;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <elseif
+                                                            condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+                                                        <a style="color:blue;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <else />
+                                                        <a href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                    </if>
+                                                </td>
+                                                <td><div class="eve_content">{$em.eve_content}</div></td>
+                                                <td>{$em.evesno}</td>
+                                                <td>{$eip_user[$em[eid]][rname]}</td>
+                                                <td>{$em.steps_content}</td>
+                                                <td class="text-right">{$em.schedule}</td>
+                                            </tr>
+                                        </foreach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade " id="events-nav4" role="tabpanel" aria-labelledby="events-nav4-tab">
+                        <div class="cardContainer">
+                            <h3 class="casesubtitle mb-2">我的進度-完成待驗</h3>
+                            <div class="edit_form">
+                                <table class="myFormTheme table edit_table" style="min-width: 1400px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px" class="text-right">序號</th>
+                                            <include file="Fig:eve_step_thead" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <foreach name="vs" key="key" item="em">
+                                            <tr>
+                                                <td class="text-right">{$key+1}</td>
+                                                <td>
+                                                    <if condition="in_array(75, $use_function_top)">
+                                                        <a href="{:u('Custo/view_re')}?id={$em[cum_id]}" target="_blank">
+                                                    <else />
+                                                        <a href="{:u('Custo/addcrm')}?id={$em[cum_id]}" target="_blank">
+                                                    </if>
+                                                        {$em.show_name}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <if condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+                                                        <a style="color:red;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <elseif
+                                                            condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+                                                        <a style="color:blue;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <else />
+                                                        <a href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                    </if>
+                                                </td>
+                                                <td><div class="eve_content">{$em.eve_content}</div></td>
+                                                <td>{$em.evesno}</td>
+                                                <td>{$eip_user[$em[eid]][rname]}</td>
+                                                <td>{$em.steps_content}</td>
+                                                <td class="text-right">{$em.schedule}</td>
+                                            </tr>
+                                        </foreach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade " id="events-nav5" role="tabpanel" aria-labelledby="events-nav5-tab">
+                        <div class="cardContainer">
+                            <h3 class="casesubtitle  mb-2">我的進度-已竣工</h3>
+                            <div class="edit_form">
+                                <table class="myFormTheme table edit_table" style="min-width: 1400px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px" class="text-right">序號</th>
+                                            <include file="Fig:eve_step_thead" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <foreach name="suc" key="key" item="em">
+                                            <tr>
+                                                <td class="text-right">{$key+1}</td>
+                                                <td>
+                                                    <if condition="in_array(75, $use_function_top)">
+                                                        <a href="{:u('Custo/view_re')}?id={$em[cum_id]}" target="_blank">
+                                                    <else />
+                                                        <a href="{:u('Custo/addcrm')}?id={$em[cum_id]}" target="_blank">
+                                                    </if>
+                                                        {$em.show_name}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <if condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+                                                        <a style="color:red;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <elseif
+                                                            condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+                                                        <a style="color:blue;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <else />
+                                                        <a href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                    </if>
+                                                </td>
+                                                <td><div class="eve_content">{$em.eve_content}</div></td>
+                                                <td>{$em.evesno}</td>
+                                                <td>{$eip_user[$em[eid]][rname]}</td>
+                                                <td>{$em.steps_content}</td>
+                                                <td class="text-right">{$em.schedule}</td>
+                                            </tr>
+                                        </foreach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade " id="events-nav6" role="tabpanel" aria-labelledby="events-nav6-tab">
+                        <div class="cardContainer">
+                            <h3 class="casesubtitle mb-2">我的進度-已暫停</h3>
+                            <div class="edit_form">
+                                <table class="myFormTheme table edit_table" style="min-width: 1400px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px" class="text-right">序號</th>
+                                            <include file="Fig:eve_step_thead" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <foreach name="trash" key="key" item="em">
+                                            <tr>
+                                                <td class="text-right">{$key+1}</td>
+                                                <td>
+                                                    <if condition="in_array(75, $use_function_top)">
+                                                        <a href="{:u('Custo/view_re')}?id={$em[cum_id]}" target="_blank">
+                                                    <else />
+                                                        <a href="{:u('Custo/addcrm')}?id={$em[cum_id]}" target="_blank">
+                                                    </if>
+                                                        {$em.show_name}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <if condition="$eve_role_level[$em['eve_level']]['rname'] == '急件'">
+                                                        <a style="color:red;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <elseif
+                                                            condition="$eve_role_level[$em['eve_level']]['rname'] == '插件'" />
+                                                        <a style="color:blue;"
+                                                            href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                        <else />
+                                                        <a href="{:u('Fig/view')}?id={$em.id}">{$em.title}</a>
+                                                    </if>
+                                                </td>
+                                                <td><div class="eve_content">{$em.eve_content}</div></td>
+                                                <td>{$em.evesno}</td>
+                                                <td>{$eip_user[$em[eid]][rname]}</td>
+                                                <td>{$em.steps_content}</td>
+                                                <td class="text-right">{$em.schedule}</td>
+                                            </tr>
+                                        </foreach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="footer-mobile">
+    <include file="Public:footer" />
+</div>
+
+<script type="text/javascript">
+    var tabs = $(".nav-item.nav-link");
+    for (var i = 0; i < tabs.length; i++) {
+        var href = $(tabs[i]).attr('href');
+        var count = $(href+' .edit_form>.edit_table>tbody>tr').length;
+        if(count){
+            $('[href="'+href+'"] span').html(count);
+        }
+    }
+</script>

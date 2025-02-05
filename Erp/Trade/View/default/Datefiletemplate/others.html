@@ -1,0 +1,60 @@
+<include file="Public:header2" />
+
+  <!-- Start document_template -->
+  <section class="main document">
+    <div class="below">
+      <!-- 共用階層列表 -->
+      <include file="Datefiletemplate:leftlist" />
+      <!-- END 共用階層列表 -->
+      
+      <div class="right">
+        <div class="document_edit">
+          <div class="document-mode mt-3">
+            <form action="{:u($daoModel.'/others')}" method="get">
+              <div class="search_bar" style="float:left;">
+                <label for="">搜尋文章：</label>
+                <input class="text" type="text" name="title">
+                <input class="submit" type="submit" value="">
+              </div>
+            </form>
+            
+            <table class="document_list full_history-table table">
+              <thead>
+                <tr>
+                  <th class="" style="width: 15%; max-width:300px">位置</th>
+                  <th class="document_head">標題</th>
+                  <th class="document_time">公告日期</th>
+                  <th class="document_pub">發佈者</th>
+                </tr>
+              </thead>
+              <tbody>
+                <foreach name="file" item="vo">
+                  <tr id="del{$vo.id}">
+                    <td>{$vo.location}</td>
+                    <td>
+                      <a href="{:u($daoModel.'/edit')}?id={$vo.id}">
+                        {$vo['title']}
+                      </a>
+                    </td>
+                    <td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+                    <td>{$vo.name}</td>
+                  </tr>
+                </foreach>
+              </tbody>
+            </table>
+
+            <!-- 換頁按鈕 -->
+            <div class="page">
+              {$show}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- End document_list -->
+  <include file="Public:footer" />
+
+</body>
+</html>

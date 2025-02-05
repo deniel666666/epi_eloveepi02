@@ -1,0 +1,103 @@
+<include file="Public:header2" />
+
+
+
+
+
+<section class="main document">
+	<div class="below">
+
+		<!-- 共用階層列表 -->
+		<include file="Jobs:job_menu" />
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-6 col-12">
+						<div class="document_edit">
+							<div class="apart">
+								<div class="jobs_op">職稱垃圾桶</div>
+								<div class="jobs_content">
+									<form action="{:U('Jobs/job_statusaparts')}" method="post">
+										<table class="" id="joblist">
+											<foreach name="joblist" item="one">
+												<tr>
+													<td>
+														<input type="checkbox" name="id[]" value="{$one.id}" class='jobs' align="absmiddle" />
+														<span class="jobsname">{$one.name}</span> <span class="op_list"> </span>
+													</td>
+												</tr>
+											</foreach>
+										</table>
+										<div class="apart_send">
+											<input type="checkbox" id="checkall_jobs" class="alljobs" name="alljobs" />
+											<label for="checkall_jobs" class="ml-2"> 選擇全部</label>
+											<input type="submit" class="addbtn btn" value="還原" name="st" />
+											<input type="submit" class="delate btn d-inline" value="刪除" name="st" />
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-12">
+						<div class="document_edit">
+							<div class="apart">
+								<div class="aparts_op">部門垃圾桶</div>
+								<div class="aparts_content">
+									<form action="{:U('Jobs/apart_statusaparts')}" method="post">
+										<table class="" id="apartlist">
+											<foreach name="apartlist" item="one">
+												<tr>
+													<td>
+														<input type="checkbox" name="id[]" value="{$one.id}" class='aparts' align="absmiddle" />
+														<span class="apartname">{$one.name}</span> <span class="op_list"> </span>
+													</td>
+												</tr>
+											</foreach>
+										</table>
+										<div class="apart_send">
+											<input type="checkbox" id="checkall_aparts" class="allaparts" name="allaparts" />
+											<label for="checkall_aparts" class="ml-2"> 選擇全部</label>
+											<input type="submit" class="addbtn btn" value="還原" name="st" />
+											<input type="submit" class="delate btn d-inline" value="刪除" name="st" />
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>	
+		</div>
+	</div>
+</section>
+<include file="Public:footer" /> 
+<script language="javascript">
+	// 左文章選單
+	$(".editmenu-open").click(function (e) {
+		$(this).toggleClass('arrow');
+		$(".left-file-menu").toggleClass('on');
+	});
+	$(".close-below").click(function (e) {
+		$(".left-file-menu").removeClass('on');
+		$('.editmenu-open').removeClass('arrow');
+	});
+	
+	
+	$('.alljobs').click(function(){
+		if($(this).attr('checked')){
+			$('.jobs').attr('checked',true);	
+		}else{
+			$('.jobs').attr('checked',false);	
+		}
+	});
+	$('.allaparts').click(function(){
+		if($(this).attr('checked')){
+		$('.aparts').attr('checked',true);
+		}else{
+			$('.aparts').attr('checked',false);
+		}
+	})
+</script>										

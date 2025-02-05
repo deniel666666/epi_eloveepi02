@@ -1,0 +1,283 @@
+<head>
+    <style type="text/css">
+        .overflow_hidden{
+            height: 55vh;
+        }
+        @media only screen and (max-width: 1200px) {
+            .overflow_hidden{
+                height: calc( 100vh - 125px - 55px - 115px);
+            }
+        }
+    </style>
+</head>
+
+<label class="editmenu-open">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up"
+        viewBox="0 0 16 16">
+        <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+    </svg>
+    文章選單
+</label>
+<div class="left-file-menu file-manu-all">
+    <div class="list_layer">
+        <!-- 排序標籤 -->
+        <div class="menu_controll">
+            <div style=" position: relative;">
+                <a class="list_Q_dep01 list_tablinks swich_on" href="javascript:void(0)"
+                    onclick="list_openQ(event, 'list_Q_dep01');">已分類</a>
+                <a class="list_Q_dep02 list_tablinks" href="javascript:void(0)"
+                    onclick="list_openQ(event, 'list_Q_dep02');">時間</a>
+                <a class="list_Q_dep03 list_tablinks" href="javascript:void(0)"
+                    onclick="list_openQ(event, 'list_Q_dep03');">未分類</a>
+                
+            </div>
+            <div class="close-below" for="left-file-menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-x-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                </svg>
+            </div>
+        </div>
+        <!-- end -->
+      
+        <!-- 一階顯示 -->
+        <div class="upwards list_Q_dep" id="list_Q_dep01">
+            <a href="{:u('Filecate/sort_add')}">
+                <input type="button" class="btn addbtn" value="新增類別" />
+            </a>
+            <foreach name="is_sort" key="key" item="vo">
+                <div class="list_group">
+                    <div class="layer_1_tab mainMenu" alt="s_{$key}">
+                        <a href="#" class="" style="display: initial;">{$key}</a>
+                        <input type="text" class="order_input">
+                        <a href="{:u('Filecate/del_file_sort')}?key={$key}" class="" style="float: right;">
+                            <i class="far fa-trash-alt"></i>
+                        </a>
+                    </div>
+                    <foreach name="is_sort[$key]" key="k" item="v">
+                        <ul class="del_{$v['id']}">
+                            <li>
+                                <div class="layer_2_tab s_{$key}" style="display: none;">
+                                    <a href="{:u('Filecate/read')}?id={$v.id}" class=""
+                                        style="padding:0 !important; display: flex">
+                                        <div class="ellipsis" style="display:inline-block; max-width: 90%;">
+                                            {$v.eip_user_name}-{$v['title']}
+                                        </div>
+                                        <if condition="$v['read_ck']!='0'">
+                                            <text class="read_ck text-danger font-weight-bold">
+                                                &nbsp;&nbsp;{$v['read_ck']}
+                                            </text>
+                                        </if>
+                                    </a>
+                                    <div class="item_setting opt_color_01" style="display:none">
+                                        <div class="opt_group">
+                                            <!--<a class="opt_btn del" href="#"></a>-->
+                                            <input type="button" class="opt_btn del" value="" fid="{$v['id']}">
+                                        </div>
+                                    </div>
+                                    <input type="text" class="order_input">
+                                </div>
+                            </li>
+                        </ul>
+                    </foreach>
+                </div>
+            </foreach>
+        </div>
+        <!-- end -->
+
+        <!-- 時間顯示 -->
+        <div class="upwards list_Q_dep" id="list_Q_dep02" style="display: none;">
+            <div class="list_group">
+                <foreach name="time" key="k_year" item="v_year">
+                    <div class="layer_1_tab mainMenu" alt="s_{$k_year}">
+                        <a href="#" class="">{$k_year}</a>
+                    </div>
+                    <foreach name="time[$k_year]" key="k_month" item="v_month">
+                        <ul>
+                            <li class="s_{$k_year}" style="display:none">
+                                <div class="layer_2_tab mainMenu" alt="s_{$k_year}_{$k_month}">
+                                    <a href="#" class="">{$k_month}</a>
+                                </div>
+                                <foreach name="time[$k_year][$k_month]" key="key" item="vo">
+                                    <ul class="del_{$vo['id']}">
+                                        <li class="s_{$k_year}_{$k_month}" style="display:none">
+                                            <div class="layer_3_tab">
+                                                <a href="{:u('Filecate/read')}?id={$vo.id}"
+                                                    style="padding:0 !important; display: flex">
+                                                    <div class="ellipsis" style="display:inline-block; max-width: 90%;">
+                                                        {$vo.eip_user_name}/{$k_year}/{$k_month}-{$vo['title']}
+                                                    </div>
+                                                    <if condition="$vo['read_ck']!='0'">
+                                                        <text class="read_ck text-danger font-weight-bold">
+                                                            &nbsp;&nbsp;{$vo['read_ck']}
+                                                        </text>
+                                                    </if>
+                                                </a>
+
+                                                <div class="item_setting opt_color_01" style="display:none">
+                                                    <div class="opt_group">
+                                                        <!--<a class="opt_btn del" href="#"></a>-->
+                                                        <input type="button" class="opt_btn del" value=""
+                                                            fid="{$vo['id']}">
+                                                    </div>
+                                                </div>
+                                                <input type="text" class="order_input">
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </foreach>
+                            </li>
+                        </ul>
+                    </foreach>
+                </foreach>
+            </div>
+        </div>
+        <!-- end -->
+
+        <!-- 未分類 -->
+        <div class="unclass_article list_Q_dep" id="list_Q_dep03" style="display: none;">
+            <form action="{:u('Filecate/mul_select_sort')}" method="post">
+                <h3 class="title">
+                    <input type="checkbox" class="seleall margin_5">
+                    未分類文章：
+                </h3>
+                <div class="overflow_hidden" style="">
+                    <foreach name="un_sort" item="vo">
+                        <ul class="del_{$vo['id']}">
+                            <li style="display: flex;align-items: center;">
+                                <input type="checkbox" class="sele margin_5" name="sele[]" value="{$vo.id}">
+                                <a class="text w-100" style="padding:0 !important; display: flex"
+                                    href="{:u('Filecate/read')}?id={$vo.id}">
+                                    <div class="ellipsis" style="display:inline-block; max-width: 85%;">
+                                        {$vo.eip_user_name}-{$vo['title']}
+                                    </div>
+                                    <if condition="$vo['read_ck']!='0'">
+                                        <text class="read_ck text-danger font-weight-bold">
+                                            &nbsp;&nbsp;{$vo['read_ck']}
+                                        </text>
+                                    </if>
+                                </a>
+                            </li>
+                        </ul>
+                    </foreach>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="text-white margin_5 small">請選擇分類：</span>
+                    <select name="sort" class="mr-2">
+                        <option value="">選擇分類</option>
+                        <foreach name="is_sort" item="vo" key="vo_key">
+                            <option value="{$vo_key}">{$vo_key}</option>
+                        </foreach>
+                    </select>
+                    <input type="submit" class="addbtn btn" value="儲存">
+                </div>
+            </form>
+        </div>
+        <!-- end -->
+    </div>
+</div>
+
+<script>
+    // 手機選單
+    $(".editmenu-open").click(function (e) {
+        $(this).toggleClass('arrow');
+        $(".left-file-menu").toggleClass('on');
+
+    });
+    $(".close-below").click(function (e) {
+        $(".left-file-menu").removeClass('on');
+        $('.editmenu-open').removeClass('arrow');
+    });
+    $(".list_group a").click(function (e) {
+         $(".left-file-menu").removeClass('on');
+    });
+
+
+    $(".cog").click(function (e) {
+        if(!$(this).next('.opt_group').hasClass( "open" )){
+            $(this).next('.opt_group').addClass('open');
+
+        }else {
+            $(this).next('.opt_group').removeClass('open');
+        }
+
+    });
+
+    // 更換頁籤
+    function list_openQ(evt, cityName) {
+        var i, tabcontent, list_tablinks;
+        tabcontent = document.getElementsByClassName("list_Q_dep");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        list_tablinks = document.getElementsByClassName("list_tablinks");
+        for (i = 0; i < list_tablinks.length; i++) {
+            list_tablinks[i].className = list_tablinks[i].className.replace(" swich_on", "");
+        }
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " swich_on";
+
+        localStorage.setItem('Filecate_list_tablinks', cityName);
+    }
+    $('.mainMenu').click(function(){
+		var thisMenu = $(this).children('.glyphicon');
+		thisMenu.toggleClass('glyphicon-triangle-right');
+		thisMenu.toggleClass('glyphicon-triangle-bottom');
+		$('.' + $(this).attr('alt')).stop().slideToggle(300);
+	});
+    $(".opt_btn").click(function(){
+		fid = $(this).attr("fid");
+        var opt_btn_data ={
+            id:$(this).attr("fid")
+        };
+		$.ajax({
+			method:'post',
+			data:opt_btn_data,
+            dataType:'json',
+			url:"{:U('Filecate/file_del')}",
+			success:function(res){
+				$(".del_"+fid).html("");
+				$.toaster({message :res});
+			}
+		});
+	});
+
+    $( document ).ready(function() {
+        var Filecate_list_tablinks = localStorage.getItem('Filecate_list_tablinks');
+        if(Filecate_list_tablinks){
+            var obj={};
+            obj.currentTarget = $('a.'+Filecate_list_tablinks)[0];
+            list_openQ(obj, Filecate_list_tablinks);
+        }
+
+        // 點擊選單內連結
+        $('.list_layer a').on('click', function(e){
+            url = $(e.currentTarget).attr('href');
+            if(url !='' && url !='#' && url != 'javascript:void(0)'){
+                localStorage.setItem('Filecate_read_url', url);
+                $.ajax({
+                    method:'get',
+                    dataType:'text',
+                    url:url,
+                    success:function(res){
+                        $('.document .right').html(res)
+                        localStorage.setItem('Filecate_auto', 'yes');
+                    }
+                });
+            }
+            e.preventDefault();
+        })
+
+        // 全選功能
+        $("#list_Q_dep03").on("click",".seleall",function(){
+            if($(this).attr('checked')){
+                $('#list_Q_dep03 .sele').attr('checked',true);
+            }else{
+                $('#list_Q_dep03 .sele').attr('checked',false);
+            }
+        });
+    });
+</script>

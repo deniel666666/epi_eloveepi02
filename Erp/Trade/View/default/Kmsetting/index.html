@@ -1,0 +1,100 @@
+<include file="Public:header2" />
+<div class="container mw1920 p-4">
+    <button id="add_km_type_btn" class="btn addbtn mb-2">新增類別</button>
+    <form method="post" action="">
+        <div style="overflow-x:auto;">
+            <table class=" edit_table table" style="min-width: 1000px;">
+                <thead>
+                    <tr>
+                        <th width="15%">名稱</th>
+                        <th width="30%">
+                            控制器名稱
+                            <span class="text-danger">(僅可輸入英文，並且除開頭大寫外，其餘皆需為小寫，請勿重複)</span>
+                        </th>
+                        <th width="30%">
+                            KM編碼
+                            <span class="text-danger">(由控制器名稱前兩碼之大寫組成，不可自行設定)</span>
+                        </th>
+                        <th width="13%">下掛位置</th>
+                        <th width="7%">排序</th>
+                        <th width="5%">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="km_types_tbody">
+                    <foreach name="km_types_group" key="key" item="km_types">
+                        <foreach name="km_types['km_types']" key="key" item="vo">
+                            <tr id="km_type_{$vo.id}">
+                                <td><input value="{$vo.title}" name="km_types[{$vo.id}][title]"></td>
+                                <td><input value="{$vo.codenamed}" name="km_types[{$vo.id}][codenamed]"></td>
+                                <td>{$vo.description}</td>
+                                <td>
+                                    <select name="km_types[{$vo.id}][parent_id]">
+                                        <foreach name="powercat" key="key2" item="vo2">
+                                            <option value="{$vo2.id}" {$vo2.id|compare_return=$vo['parent_id'], 'selected'}>{$vo2.title}</option>
+                                        </foreach>
+                                    </select>
+                                </td>
+                                <td><input value="{$vo.orders}" name="km_types[{$vo.id}][orders]" type="number" step="1"></td>
+                                <td>
+                                    <a class="btn delate text-white" href="javascript:del_km_type('{$vo.id}')">
+                                        <i aria-hidden="true" class="far fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </foreach>
+                        <tr><td colspan="6"><hr></td></tr>
+                    </foreach>
+                </tbody>
+            </table>
+            <div class="vRight mt-2">
+                <input id="complete" class="btn sendbtn" type="submit" value="修改完成">
+            </div>
+        </div>
+    </form>
+</div>
+<include file="Public:footer" />
+
+<script type="text/javascript">
+    add_num = 9999;
+    $('#add_km_type_btn').on('click', function(){
+        $('#km_types_tbody').append(`
+            <tr id="km_type_`+add_num+`">
+                <td><input value="" name="km_types[`+add_num+`][title]"></td>
+                <td><input value="" name="km_types[`+add_num+`][codenamed]"></td>
+                <td></td>
+                <td>
+                    <select name="km_types[`+add_num+`][parent_id]">
+                        <foreach name="powercat" key="key2" item="vo2">
+                            <option value="{$vo2.id}">{$vo2.title}</option>
+                        </foreach>
+                    </select>
+                </td>
+                <td><input value="" name="km_types[`+add_num+`][orders]" type="number" step="1"></td>
+                <td>
+                    <a class="btn delate text-white" href="javascript:del_km_type('`+add_num+`')">
+                        <i aria-hidden="true" class="far fa-trash-alt"></i>
+                    </a>
+                </td>
+            </tr>
+        `);
+        add_num += 1;
+    });
+
+    function del_km_type(id){
+        if(confirm('確認刪除？')){
+            $.ajax({
+                method: 'DELETE',
+                url: "{:U('Kmsetting/index')}",
+                dataType: 'json',
+                data: { id: id},
+                success: function(e){
+                    var bg_class = e.status ? 'bg-success' : 'bg-danger';
+                    Vue.toasted.show(e.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                    if(e.status){
+                        $('#km_type_'+id).remove();
+                    }
+                }
+            });
+        }
+    }
+</script>

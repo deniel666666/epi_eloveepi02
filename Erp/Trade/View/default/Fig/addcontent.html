@@ -1,0 +1,289 @@
+<include file="Public:header2" />
+<section class="document main">
+    <div id="right">
+        <include file="Fig:top_menu" />
+        <div class="content-table">
+            <div class="eventsContainer">
+                
+                <!-- ////////////////////////// events_List ////////////////////////// -->
+                <div class="cardContainer">
+                    <div class="cardContainer-top">
+                        <h3 class="casesubtitle mr-2 mb-2">發佈事件 - 案件安排</h3>
+                        <div class="eventsHead mb-2">事件狀態：送件中</div>
+                    </div>
+                    
+                    <form id="form" action="{:u('Fig/do_add')}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="cum_id" value="{$_GET['id']}" />
+                        <input type="hidden" name="crm_name" value="{$one['name']}" />
+                        <input type="hidden" name="case_name" id="case_name" value="免合約" />
+                        <input type="hidden" name="draft" id="draft" value="0" placeholder="草稿 0.否 1.是" />
+                        <input type="hidden" name="eve_events_id" value="{$eve_events_id}" placeholder="判斷重發或新發"/>
+                        <!-- <h3 class="casesubtitle mt-2">{$system_parameter["客戶"]}資訊</h3> -->
+                        
+                        
+                        <!-- <h3 class="casetitle mt-2">工作單內容</h3> -->
+                        <div class="container-fluid contract-item pl-0 pr-0">
+                            <div class="row w-100 m-0">
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>事件名稱：</label>
+                                    <input type="text" value="{$eve_title}" class="subject" name="title" size="40" value="" placeholder="此欄必填" />
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>事件號：</label>
+                                    <input type="text" value="{$eve_sno}" name="evesno" id="evesno"/>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>{$system_parameter["公司名稱"]}：</label>
+                                    <span>{$one.show_name}</span>
+                                </div>
+
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>{$system_parameter['合約']}號：</label>
+                                    <select name="caseid" id="caseid">
+                                        <option value="0">免{$system_parameter['合約']}</option>
+                                        <foreach name="crm_contract" key="num" item="vo">
+                                            <if condition="$vo['sn'] neq ''">
+                                                <option value="{$vo['id']}" {$vo['id']|compare_return=$eve_caseid,'selected'}>
+                                                    {$vo['sn']}
+                                                </option>
+                                            </if>
+                                        </foreach>
+                                    </select>
+                                    <foreach name="crm_contract" key="num" item="vo">
+                                        <span class="crm_contract_allmoney d-none" id="crm_contract_allmoney_{$vo['id']}">({$vo['allmoney']}元)</span>
+                                    </foreach>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12"></div>
+                                <div class="col-lg-4 col-md-6 col-12"></div>
+
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>等級：</label>
+                                    <select name='eve_level'>
+                                        <foreach name="eve_role_level" key="num" item="vo">
+                                            <option value="{$vo.id}">{$vo.name}</option>
+                                        </foreach>
+                                    </select>
+                                </div>                                
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <input id="eve_type0" type="radio" value="0" name="eve_type" checked="checked"/>
+                                    <label for="eve_type0" class="bg-white">專案事件</label>
+                                    <input id="eve_type1" type="radio" value="1" name="eve_type" onclick="getprolist()" />
+                                    <label for="eve_type1" class="bg-white">模組事件</label>
+                                    <div class="selectContainer" id="builderselect" style="display: none">
+                                        <select id="model_builder">
+                                            <option value="">建模人員</option>
+                                            <foreach name="model_builder" key="num" item="vo">
+                                                <option value="{$vo.id}">{$vo.name}</option>
+                                            </foreach>
+                                        </select>
+                                    </div>
+                                    <div class="selectContainer" id="caseselect" style="display: none">
+                                        <select name="eve_pid" id="eve_pid" onchange="getprolist()">
+                                            <foreach name="processes" key="num" item="vo">
+                                                <option value="{$vo.id}">{$vo.name}</option>
+                                            </foreach>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label>內容：</label>
+                                    <textarea id="descriptions" name="content" cols="100" rows="8" style="width:700px;height:200px;visibility:hidden;">
+                                        {$eve_content}
+                                    </textarea>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12">
+                                    <label>附件：</label>
+                                    <input type="file" name="file[]" multiple/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="show">
+                        </div>
+
+                        <fieldset class="filelist">
+                            <legend>工作排程</legend>
+                        </fieldset>
+                        <div class="schedule">
+                        </div>
+
+                        <div >
+                            <input type="button" value="發佈事件" class="addbtn btn" onclick="set_draft(0);sendCheck()"/>
+                            <input type="button" value="儲存草稿" class="sendbtn btn" onclick="set_draft(1);sendCheck()"/>
+                            <p class="text-danger d-inline small">〈!〉為讓專案進行順利，發單後將不得修改流程</p>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="footer-mobile">
+    <include file="Public:footer" />
+</div>
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+
+<script type="text/javascript">
+    var check_user = true; /*是否檢查未指派人員*/
+</script>
+<include file="Events:role_judge" />
+
+<script>
+    var eve_events_id = '{$eve_events_id}';
+
+    var editor;
+    KindEditor.ready(function(K) {
+        editor = K.create('#descriptions', {
+            afterBlur: function() {
+                this.sync();
+            },
+            langType: 'zh_TW',
+            items: [
+                'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
+                'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+                'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+                'superscript', 'quickformat', 'selectall', '|', 'fullscreen', '/', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+                'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
+                'table', 'hr', 'emoticons', 'pagebreak',
+                'anchor', 'link', 'unlink', '|', 'about'
+            ],
+            width: '100%',
+            height: '600px',
+            resizeType: 0
+        });
+    });
+
+    // 更改建模人員下拉選
+    $('#model_builder').on('change',function(e){
+        user_id = $('#model_builder').val();
+
+        // 載入人員建立的模組
+        $.ajax({
+            type: 'GET',
+            dataType:'json',
+            url: "{:u('Events/get_eve_processes')}",
+            data: {
+                ajax: true,
+                user_id: user_id,
+            },
+            success: function(res) {
+                console.log(res);
+                option_html="";
+                for (var i = 0; i < res.length; i++) {
+                    option_html += `<option value="`+res[i]['id']+`">`+res[i]['name']+`</option>`
+                }
+                $('#eve_pid').html(option_html);
+
+                getprolist();
+            }
+        })
+    });
+
+    //載入設定氁組內容
+    function getprolist(data=false) {
+        if(!data){
+            if($('input[name=eve_type]:checked').val()=="0"){ /*當前選擇專案事件*/
+                data = {}
+            }else{
+                // 依模組載入
+                data = { id: $('#eve_pid').val() }
+
+                // 載入模組內文
+                $.ajax({
+                    type: 'POST',
+                    dataType:'text',
+                    url: "{:u('Fig/aj_html')}",
+                    data: {
+                        id: $('#eve_pid').val()
+                    },
+                    success: function(res) {
+                        editor.html(res);
+                    }
+                });
+            }
+        }
+        // 載入排程
+        $.ajax({
+            type: 'POST',
+            dataType:'text',
+            url: "{:u('Fig/aj_schedule')}", // 可修改人員、流程
+            data: data,
+            success: function(res) {
+                // console.log(res);
+                $(".schedule").html(res);
+                ste = $('.steps').length - 1; //事件流程數
+            },
+            error: function(request, error) {
+                console.log(arguments);
+                alert(" Can't do because: " + error);
+            }
+        });
+    };
+    // 切換專案/模組事件
+    $("input[name=eve_type]").change(function(){
+        if($('input[name=eve_type]:checked').val()=="0"){
+            // 專案事件
+            $("#caseselect").css("display","none");
+            $("#builderselect").css("display","none");
+            getprolist();
+
+        }else{
+            // 模組事件
+            $("#caseselect").css("display","inline-block");
+            $("#builderselect").css("display","inline-block");
+            getprolist();
+        }
+    })
+    // 預設顯示流程
+    $( window ).load(function() {
+        data = false;
+        if(eve_events_id){ /*有eve_events_id，是舊事件*/
+            data = { eve_id: eve_events_id }
+        }
+        getprolist(data);
+    });
+
+    //變換合約
+    $("#caseid").change(function() {
+        //無合約則EN開頭 有責EV
+        if ($(this).val() == "0") {
+            $("#evesno").val("EN{$eve_sno_num}");
+        } else {
+            $("#evesno").val("EV{$eve_sno_num}");
+        }
+        set_case_name();
+        show_contract_allmoney();
+    });
+    function set_case_name(){
+        $("#case_name").val($('#caseid :selected').text().trim());
+    }
+    set_case_name();
+    function show_contract_allmoney(){
+        let selected_v = $("#caseid").val();
+        $('.crm_contract_allmoney').addClass('d-none');
+        $('#crm_contract_allmoney_'+selected_v).removeClass('d-none');
+    }
+    show_contract_allmoney();
+
+    if("{$crm_contract|count}" == 0){
+        $.toaster({ message : "尚未建立{$system_parameter['合約']}", priority : 'warning' });
+    }
+
+    function set_draft(status) {
+        $('#draft').val(status);
+        if(status==1){
+            check_user = false;
+        }else{
+            check_user = true;
+        }
+    }
+</script>
+<script type="text/javascript">
+    // 離開頁面提醒
+    $(window).on('beforeunload', function(){
+        return 'Are you sure you want to leave?';
+    });
+</script> 

@@ -1,0 +1,46 @@
+		<script>
+			// 點擊列印信封
+			function print_envelope(size="h_b") {
+				var sele = $("input[name='sele']:checked").map(function(){return $(this).val();}).get();
+				if(sele.length==0){
+					Vue.toasted.show("請選擇列印對象", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+					return;
+					// if(!confirm("確定依搜尋結果產生信封？\n會拆一個檔案1千筆，分批產生")){
+					// 	return;
+					// }
+				}
+
+				Vue.toasted.show("開始產生檔案，請勿重複點擊", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+				$('#body_block').css('display','block');
+
+				api_url = "{:u('Custo/print_envelope',$_GET)}?size=" + size;
+
+				if(sele.length==0){ // 根據搜尋結果產生
+					p = Number(crm_indexVM.pagwAllA.totalPages);
+					perPage = Number(crm_indexVM.pagwAllA.listRows);
+					files = Math.ceil(p*perPage/1000);
+
+					time = 200*perPage*files;
+					for (var i = 1; i <= files; i++) {
+						aj_url = api_url + '&' + get_crm_search_pars() +"&p=" + i
+						go_print_envelope(i,aj_url, 500+time*(i-1));
+					}
+					setTimeout(function(){ 
+						// Vue.toasted.show("下載檔案結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+						$('#body_block').css('display','none');
+					}, 500+time*(i));
+
+				}else{ // 依勾選產生
+					aj_url = api_url + "&ids=" + JSON.stringify(sele);
+					go_print_envelope('',aj_url, 50);
+					setTimeout(function(){ 
+						$('#body_block').css('display','none');
+					}, sele.length*50);
+				}
+			}
+			function go_print_envelope(page, aj_url, time){
+				setTimeout(function(){ 
+					window.open(aj_url, "print"+page, "width=500");
+				}, time);
+			}
+		</script>

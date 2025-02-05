@@ -1,0 +1,436 @@
+<include file="Public:header2" />
+
+<style>
+	#tableScroll {
+		overflow: auto;
+		width: 100%;
+		height: auto;
+		max-height: 60vh;
+	}
+
+	#tableScroll td,
+	th {
+		width: 100px;
+	}
+
+	#tableScroll th:not(:first-child) {
+		z-index: 1;
+	}
+
+	#tableScroll th {
+		background-color: lightblue;
+	}
+
+	#tableScroll table {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+	#tableScroll td:nth-child(1),
+	#tableScroll td:nth-child(2) {
+		position: sticky;
+		z-index: 1;
+		background-color: #ddd;
+	}
+
+	#tableScroll thead tr th {
+		position: sticky;
+		top: 0;
+	}
+
+	#tableScroll th:nth-child(1) {
+		z-index: 2;
+	}
+
+	#tableScroll th:nth-child(2) {
+		z-index: 2;
+	}
+
+	.late-come,
+	.early-leave {
+		color: red;
+	}
+</style>
+
+<div id="attendance_date_VM" class="container mw1920 p-4">
+  <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+    <div class="row">
+      <div class="col-md-3 order-md-1 order-4">
+        <button type="button" class="btn addbtn" @click="open_attendance_panel">批次添加需打卡日</button>
+      </div>
+    </div>
+  </if>
+  <div class="searchForm">
+    <div class="w100 d-flex align-items-start">
+      <div class="w100 d-flex flex-wrap">
+        <ol class="headerOl rightR mr-3">
+          <li>
+            切換年月：
+            <select v-model="currentMonth" @change="getMonthDates">
+              <option v-for="(item, index) in monthOptions">{{item}}</option>
+            </select>
+          </li>
+        </ol>
+        <!-- <div class="search_bar">
+          <button type="button" class="btn addbtn" style="width: 80px; cursor: pointer; padding: 0px"
+            @click="getMonthDates">搜尋</button>
+        </div>
+        <div class="search_bar">
+          <a href="{:u($CONTROLLER_NAME.'/index')}">
+            <input type="text" class="text text-center" readonly
+              style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+          </a>
+        </div> -->
+        <p class="text-danger">僅顯示需「月薪打卡」 & 本月約定薪資為「月薪」的員工</p>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex flex-wrap align-items-start" style="overflow-x:auto;">
+    <div id="tableScroll">
+      <table class="table" style="max-width: 100px;">
+        <thead>
+          <tr>
+            <th style="left: 0px;">員工姓名</th>
+            <th style="left: 100px;">員工編號</th>
+            <template v-for="d_item in dateColumns">
+              <th class="text-center" 
+                  :style="{'color': check_holiday(d_item) ? '#e14040' : 'inherit'}">
+                {{moment(new Date(d_item)).format('DD')}}
+                ({{handleWeek(d_item)}})
+                <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+                  <div class="d-flex flex-wrap justify-content-around mt-1">
+                    <a href="###" class="btn btn-primary" @click="addRows_date(d_item)"><i aria-hidden="true" class="fas fa-plus"></i></a>
+                    <a href="###" class="btn delate" @click="deleteRows(d_item)"><i aria-hidden="true" class="far fa-trash-alt"></i></a>
+                  </div>
+                </if>
+              </th>
+            </template>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(user, u_idx) in mens">
+            <td style="left: 0px;">{{user.name}}</td>
+            <td style="left: 100px;">{{user.no}}</td>
+            <template v-for="d_item in dateColumns">
+              <td class="text-center" 
+                  @change="change_attendance_date(d_item, user, $event)"
+                  :style="{'background-color': check_holiday(d_item) ? '#fcebe4' : 'inherit'}">
+                <select :class="[user.need_works.indexOf(d_item)==-1 ? 'text-danger' : '' ]">
+                  <option value="1" :selected="user.need_works.indexOf(d_item)!=-1" class="text-dark">上班</option>
+                  <option value="0" :selected="user.need_works.indexOf(d_item)==-1" class="text-danger">免上班</option>
+                </select>
+              </td>
+            </template>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <a id="attendance_panel_btn" class="d-none" data-toggle="modal" data-target="#attendance_panel"></a>
+  <div class="modal fade bd-example-modal-lg" id="attendance_panel" tabindex="-1" role="dialog"
+    aria-labelledby="attendance_panelTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="modal-header">
+          <h5 class="modal-title" id="attendance_panelTitle">批次添加需打卡日</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="form-group col-md-12 mb-3">
+              <label class="form-label">
+                <font color="red" style="font-size: 1.1rem;">*</font>
+                選擇日期：
+              </label>
+              <span class="d-inline-flex align-items-center">
+                <input type="date" class="form-control"
+                        v-model="postData.start_date">&nbsp;~&nbsp;
+                <input type="date" class="form-control" v-model="postData.end_date">
+              </span>
+            </div>
+            <div class="form-group col-md-12 mb-3">
+              選擇星期：<span class="text-danger" style="font-style:italic;">全不選視為全選</span><br />
+              <template v-for="item in weekdays">
+                <input type="checkbox" :id="'id_'+ item.value" :value="item.value"
+                        v-model="postData.checked_days">
+                <label :for="'id_'+ item.value"
+                  style="padding-right: 20px;">{{item.text}}</label>
+              </template>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer flex-wrap">
+          <span class="text-danger mr-auto" style="font-style:italic;">點擊「確認新增」後視窗不會關閉，可修改部份內容再添加需打卡日期</span>
+          <button type="button" class="btn btn-primary" @click="addRows">確認新增</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  var Request = new Object();	 
+  Request = GetRequest();
+  function GetRequest() {
+    var url = location.search; 
+    var theRequest = new Object();
+    if (url.indexOf("?") != -1) {
+      var str = url.substr(1);
+      strs = str.split("&");
+      for(var i = 0; i < strs.length; i++) {
+        theRequest[strs[i].split("=")[0]]=decodeURI(strs[i].split("=")[1]);
+      }
+    }
+    return theRequest;
+  }
+  currentMonth = Request.ym ? Request.ym : '';
+  if(currentMonth.length==6){
+    check = new Date(currentMonth.slice(0,4)+'-'+currentMonth.slice(4,6)+'-01');
+    currentMonth = check != 'Invalid Date' ? Request.ym : moment().format('YYYYMM');
+  }else{
+    currentMonth = moment().format('YYYYMM');
+  }
+  const attendance_date_VM = new Vue({
+    el: '#attendance_date_VM',
+    data() {
+      return {
+        /*列表顯示*/
+        currentMonth: currentMonth,
+        monthOptions: [],
+        dateColumns: [],
+        mens: [],
+        weekdays: [
+          { value: 0, text: '日' },
+          { value: 1, text: '一' },
+          { value: 2, text: '二' },
+          { value: 3, text: '三' },
+          { value: 4, text: '四' },
+          { value: 5, text: '五' },
+          { value: 6, text: '六' },
+        ],
+
+        /*批次設定打卡日*/
+        postData: {
+          start_date: '',
+          end_date: '',
+          checked_days: [1,2,3,4,5],
+        },
+      }
+    },
+    created() {
+      // 搜尋月份下拉選單
+      let startMonth = moment().subtract(6, 'months');
+      let endMonth = moment().add(1, 'month');
+
+      if (startMonth < endMonth) {
+        let date = startMonth.startOf('month');
+
+        while (date < endMonth.endOf('month')) {
+          this.monthOptions.push(date.format('YYYYMM'));
+          date.add(1, 'month');
+        }
+      }
+
+      // 取得資料列表
+      this.getMonthDates();
+    },
+    mounted() {
+      // let self = this;
+      // $('#attendance_panel').on('hidden.bs.modal', function (e) {
+      //   self.$data.postData = self.$options.data().postData;
+      // })
+    },
+    methods: {
+      getMonthDates() {
+				let self = this;
+				$.ajax({
+					method: 'get',
+					url: "{:u($CONTROLLER_NAME.'/getMonthDates')}?get_month=" + self.currentMonth,
+					beforeSend: function (XMLHttpRequest) {
+						self.mens = []; // 切換月份時先畫面渲染，不然 mens 的 <td> 先重疊再正常
+						Vue.toasted.show("日期初始化，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+					},
+					success: function (res) {
+            url = location.href.replaceAll('#', '');
+            url = url.split('?')[0];
+            url = url + '?ym='+self.currentMonth;
+            let prevUrl = '';
+            if(window.history.state){
+              prevUrl = window.history.state.prevUrl;
+            }
+            if(prevUrl!=url){
+              history.pushState({ prevUrl: url}, null, url);
+            }
+            // console.log(res);
+						self.dateColumns = res.dates;
+						self.$nextTick(() => {
+							// 取得資料列表
+							self.getDataRows();
+						});
+					},
+					complete: function (XMLHttpRequest, textStatus) {
+						Vue.toasted.show("日期初始化結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+					},
+				});
+			},
+      getDataRows() {
+        let self = this;
+        $.ajax({
+          method: 'post',
+          dataType: 'json',
+          url: "{:u($CONTROLLER_NAME.'/getUserList')}",
+          data: { get_month: this.currentMonth },
+          beforeSend: function (XMLHttpRequest) {
+            Vue.toasted.show("搜尋中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          },
+          success: function (res) {
+            self.mens = res.mens;
+          },
+          complete: function (XMLHttpRequest, textStatus) {
+            Vue.toasted.show("搜尋結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          },
+        });
+      },
+      handleWeek(date) {
+        let weekday = moment(date).day();
+
+        let newArr = this.weekdays.filter(element => {
+          if (element.value == weekday) return element.text;
+        });
+
+        return newArr[0].text;
+      },
+      check_holiday(date){
+        return ['六','日'].indexOf(this.handleWeek(date))!=-1;
+      },
+
+      open_attendance_panel(){
+        date = this.currentMonth.slice(0,4)+'-'+this.currentMonth.slice(4,6)+'-01';
+        if(!this.postData.start_date){ this.postData.start_date = date; }
+        if(!this.postData.end_date){ this.postData.end_date = date; }
+        $('#attendance_panel_btn').click();
+      },
+      addRows() {
+        postData = {
+          start_date: this.postData.start_date,
+          end_date: this.postData.end_date,
+          checked_days: this.postData.checked_days,
+        };
+        this.do_addRows(postData);
+      },
+      addRows_date(date){
+        postData = {
+          start_date: date,
+          end_date: date,
+          checked_days: [],
+        };
+        this.do_addRows(postData);
+      },
+      do_addRows(postData){
+        let self = this;
+        // 檢查欄位
+        if (!postData.start_date || !postData.end_date) {
+          Vue.toasted.show("請設定批次添加需打卡日區間", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+          return;
+        }
+        if (postData.start_date > postData.end_date) {
+          Vue.toasted.show("開始日期需小於或等於結束日期", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+          return;
+        }
+        postData.get_month = this.currentMonth;
+
+        $.ajax({
+          method: 'post',
+          dataType: 'json',
+          url: "{:u($CONTROLLER_NAME.'/addRows_with_options')}",
+          data: postData,
+          success: function (res) {
+            bg_class = res.status ? 'bg-success' : 'bg-danger';
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+            // 重新取得資料列表
+            if (res.status) self.getDataRows();
+          },
+        });
+      },
+      deleteRows(date) {
+        let self = this;
+        Swal.fire({
+          title: "確定將"+date+"設為免上班？",
+          text: "修改後該日的卡時間也將移並被刪除(無法回復)",
+          confirmButtonText: "確定",
+          confirmButtonColor: "#28a745",
+          showCancelButton: true,
+          cancelButtonText: `取消`,
+        }).then((result) => {
+          /* Read more about isConfirmed, isDenied below */
+          if (result.isConfirmed) {
+            $.ajax({
+              method: 'post',
+              dataType: 'json',
+              url: "{:u($CONTROLLER_NAME.'/deleteRows')}",
+              data: {
+                date: date,
+                get_month: self.currentMonth,
+              },
+              success: function (res) {
+                bg_class = res.status ? 'bg-success' : 'bg-danger';
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+
+                // 重新取得資料列表
+                if (res.status) self.getDataRows();
+              },
+            });
+          }
+        });
+      },
+
+      change_attendance_date(date, user, $event){
+        let self = this;
+        value = $($event.target).val();
+
+        let do_after_confirm = () =>{
+          $.ajax({
+            method: 'post',
+            dataType: 'json',
+            url: "{:u($CONTROLLER_NAME.'/change_attendance_date')}",
+            data: {
+              need_work: value,
+              date: date,
+              user_id: user.id,
+            },
+            success: function (res) {
+              var bg_class = res.status ? 'bg-success' : 'bg-danger';
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+              if(res.status){
+                self.getDataRows();
+              }
+            },
+          });
+        };
+        if(value==0){
+          Swal.fire({
+            title: "確定將"+user.name+"在"+date+"設為免上班？",
+            text: "修改後該日的卡時間也將移並被刪除(無法回復)",
+            confirmButtonText: "確定",
+            confirmButtonColor: "#28a745",
+            showCancelButton: true,
+            cancelButtonText: `取消`,
+          }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+              do_after_confirm();
+            }
+          });
+        }else{
+          do_after_confirm();
+        }
+      },
+    }
+  });
+</script>

@@ -1,0 +1,174 @@
+
+<include file="Public:header2" />
+
+<section class="main ">
+	<!---->
+	<div id="right">
+		
+		<div>
+			<if condition="$page eq ''">
+				<form name="search" class="searchForm" id="searchform" action="{:u('Seoprice/index')}" method="get">
+			<else />
+				<form name="search" class="searchForm" id="searchform" action="{:u('Seoprice/index')}?p={$Think.get.p}" method="get">
+			</if>
+					<ol class="headerOl rightR">
+						<li>
+							<select name="engine">
+								<option value="">搜尋引擎</option>
+								
+								<foreach name="engine" item="op">
+									<if condition="$op eq $_GET['engine']">
+										<option selected>{$op[engine]}</option>
+										<else />
+										<option >{$op[engine]}</option>
+									</if>
+								</foreach>
+								
+							</select>
+						</li>
+						<li>
+							<div class="search_bar">
+								<label for=""></label>
+								<input class="text" type="text"  placeholder="搜尋..." name="name" value="{$_GET['name']}"   />
+								<input class="submit btn" type="submit" value="" />
+							</div>
+						</li>
+					</ol>
+				</form>
+			<if condition="$access['seoprice_new'] eq '1'">
+					<form action="{:u('Seoprice/do_add')}">
+						快速新增:
+						<input type="text" name="name" />
+						<select name="engine">
+							
+							<foreach name="engine" item="op">
+								<if condition="$op eq $_GET['engine']">
+									<option selected>{$op[engine]}</option>
+									<else />
+									<option >{$op[engine]}</option>
+								</if>
+							</foreach>
+							
+						</select>
+						<input type="submit" class="btn addbtn" />
+						
+					</form>
+			</if>
+		</div>
+		<div class="calendar" >
+			<p id="nowdata">{$today}</p>
+			<ul class="seo_month">
+				<foreach name="dis" item="op">
+					<!--{$date}{$op}-->
+					<if condition="$date eq $op">
+						<li style="border:solid 2px red;">
+					<else />
+						<li>
+					</if>
+							<a href="{:u('Seoto/index')}?todate={$op}">
+								{$op|substr=8,11}<br>
+								{$monnum[$op]}
+							</a>
+						</li>
+				</foreach>
+			</ul>
+		</div>
+				
+		<ul class="seo_month">
+			<if condition="$access['seoprice_del'] eq '1'">
+				<li><a href="{:u('Seoprice/index')}?status=0" class="btn border mr-1 delate">垃圾桶 </a></li>
+			</if>
+			<li><a href="{:u('Seoprice/index')}" class="btn border mr-1">全部字組</a></li>
+			<li class="noBorder">價格區分：</li>
+			<li><a href="{:u('Seoprice/index')}?m=1&status={$status}">3000以下</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=2&status={$status}">3000~5000</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=3&status={$status}">5000~8000</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=4&status={$status}">8000~10000</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=5&status={$status}">10000~15000</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=6&status={$status}">15000~20000</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=7&status={$status}">20000~30000</a></li>
+			<li><a href="{:u('Seoprice/index')}?m=8&status={$status}">30000以上</a></li>
+		</ul>
+		<form name="search" id="searchform" action="{:u('Seoprice/index')}" method="get">
+			<div class="content-table">
+				<div class="edit_form">
+					<table cellpadding="0" cellspacing="0" class="table edit_table" style="min-width:1200px">
+						<thead>
+							<tr>
+								<th style='width:60px'><label class="mb-0">全選 <input type="checkbox" class="seleall" name="all" id="all"  /></label></th>
+								<th style='width:60px'>序號</th>
+								<th>搜索引擎</th>
+								<th>字組</th>
+								<th>價格</th>
+								<th>備註</th>
+								<th>滿檔</th>
+								<th style='width:120px'>專案</th>
+								<th style='width:120px'>建立日期</th>
+								<if condition="$access['seoprice_del'] eq '1'">
+									<th style='width:100px'>功能</th>
+								</if>
+							</tr>	
+						</thead>
+						<tbody>
+							<foreach name="crm_seoprice" item="seo" key="linit">
+								<tr>
+									<td><input type="checkbox" class="sele" value="{$seo.key_Id}" name="flags[]"/></td>
+									<td>{$linit+1}</td>
+									<td>{$seo.engine}</td>
+									<!-- <td>{$seo.engine}</td> -->
+									<td>
+									{$seo[name]}</td>
+									<td>
+									<input type="text" value="{$seo[price]}"  class="input_content op" dbname="crm_seoprice" row="price" myid="{$seo.id}"/></td>
+									<td>
+									<input type="text" value="{$seo[note]}"  class="input_content op" dbname="crm_seoprice" row="note" myid="{$seo.id}"/></td>
+									<td><if condition="$seo[full] eq '1'">滿檔<else />----</if></td>
+									<td>
+										<if condition="$seo[project] eq '1'">非專案<else />專案</if>
+									</td>
+									<td>{$seo[date]|date="Y/m/d",###}</td>
+									<if condition="$access['seoprice_del'] eq '1'">
+										<td><a href="{:u('Seoprice/del')}?id={$seo[id]}"><input name="" type="button" value="刪除" class="typeBtn btn delate"/></a></td>
+									</if>
+								</tr>
+							</foreach>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			
+			
+		</form>
+		<if condition="$access['seoprice_edi'] eq '1'">
+			<select name="val" id="val">
+				<option value="1">非專案</option>
+				<option value="2">滿檔</option>
+				<option value="3">移除</option>
+			</select>
+			<input type="submit" class="btn addbtn"/>
+		</if>
+	
+	</div>
+</section>
+
+<include file="Public:footer" />
+
+<script language="javascript">
+	$("tr").on("change",".input_content",function(){
+		var myin=$(this);
+		$.ajax({
+			method:'post',
+			dataType:'json',
+			url:"{:U('Seoprice/aj_chcontent')}",
+			data:{dbname:myin.attr("dbname"),row:myin.attr("row"),id:myin.attr("myid"),data:myin.val()},
+			success:function(res){
+				if(res.status==1){
+                    bg_class = "bg-success";
+                }else{
+                    bg_class = "bg-danger";
+                }
+                Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+			}	
+		});
+	});
+</script>	

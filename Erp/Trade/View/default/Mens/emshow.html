@@ -1,0 +1,1203 @@
+<include file="Public:header2" />
+
+<section class="main document mens">
+  <div class="below">
+    <!-- 共用階層列表 -->
+    <include file="Mens:menu" />
+    <!-- END 共用階層列表 -->
+
+    <div class="right">
+      <h3 class="mens-title mr-3">員工號： <span class="em">{$em.no}</span></h3>
+      <div class="right_cont menSty mens-content">
+        <div class="mens-category">
+          <ul>
+            <li class="mb-2">
+              <if condition="$em.img neq ''">
+                <img style="width:200px;height:auto;margin:auto;max-height: 200px;display: block;" src="{$em.img}" />
+                <else />
+                <img style="width:200px;height:auto;margin:auto;max-height: 200px;display: block;" src="__PUBLIC__/images/icon.png" />
+              </if>
+            </li>
+            <if condition="in_array(73, $use_function_top)">
+              <li>所屬部門： <span class="em">{$em.aname}</span></li>
+            </if>
+            <if condition="in_array(73, $use_function_top)">
+              <li>員工職務： <span class="em">{$em.jname}</span></li>
+            </if>
+
+            <if condition="in_array(5, $use_function_top)">
+              <li>使用權限： <span class="em">{$em.accname}</span></li>
+            </if>
+
+            <if condition="in_array(51, $use_function_top)">
+              <li>週分析：
+                <span class="em">
+                  <if condition="$em[is_anysis] eq 1">啟動
+                    <else />關閉</if>
+                </span>
+              </li>
+              <if condition="$em[is_anysis] eq 1">
+                <li>新進客戶期限：{$em[new_date]}天</li>
+                <li>潛在客戶限制：{$em[pot_num]}個</li>
+              </if>
+            </if>
+            <if condition="in_array(106, $use_function_top)">
+              <li>績效：
+                <span class="em">
+                  <if condition="$em[is_kpi] eq 1">啟動
+                    <else />關閉</if>
+                </span>
+              </li>
+              <if condition="$em[is_kpi] eq 1">
+                <li>績效模組歷程：
+                  <table class="table setup-table">
+                    <thead>
+                      <tr>
+                        <th>設定日期</th>
+                        <th>模組</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="kpimodel" item="vo" key="key">
+                        <tr>
+                          <td>{$vo.time|date="Y/m/d",###}</td>
+                          <td>{$vo.name}</td>
+                        </tr>
+                      </foreach>
+                    </tbody>
+
+                  </table>
+                </li>
+              </if>
+            </if>
+
+            <li>部門代理人A：
+              <span class="em">{$eip_user[$em[smapo]][rname]}</span>
+            </li>
+            <li>部門代理人B：
+              <span class="em">{$eip_user[$em[smapt]][rname]}</span>
+            </li>
+            <li>異部代理人：
+              <span class="em">{$eip_user[$em[otap]][rname]}</span>
+            </li>
+            <if condition="in_array(155, $use_function_top)">
+              <li>是否需月薪打卡：
+                <if condition="$em.use_attendance eq '1'">
+                  <span class="em">是</span>
+                  <else />
+                  <span class="em">否</span>
+                </if>
+              </li>
+            </if>
+            <li>
+              員工碼歷程：
+              <table class="table setup-table">
+                <thead>
+                  <tr>
+                    <th>生效日期</th>
+                    <th>員工碼</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <foreach name="em[no_expe]" item="vo" key="key">
+                    <tr>
+                      <td>{$vo[0]|date="Y/m/d",###}</td>
+                      <td>{$vo[1]}</td>
+                    </tr>
+                  </foreach>
+                </tbody>
+              </table>
+            </li>
+            <if condition="$my_access['mens_edi'] eq '1'">
+              <li style="text-align:center;padding:10px 0;"><a href="{:u('Mens/edit', ['id'=>$_GET['id']])}"><input
+                    type="button" value="修改" class="btn sendbtn" /></a>
+              </li>
+            </if>
+          </ul>
+        </div>
+        <div class="mens-info">
+          <fieldset>
+            <h3 class="casetitle">基本資料</h3>
+            <div class="mens-info-content">
+              <ul class="mens-items">
+                <li class="item">
+                  <span class="mens-name">姓名：</span>
+                  {$em.name}
+                </li>
+                <li class="item">
+                  <span class="mens-name">別稱：</span>
+                  {$em.ename}
+                </li>
+                <li class="item">
+                  <span class="mens-name">帳號：</span>
+                  {$em.username}
+                </li>
+                <li class="item">
+                  <span class="mens-name">密碼：</span>
+                </li>
+                <li class="item">
+                  <span class="mens-name">電話：</span>
+                  {$em.phone}
+                </li>
+                <li class="item">
+                  <span class="mens-name">手機：</span>
+                  {$em.mphone}
+                </li>
+                <li class="item mail">
+                  <span class="mens-name">通知mail：</span>
+                  {$em.email}
+                </li>
+                <li class="item mail">
+                  <span class="mens-name">公司mail：</span>
+                  {$em.email2}
+                </li>
+                <li class="item">
+                  <span class="mens-name">生日：</span>
+                  <if condition="$em.birthday neq '0000-00-00'">{$em.birthday}</if>
+                </li>
+                <li class="item">
+                  <span class="mens-name">年齡：</span>
+                  <span id="calculateAge">0歲</span>
+                </li>
+                <li class="item">
+                  <span class="mens-name">到職日：</span>
+                  <if condition="$em.dutday neq '0000-00-00'">{$em.dutday}</if>
+                </li>
+                <li class="item">
+                  <span class="mens-name">年資：</span>
+                  <span id="calculateJobTenure">0年0個月</span>
+                </li>
+                <li class="item address">
+                  <span class="mens-name">現居地：</span>
+                  {$em.addr}
+                </li>
+                <li class="item address">
+                  <span class="mens-name">戶籍地：</span>
+                  {$em.resaddr}
+                </li>
+                <li class="item">
+                  <span class="mens-name">身份証：</span>
+                  {$em.idno}
+                </li>
+                <li class="item">
+                  <span class="mens-name">公司分機：</span>
+                  {$em.extension}
+                </li>
+                <li class="item address">
+                  <span class="mens-name">備註：</span>
+                  {$em.mom}
+                </li>
+                <li class="item">
+                  <if condition="in_array(154, $use_function_top)">
+                    <span class="mens-name">時薪統計方式：</span>
+                    <if condition="$em['pay_count_type'] eq 1">月</if>
+                    <if condition="$em['pay_count_type'] eq 2">雙週</if>
+                    <if condition="$em['pay_count_type'] eq 3">每日</if>
+                  </if>
+                </li>
+                <li class="item">
+                  <if condition="in_array(157, $use_function_top)">
+                    <span class="mens-name">上班時間：</span>
+                    <foreach name="work_times" key="key" item="vo">
+                      <if condition="$vo['id'] eq $em['work_time_id']">
+                        {$vo.time_s}~{$vo.time_e}
+                      </if>
+                    </foreach>
+                  </if>
+                </li>
+                <li class="item"></li>
+                <li class="item"></li>
+                <li class="item">
+                  <span class="mens-name">戶名：</span>
+                  {$em.bank_account_name}
+                </li>
+                <li class="item">
+                  <span class="mens-name">銀行+代碼：</span>
+                  {$em.bank}{$em.bank_code}
+                </li>
+                <li class="item">
+                  <span class="mens-name">分行：</span>
+                  {$em.bank_branch_name}
+                </li>
+                <li class="item">
+                  <span class="mens-name">帳號：</span>
+                  {$em.bank_account}
+                </li>
+                <li class="item">
+                  <span class="mens-name">聯絡人：</span>
+                  {$em.econtact}
+                </li>
+                <li class="item">
+                  <span class="mens-name">關係：</span>
+                  {$em.relationship}
+                </li>
+                <li class="item">
+                  <span class="mens-name">手機：</span>
+                  {$em.emphone}
+                </li>
+                <li class="item">
+                  <span class="mens-name">備註：</span>
+                  {$em.ememo}
+                </li>
+              </ul>
+            </div>
+          </fieldset>
+          <div class="mens-tabs-box">
+            <div class="content_menu">
+              <ul class="tabs">
+                <if condition="in_array(137, $use_function_top)">
+                  <li><a href="#tab4">假勤資訊</a></li>
+                  <li><a href="#tab4_1">特休紀錄</a></li>
+                </if>
+                <if condition="$_SESSION['eid'] eq $_GET[id] || $_SESSION['eid'] eq $top_adminid">
+                  <if condition="in_array(154, $use_function_top)">
+                    <li><a href="#tab_pay_page">時薪付款單</a></li>
+                  </if>
+                  <if condition="in_array(140, $use_function_top)">
+                    <li><a href="#tab_salary">薪資紀錄</a></li>
+                  </if>
+                </if>
+                <if condition="in_array(140, $use_function_top)">
+                  <li><a href="#tab5">約定薪資</a></li>
+                </if>
+                <li><a href="#tab3">主管評核</a></li>
+                <li><a href="#tab6">其他資訊</a></li>
+              </ul>
+              <if condition="in_array(137, $use_function_top)">
+                <div id="tab4" class="tab_content edit_form">
+                  <table class="table edit_table" style="min-width: unset">
+                    <thead>
+                      <tr>
+                        <th style="min-width: 100px;">假別</th>
+                        <th style="min-width: 300px;">期間(1日為8小時)</th>
+                        <th style="min-width: 200px;">事由</th>
+                        <th style="min-width: 100px;">相關證明</th>
+                        <th style="min-width: 100px;">職務代理人</th>
+                        <th style="min-width: 80px;">部審核</th>
+                        <th style="min-width: 80px;">公司審核</th>
+                        <!-- <th style="min-width: 100px;">備註</th> -->
+                        <th style="min-width: 100px;">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="record in rest_records" :class="[record.apply_status!=0 ? 'opacity0_5':'']">
+                        <td data-th="假別" v-text="record.rt_name"></td>
+                        <td data-th="期間">
+                          <span v-text="record.rest_day_s"></span>~
+                          <span v-text="record.rest_day_e"></span>
+                          (<span v-text="record.hours.split('.')[0]"></span>小時<span v-text="record.hours.split('.')[1]*60/1000"></span>分)
+                        </td>
+                        <td data-th="事由" v-text="record.reason"></td>
+                        <td data-th="相關證明" v-text="record.reason"></td>
+                        <td data-th="職務代理人" v-text="record.job_agent_name"></td>
+                        <td data-th="部審核" v-text="record.examiner_name"></td>
+                        <td data-th="公司審核" v-text="record.examiner_top_name"></td>
+                        <!-- <td data-th="備註" v-text="record.note"></td> -->
+                        <td data-th="操作">
+                          <template v-if="record.apply_status==0">通過</template>
+                          <template v-else-if="record.apply_status==1">待送審</template>
+                          <template v-else-if="record.apply_status==2">職代審</template>
+                          <template v-else-if="record.apply_status==3">部審</template>
+                          <template v-else-if="record.apply_status==4">公司審</template>
+                          <button type="button" class="btn delate d-inline" @click="delete_record(record.id)">
+                            <i aria-hidden="true" class="far fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="tab4_1" class="tab_content">
+                  <div class="pt-2">
+                    <span class="d-inline-block mb-2 mr-2"><b>年資</b>:<span v-text="dut_years"></span>(年)</span>
+                    <span class="d-inline-block mb-2 mr-2"><b>剩餘特休數</b>:<span v-text="special_rests_remained"></span>(日) (1日為8小時)</span>
+                  </div>
+                  <table class="ta_box table apply-table">
+                    <thead>
+                      <tr>
+                        <th>條件年資(年)</th>
+                        <th>增加天數(日)</th>
+                        <th>變動日期</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="record in special_rest_accumulation">
+                        <td data-th="條件年資(年)" v-text="record.seniority"></td>
+                        <td data-th="增加天數(日)" v-text="record.rest_day"></td>
+                        <td data-th="變動日期" v-text="record.datetime"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </if>
+              <if condition="$_SESSION['eid'] eq $_GET[id] || $_SESSION['eid'] eq $top_adminid">
+                <if condition="in_array(154, $use_function_top)">
+                  <div id="tab_pay_page" class="tab_content edit_form">
+                    <table class="table edit_table" style="min-width: unset">
+                      <thead>
+                        <tr>
+                          <th style="min-width: 60px; width:5%">序號</th>
+                          <th style="min-width: 100px; width:13%">生成日期</th>
+                          <th style="min-width: 100px; width:13%">核可日期</th>
+                          <th class="text-right" style="min-width: 60px;">時薪總計</th>
+                          <th class="text-right" style="min-width: 60px;">獎懲調薪</th>
+                          <th class="text-right" style="min-width: 60px;">保險自付額</th>
+                          <th class="text-right" style="min-width: 60px;">應付薪資</th>
+                          <!-- <th>詳細內容</th> -->
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <foreach name="pay_pages" key="key" item="pay_page">
+                          <tr>
+                            <!-- 序號 -->
+                            <td>{$key+1}</td>
+                            <td>{$pay_page['create_time_format']|substr=0,16}</td>
+                            <td>{$pay_page['comfirm_time_format']|substr=0,16}</td>
+                            <td class="text-right">{$pay_page['pay_total']}</td>
+                            <td class="text-right">{$pay_page['change_num']}</td>
+                            <td class="text-right">{$pay_page['insurance_personal_pay']}</td>
+                            <td class="text-right">{$pay_page['pay_sum']}</td>
+                            <!-- <td>
+                              <button type="button" class="btn btn-primary">
+                                <i aria-hidden="true" class="fas fa-eye"></i>
+                              </button>
+                            </td> -->
+                          </tr>
+                        </foreach>
+                      </tbody>
+                    </table>
+                  </div>
+                </if>
+                <if condition="in_array(140, $use_function_top)">
+                  <div id="tab_salary">
+                    <table class="table edit_table" style="min-width: unset">
+                      <thead>
+                        <tr>
+                          <th>序號</th>
+                          <th>年月</th>
+                          <th>薪時時數</th>
+                          <th>總時薪</th>
+                          <th>月在職率</th>
+                          <th>總月薪</th>
+                          <th>獎金加給</th>
+                          <th>請假不支薪</th>
+                          <th>總薪資</th>
+                          <th>員工應負保額</th>
+                          <th>實領薪資</th>
+                          <th>雇主應負保額</th>
+                          <th>備註</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <foreach name="salary_list" key="key" item="salary_item">
+                          <tr>
+                            <!-- 序號 -->
+                            <td>{$key+1}</td>
+                            <!-- 年月 -->
+                            <td>
+                              <a href="{:u('Salary/salary_detail', ['id'=>$salary_item['id']])}" target="_blank">
+                                {$salary_item['year']}/{$salary_item['month']}
+                              </a>
+                            </td>
+                            <!-- 薪時時數 -->
+                            <td>{$salary_item['hour_count']}</td>
+                            <!-- 總時薪 -->
+                            <td>{$salary_item['total_pay_hour']}</td>
+                            <!-- 月在職率 -->
+                            <td>{$salary_item['month_count']*100}%</td>
+                            <!-- 總月薪 -->
+                            <td>{$salary_item['total_pay_month']}</td>
+                            <!-- 獎金加給 -->
+                            <td>{$salary_item['total_bonus_award']}</td>
+                            <!-- 請假不支薪 -->
+                            <td>{$salary_item['total_rest_deduct']}</td>
+                            <!-- 總薪資 -->
+                            <td>{$salary_item['total_salary']}</td>
+                            <!-- 員工應負保額 -->
+                            <td>{$salary_item['insurance_personal_pay']}</td>
+                            <!-- 實領薪資 -->
+                            <td>{$salary_item['total_salary'] - $salary_item['insurance_personal_pay']}</td>
+                            <!-- 雇主應負保額 -->
+                            <td>{$salary_item['insurance_company_pay']}</td>
+                            <td>{$salary_item['note']}</td>
+                          </tr>
+                        </foreach>
+                      </tbody>
+                    </table>
+                  </div>
+                </if>
+              </if>
+              <if condition="in_array(140, $use_function_top)">
+                <div id="tab5" class="tab_content edit_form">
+                  <table class="table edit_table" style="min-width: unset">
+                    <thead>
+                      <tr>
+                        <th rowspan="2" style="min-width: 100px;">開始日期</th>
+                        <th rowspan="2" class="text-right" style="min-width: 175px;">薪資</th>
+                        <th v-if="bonus_types.length>0" :colspan="bonus_types.length" class="text-center">加給項目</th>
+                        <th rowspan="2" class="text-right" style="min-width: 100px;">總月薪</th>
+                        <th rowspan="2" class="text-right" style="min-width: 80px;">個人負擔額</th>
+                        <th rowspan="2" class="text-right" style="min-width: 80px;">公司負擔額</th>
+                        <th rowspan="2" style="min-width: 150px;">備註</th>
+                        <th rowspan="2" style="min-width: 60px;">操作</th>
+                      </tr>
+                      <tr>
+                        <th class="text-right" style="min-width: 100px;"
+                            v-for="bonus_type in bonus_types" v-text="bonus_type.name">
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td data-th="開始日期">
+                          <input type="date" v-model="new_record.day_s" class="w100">
+                        </td>
+                        <td data-th="薪資">
+                          <div class="d-flex justify-content-between">
+                            <select v-model="new_record.pay_type">
+                              <option value="0">時薪</option>
+                              <option value="1">月薪</option>
+                            </select>
+                            <div>
+                              <a v-if="new_record.pay_type==0" href="###" @click="set_pay_hour_modal(-1)"
+                                v-text="new_record.pay_hour">
+                              </a>
+                              <input type="number" min="0" step="1" class="w100 text-right"
+                                v-if="new_record.pay_type==1" v-model="new_record.pay_month">
+                            </div>
+                          </div>
+                        </td>
+                        <td v-for="bonus_type in bonus_types" :data-th="'加給-'+bonus_type.name">
+                          <input type="number" min="0" step="1"  class="w100 text-right"
+                            v-if="new_record.bonus[bonus_type.id]" 
+                                  v-model="new_record.bonus[bonus_type.id].num">
+                        </td>
+                        <td data-th=""></td>
+                        <td data-th="個人負擔額" class="text-right">
+                          <a href="###" @click="set_insurance_modal(-1)">
+                            <span v-if="new_record.insurance_personal_pay" v-text="new_record.insurance_personal_pay"></span>
+                            <span v-else>設定</span>
+                          </a>
+                        </td>
+                        <td data-th="公司負擔額" class="text-right">
+                          <a href="###" @click="set_insurance_modal(-1)">
+                            <span v-if="new_record.insurance_company_pay" v-text="new_record.insurance_company_pay"></span>
+                            <span v-else>設定</span>
+                          </a>
+                        </td>
+                        <td data-th="備註">
+                          <input type="text" v-model="new_record.note" class="w100">
+                        </td>
+                        <td data-th="操作">
+                          <button class="sendbtn btn" @click="add_record">新增</button>
+                        </td>
+                      </tr>
+                      <tr v-for="record, record_index in salary_records">
+                        <td data-th="開始日期">
+                          <span v-text="record.day_s"></span>
+                        </td>
+                        <td data-th="薪資" class="text-right">
+                          <div class="d-flex justify-content-between">
+                            <span v-if="record.pay_type==0">時薪</span>
+                            <span v-if="record.pay_type==1">月薪</span>
+                            <div>
+                              <a v-if="record.pay_type==0" href="###" @click="set_pay_hour_modal(record_index)"
+                                 v-text="record.pay_hour_format">
+                              </a>
+                              <span v-else v-text="record.pay_month_format"></span>
+                            </div>
+                          </div>
+                        </td>
+                        <td v-for="bonus_type in bonus_types" :data-th="'加給-'+bonus_type.name" class="text-right">
+                          <template v-if="typeof(record.bonus[bonus_type.id])!='undefined'">
+                            <span v-text="record.bonus[bonus_type.id].num_format"></span>
+                          </template>
+                        </td>
+                        <td data-th="總月薪" class="text-right">
+                          <span v-text="record.pay_month_all_format"></span>
+                        </td>
+                        <td data-th="個人負擔額" class="text-right">
+                          <a href="###" @click="set_insurance_modal(record_index)"
+                             v-text="record.insurance_personal_pay_format">
+                          </a>
+                        </td>
+                        <td data-th="公司負擔額" class="text-right">
+                          <a href="###" @click="set_insurance_modal(record_index)"
+                             v-text="record.insurance_company_pay_format">
+                          </a>
+                        </td>
+                        <td data-th="備註" v-text="record.note"></td>
+                        <td data-th="操作">
+                          <button type="button" class="btn delate d-inline" @click="delete_record(record.id)">
+                            <i aria-hidden="true" class="far fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </if>
+
+              <div id="tab3" class="tab_content">
+                <if condition="$_SESSION['eid'] neq $_GET[id]">
+                  <table class="ta_box table apply-table">
+                    <thead>
+                      <tr>
+                        <th style="width:10%" class="evaluate-time">時間</th>
+                        <th style="width:35%">情況</th>
+                        <th style="width:35%">主管批示</th>
+                        <th style="width:12%">積分</th>
+                        <th style="width:7.5%">評核人員</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="em[assess]" item="vo" key="key">
+                        <if condition="$vo[0] neq ''">
+                          <tr id="tr_bar" value='{$key}' class="">
+                            <td data-th="時間" >
+                              {$vo[0]}
+                            </td>
+                            <td data-th="情況" >
+                              {$vo[1]}
+                            </td>
+                            <td data-th="主管批示">
+                              {$vo[2]}
+                            </td>
+                            <td data-th="積分" class="d-flex">
+                              <div style="width:50%" class="text-right">{$vo[3]} </div>
+                              <div style="width:50%" class="text-right">{$vo[4]} </div>
+                            </td>
+                            <td data-th="評核人員" >
+                              {$vo[5]}
+                            </td>
+                          </tr>
+                        </if>
+                      </foreach>
+                      <tr>
+                        <td colspan="3" class="small"></td>
+                        <td class="d-flex" data-th="總和">
+                          <div style="width:50%" class="text-right"><em>+</em> {$assess_positive_sum} </div>
+                          <div style="width:50%" class="text-right"><em>-</em> {$assess_negative_sum} </div>
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </if>
+              </div>
+              <div id="tab6" class="tab_content">
+                <if condition="$_SESSION['eid'] neq $_GET[id]">
+                  <table class="ta_box table apply-table">
+                    <thead>
+                      <tr >
+                        <th style="width:80%">其他資訊</th>
+                        <th>建立日期</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <foreach name="em[other]" item="vo" key="key">
+                          <if condition="$vo neq ''">
+                      <tr id="tr_bar" class="">
+                        <td data-th="其他資訊">{$vo}</td>
+                        <td data-th="建立日期">{$em[other_time]->$key|date="Y-m-d",###}</td>
+                      </tr>
+                </if>
+                </foreach>
+                </tr>
+                </tbody>
+                </table>
+                </if>
+              </div>
+            </div>
+            <!-- 員工歷程 -->
+            <div class="content_menu pt-3">
+              <ul class="tabs">
+                <!-- 選項區 -->
+                <li><a href="#tab">重大歷程</a></li>
+                <li><a href="#tab0">過往職場</a></li>
+                <li><a href="#tab1">證照技能</a></li>
+                <li><a href="#tab2">學歷</a></li>
+              </ul>
+              <div class="tab_container">
+                <div id="tab" class="tab_content">
+                  <div class="row m-0">
+                    <div class="col-xl-6 col-12 edit_form p-0">
+                      <table class="table edit_table" style="min-width: unset">
+                        <thead>
+                          <tr>
+                            <th style="min-width: 60px;">類別</th>
+                            <th style="min-width: 200px;">介紹</th>
+                            <th style="min-width: 75px;">年資</th>
+                            <th style="min-width: 200px;">備註</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td data-th="類別">業務類</td>
+                            <td data-th="介紹">{$em['work_intro_sale']}</td>
+                            <td data-th="年資">{$em['work_year_sale']}</td>
+                            <td data-th="備註">{$em['work_note_sale']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">技術類</td>
+                            <td data-th="介紹">{$em['work_intro_skill']}</td>
+                            <td data-th="年資">{$em['work_year_skill']}</td>
+                            <td data-th="備註">{$em['work_note_skill']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">企劃類</td>
+                            <td data-th="介紹">{$em['work_intro_plan']}</td>
+                            <td data-th="年資">{$em['work_year_plan']}</td>
+                            <td data-th="備註">{$em['work_note_plan']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">行政類</td>
+                            <td data-th="介紹">{$em['work_intro_administration']}</td>
+                            <td data-th="年資">{$em['work_year_administration']}</td>
+                            <td data-th="備註">{$em['work_note_administration']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">其它類</td>
+                            <td data-th="介紹">{$em['work_intro_other']}</td>
+                            <td data-th="年資">{$em['work_year_other']}</td>
+                            <td data-th="備註">{$em['work_note_other']}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-xl-6 col-12 edit_form p-0">
+                      <table class="table edit_table" style="min-width: unset">
+                        <thead>
+                          <tr>
+                            <th style="min-width: 80px;">類別</th>
+                            <th style="min-width: 255px;">選擇</th>
+                            <th style="min-width: 200px;">備註</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td data-th="類別">業務管理</td>
+                            <td data-th="選擇">
+                              {$em['saler_options']|str_replace='"','',###|str_replace='[','',###|str_replace=']','',###}
+                            </td>
+                            <td data-th="備註">{$em['saler_note']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">後勤管理</td>
+                            <td data-th="選擇">
+                              {$em['maintainer_options']|str_replace='"','',###|str_replace='[','',###|str_replace=']','',###}
+                            </td>
+                            <td data-th="備註">{$em['maintainer_note']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">國際經驗</td>
+                            <td data-th="選擇">
+                              {$em['international_options']|str_replace='"','',###|str_replace='[','',###|str_replace=']','',###}
+                            </td>
+                            <td data-th="備註">{$em['international_note']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">同行經驗</td>
+                            <td data-th="選擇">
+                              {$em['samecompany_options']|str_replace='"','',###|str_replace='[','',###|str_replace=']','',###}
+                            </td>
+                            <td data-th="備註">{$em['samecompany_note']}</td>
+                          </tr>
+                          <tr>
+                            <td data-th="類別">大型專案</td>
+                            <td data-th="選擇">
+                              {$em['project_options']|str_replace='"','',###|str_replace='[','',###|str_replace=']','',###}
+                            </td>
+                            <td data-th="備註">{$em['project_note']}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div id="tab0" class="tab_content">
+                  <table class="ta_box table apply-table">
+                    <thead>
+                      <tr>
+                        <th style="width:15%">公司名稱</th>
+                        <th style="width:15%">公司職務</th>
+                        <th style="width:15%">離職時薪資</th>
+                        <th style="width:30%;">時間</th>
+                        <th style="width:25%">備註</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="em[work_exp]" item="vo" key="key">
+                        <if condition="$vo[0] neq ''">
+                          <tr id="tr_bar" value='{$key}' class="">
+                            <td data-th="公司名稱">
+                              {$vo[0]}
+                            </td>
+                            <td data-th="公司職務">
+                              {$vo[1]}
+                            </td>
+                            <td data-th="離職時薪資">
+                              {$vo[2]}
+                            </td>
+                            <td data-th="時間" class="time">
+                              {$vo[3]}~{$vo[4]}
+                            </td>
+                            <td data-th="備註">
+                              {$vo[5]}
+                            </td>
+
+                          </tr>
+                        </if>
+                      </foreach>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="tab1" class="tab_content">
+                  <ul class="inline_ul">
+                    <li>
+                      <label class="name">個人專長：</label>
+                      <textarea class="form-control" rows="6" readonly>{$em.expertise}</textarea>
+                    </li>
+                    <li><label class="name">相關證照：</label>
+                      <textarea class="form-control" rows="6" readonly>{$em.license}</textarea>
+                    </li>
+                    <li>
+                      <label class="name">語言能力：</label>
+                      <textarea class="form-control" rows="6" readonly>{$em.language}</textarea>
+                    </li>
+                  </ul>
+                </div>
+                <div id="tab2" class="tab_content">
+                  <table class="ta_box table apply-table">
+                    <thead>
+                      <tr >
+                        <th style="width:20%">學校名稱</th>
+                        <th style="width:20%">學校科系</th>
+                        <th style="width:30%;">時間</th>
+                        <th style="width:30%">備註</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="em[educ_exp]" item="vo" key="key">
+                        <if condition="$vo[0] neq ''">
+                          <tr id="tr_bar" value='{$key}' class="">
+                            <td data-th='學校名稱'>
+                              {$vo[0]}
+                            </td>
+                            <td data-th='學校科系'>
+                              {$vo[1]}
+                            </td>
+                            <td data-th='時間'>
+                              {$vo[2]}~{$vo[3]}
+                            </td>
+                            <td data-th='備註'>
+                              {$vo[4]}
+                            </td>
+                          </tr>
+                        </if>
+                      </foreach>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<a id="insurance_modal_btn" data-toggle="modal" data-target="#insurance_modal"></a>
+<div class="modal fade" id="insurance_modal" tabindex="-1" role="dialog"
+     aria-labelledby="insurance_modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="insurance_modalTitle">投保內容</h5>
+      </div>
+      <div class="modal-body">
+        <span class="text-danger">名稱留空的項目將被刪除</span>
+        <table class="table edit_table" style="min-width: unset">
+          <thead>
+            <tr>
+              <th>
+                項目名稱
+                <template v-if="new_record_index==-1">
+                  <a href="###" @click="add_insurance_item">
+                    <i aria-hidden="true" class="fas fa-plus-circle"></i>
+                  </a>
+                </template>
+              </th>
+              <th class="">會計名稱</th>
+              <th class="text-right">個人負擔額</th>
+              <th class="text-right">公司負擔額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, item_index) in edit_record.insurance">
+                <td>
+                  <input type="text" step="1" min="0" class="w100" 
+                         :readonly="new_record_index!=-1"
+                         v-model="edit_record.insurance[item_index].name">
+                </td>
+                <td>
+                  <select v-model="edit_record.insurance[item_index].accountant_item_id"
+                          :disabled="new_record_index!=-1">
+                    <option value="">無</option>
+                    <option v-for="item in accountant_item_out"
+                            :value="item.id" v-text="item.name"></option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number" step="1" min="0" class="w100 text-right" 
+                         :readonly="new_record_index!=-1"
+                          v-model="edit_record.insurance[item_index].insurance_personal_pay">
+                </td>
+                <td>
+                  <input type="number" step="1" min="0" class="w100 text-right" 
+                         :readonly="new_record_index!=-1"
+                          v-model="edit_record.insurance[item_index].insurance_company_pay">
+                </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="text-center mt-3">
+          <a href="###" class="btn sendbtn pl-4 pr-4" @click="close">確認</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<a id="pay_hour_modal_btn" data-toggle="modal" data-target="#pay_hour_modal"></a>
+<div class="modal fade" id="pay_hour_modal" tabindex="-1" role="dialog"
+     aria-labelledby="pay_hour_modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="pay_hour_modalTitle">時薪內容</h5>
+      </div>
+      <div class="modal-body">
+        <div class="text-right text-danger">時薪清空時，則表示不具備處理此工種的能力</div>
+        <table class="table edit_table" style="min-width: unset">
+          <thead>
+            <tr>
+              <th>工種名稱</th>
+              <th class="text-right">時薪</th>
+              <th class="text-right">時薪(加班)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="skill in user_skills">
+              <template v-if="edit_record.skills[skill.id]">
+                <td><span v-text="skill.name"></span></td>
+                <td>
+                  <input type="number" step="1" min="0" class="w100 text-right" 
+                          :readonly="new_record_index!=-1"
+                          v-model="edit_record.skills[skill.id].hour_pay">
+                </td>
+                <td>  
+                  <input type="number" step="1" min="0" class="w100 text-right" 
+                          :readonly="new_record_index!=-1"
+                          v-model="edit_record.skills[skill.id].hour_pay_over">
+                </td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+        <div class="text-center mt-3">
+          <a href="###" class="btn sendbtn pl-4 pr-4" @click="close">確認</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const user_id = "{$_GET['id']??0}";
+</script>
+<script type="text/javascript">
+  $(function(){
+    calculateAge('{$em.birthday}');
+    calculateJobTenure('{$em.dutday}');
+  });
+  /*假勤資訊*/
+  const tab4_data = {
+    user_id: user_id,
+    rest_records: [],
+  };
+  const tab4VM = new Vue({
+    el: '#tab4',
+    data: tab4_data,
+    methods: {
+      get_rest_records: function(){
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          url: "{:u('RestRecord/get_rest_records')}",
+          data: {
+            user_id: tab4VM.user_id,
+          },
+          success:function(res){
+            tab4VM.rest_records = res.rest_records;
+          },
+        });
+      },
+      delete_record: function(id){
+        if(!confirm('確定刪除?')){ return; };
+        $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('RestRecord/delete_rest_records')}",
+          data: {id, id},
+          success:function(res){
+            if(res.status){
+              tab4VM.get_rest_records();
+              bg_class = 'bg-success';
+            }else{
+              bg_class = 'bg-danger';
+            }
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+    },
+  });
+  tab4VM.get_rest_records();
+</script>
+<script type="text/javascript">
+  /*特休紀錄*/
+  const tab4_1_data = {
+    user_id: user_id,
+    dutday:'',
+    dut_years: 0,
+    special_rest_accumulation: [],
+    special_rests_remained: 0,
+  };
+  const tab4_1VM = new Vue({
+    el: '#tab4_1',
+    data: tab4_1_data,
+    methods: {
+      get_special_rests: function(){
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          url: "{:u('Mens/get_special_rests')}",
+          data: {
+            user_id: tab4_1VM.user_id,
+          },
+          success:function(res){
+            tab4_1VM.dutday = res.dutday;
+            tab4_1VM.dut_years = res.dut_years;
+            tab4_1VM.special_rest_accumulation = res.special_rest_accumulation;
+            tab4_1VM.special_rests_remained = res.special_rests_remained;
+          },
+        });
+      },
+    },
+  });
+  tab4_1VM.get_special_rests();
+</script>
+<script type="text/javascript">
+  /*約定薪資*/
+  const new_salary_record_empty = {
+    user_id: user_id,
+    bonus: {},
+    skills: {},
+    pay_hour: '設定',
+    pay_month: '',
+    pay_type: 0,
+    
+    insurance: [],
+    insurance_personal_pay: '',
+    insurance_company_pay: '',
+  }
+  const tab5_data = {
+    user_id: user_id,
+    salary_records: [],
+    bonus_types: [],
+    user_skills: [],
+    accountant_item_out: [],
+
+    new_record_index: -1,
+    new_record: JSON.parse(JSON.stringify(new_salary_record_empty)),
+    edit_record: JSON.parse(JSON.stringify(new_salary_record_empty)),
+  };
+  const tab5VM = new Vue({
+    el: '#tab5',
+    data: tab5_data,
+    methods: {
+      get_salary_records: function(){
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          url: "{:u('Mens/get_salary_records')}",
+          data: {
+            user_id: tab5VM.user_id,
+          },
+          success:function(res){
+            tab5VM.salary_records = res.salary_records;
+
+            tab5VM.bonus_types = res.bonus_types;
+            for (var i = 0; i < res.bonus_types.length; i++) {
+              tab5VM.new_record.bonus[res.bonus_types[i].id] = JSON.parse(JSON.stringify(res.bonus_types[i]));
+              tab5VM.new_record.bonus[res.bonus_types[i].id].num = 0;
+              tab5VM.edit_record.bonus[res.bonus_types[i].id] = JSON.parse(JSON.stringify(res.bonus_types[i]));
+              tab5VM.edit_record.bonus[res.bonus_types[i].id].num = 0;
+            }
+            new_salary_record_empty.bonus = JSON.parse(JSON.stringify(tab5VM.new_record.bonus));
+            
+            tab5VM.user_skills = res.user_skills;
+            for (var i = 0; i < res.user_skills.length; i++) {
+              tab5VM.new_record.skills[res.user_skills[i].id] = JSON.parse(JSON.stringify(res.user_skills[i]));
+              tab5VM.edit_record.skills[res.user_skills[i].id] = JSON.parse(JSON.stringify(res.user_skills[i]));
+            }
+            new_salary_record_empty.skills = JSON.parse(JSON.stringify(tab5VM.new_record.skills));
+
+            tab5VM.accountant_item_out = res.accountant_item_out;
+          },
+        });
+      },
+      set_insurance_modal: function(index){
+        pay_hour_modalVM.new_record_index = index;
+        temp_data = index==-1 ? tab5VM.new_record : pay_hour_modalVM.salary_records[index];
+        pay_hour_modalVM.edit_record = JSON.parse(JSON.stringify(temp_data));
+        $('#insurance_modal_btn').click();
+      },
+      set_pay_hour_modal: function(index){
+        pay_hour_modalVM.new_record_index = index;
+        temp_data = index==-1 ? tab5VM.new_record : pay_hour_modalVM.salary_records[index];
+        pay_hour_modalVM.edit_record = JSON.parse(JSON.stringify(temp_data));
+        $('#pay_hour_modal_btn').click();
+      },
+      add_record: function(){
+        let temp = {...tab5VM.new_record};
+        let sortedSkills = Object.keys(tab5VM.new_record.skills).sort(function (a, b) {
+          return tab5VM.new_record.skills[a].order_id - tab5VM.new_record.skills[b].order_id;
+        }).map(function(v) {
+          return tab5VM.new_record.skills[v];
+        });
+        temp.skills = sortedSkills;
+
+        temp.insurance = JSON.stringify(temp.insurance);
+
+        $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('Mens/add_salary_records')}",
+          data: temp,
+          success:function(res){
+            if(res.status){
+              tab5VM.get_salary_records();
+              tab5VM.new_record = JSON.parse(JSON.stringify(new_salary_record_empty));
+              tab5VM.edit_record = JSON.parse(JSON.stringify(new_salary_record_empty));
+              bg_class = 'bg-success';
+            }else{
+              bg_class = 'bg-danger';
+            }
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+      delete_record: function(id){
+        if(!confirm('確定刪除?')){ return; };
+        $.ajax({
+          type: 'POST',
+          dataType:'json',
+          url: "{:u('Mens/delete_salary_records')}",
+          data: {id, id},
+          success:function(res){
+            if(res.status){
+              tab5VM.get_salary_records();
+              bg_class = 'bg-success';
+            }else{
+              bg_class = 'bg-danger';
+            }
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+    },
+  });
+  tab5VM.get_salary_records();
+
+  const pay_hour_modalVM = new Vue({
+    el: '#pay_hour_modal',
+    data: tab5_data,
+    mounted() {
+      $('#pay_hour_modal').on('hidden.bs.modal', function (e) {
+        pay_hour_modalVM.close();
+      })
+    },
+    methods: {
+      close: function(){
+        $('#pay_hour_modal').modal('hide');
+        setTimeout(()=>{
+          if(pay_hour_modalVM.new_record_index==-1){
+            hour_pay = '設定';
+            for (let index = 0; index < tab5VM.user_skills.length; index++) {
+              const key = tab5VM.user_skills[index].id;
+              temp_hour_pay = tab5VM.edit_record.skills[key].hour_pay;
+              if(temp_hour_pay && temp_hour_pay != 0){ hour_pay = temp_hour_pay; break;}
+            }
+            tab5VM.new_record.pay_hour = hour_pay;
+            tab5VM.new_record.skills = JSON.parse(JSON.stringify(tab5VM.edit_record.skills));
+          }
+        }, 200);
+      },
+    }
+  });
+  const insurance_modalVM = new Vue({
+    el: '#insurance_modal',
+    data: tab5_data,
+    mounted() {
+      $('#insurance_modal').on('hidden.bs.modal', function (e) {
+        insurance_modalVM.close();
+      })
+    },
+    methods: {
+      add_insurance_item: function(){
+        insurance_modalVM.edit_record.insurance.push({
+          name: '',
+          accountant_item_id: '',
+          insurance_personal_pay: '', 
+          insurance_company_pay: '',
+        });
+      },
+      close: function(){
+        $('#insurance_modal').modal('hide');
+        setTimeout(()=>{
+          if(pay_hour_modalVM.new_record_index==-1){
+            insurance_personal_pay = 0;
+            insurance_company_pay = 0;
+            insurance = [];
+            for (let index = 0; index < pay_hour_modalVM.edit_record.insurance.length; index++) {
+              const item = pay_hour_modalVM.edit_record.insurance[index];
+              if(item.name==''){ continue; }
+              insurance_personal_pay += Number(item.insurance_personal_pay);
+              insurance_company_pay += Number(item.insurance_company_pay);
+              insurance.push(item);
+            }
+            tab5VM.new_record.insurance_personal_pay = insurance_personal_pay;
+            tab5VM.new_record.insurance_company_pay = insurance_company_pay;
+            tab5VM.new_record.insurance = JSON.parse(JSON.stringify(insurance));
+          }
+        }, 200);
+      },
+    }
+  })
+</script>
+
+<script>
+  $( ".content_menu" ).tabs();
+</script>

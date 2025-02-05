@@ -1,0 +1,651 @@
+<include file="Public:header2" />
+
+<section id="right">
+  <div class="container mw1920 p-4" id="schedule_div">
+    <template v-if="schedule">
+      <div class="row mb-2">
+        <div class="col-md-12 col-12">
+          <h4 class="d-inline-block">
+            <span class="mr-3" v-text="schedule.date"></span>
+            <a :href="'{:u('Schedule/index_date')}?schedule_id='+schedule.id"><span v-text="schedule.name"></span></a>
+          </h4>
+        </div>
+        <div class="col-md-6 col-12">
+          地點：<span v-text="schedule.location"></span>
+        </div>
+        <if condition="in_array(18, $use_function_top)">
+          <div class="col-md-6 col-12">
+            走期：
+            <span class="d-inline-block" v-if="schedule.start_time" v-text="schedule.start_time_format.substr(0, 16)"></span>
+            ~
+            <span class="d-inline-block" v-if="schedule.end_time" v-text="schedule.end_time_format.substr(0, 16)"></span>
+          </div>
+          <div class="col-md-6 col-12">
+            事件編號：<span v-text="schedule.evesno"></span>
+          </div>
+        </if>
+        <div class="col-md-6 col-12">
+          {$system_parameter['合約']}編號：<span v-text="schedule.sn"></span>
+        </div>
+        <div class="col-md-6 col-12">
+          {$system_parameter['客戶']}：<span v-text="schedule.show_name"></span>
+        </div>
+        <div class="col-md-6 col-12">
+          審核者：<span v-text="schedule.user_name"></span>、
+          當日管理者:<span v-text="schedule.user_in_charge_name"></span>
+        </div>
+        <div class="col-md-12 col-12">
+          日程備註：
+          <textarea class="form-control" rows="3" v-model="schedule.date_note" readonly></textarea>
+        </div>
+      </div>
+    </template>
+    <div class="navi1">
+      <div class="menu-sub-btn align-items-center">
+        <ol class="mr-3">
+          <if condition="$has_schedule_detail_right_edit">
+            <li class="subbtn">
+              <a href="###" class="" @click="open_add">
+                <i class="fas fa-plus-circle"></i>
+                人員
+              </a>
+            </li>
+          </if>
+        </ol>
+        <span class="used_remind d-inline-block" style="width: 1rem; height: 1rem;"></span> : 重複標記&nbsp;&nbsp;
+        <span class="rest_remind d-inline-block" style="width: 1rem; height: 1rem;"></span> : 請假標記
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <div class="d-flex flex-wrap align-items-center pt-1 pb-1">
+        <select class="mr-2" v-model="search_params.user_skill" @change="get_schedule_date_users">
+          <option value="">工種</option>
+            <template v-for="vo in users_skills">
+              <option :value="vo.user_skill_id" v-text="vo.user_skill_name"></option>
+            </template>
+          </foreach>
+        </select>
+        <input class="w100 mr-2" v-model="search_params.mens_keyword" placeholder="姓名/別稱/手機/電話/信箱" style="max-width: 300px;">
+        <a href="###" class="btn addbtn mr-2" @click="get_schedule_date_users">搜尋</a>
+        <a href="javascript:location.reload()" class="btn btn-light">清除搜尋</a>
+      </div>
+      <table class="table edit_table mb-2" style="min-width: 1250px;">
+        <thead>
+          <tr>
+            <th style="min-width: 50px;" class="text-right" valign="middle">序號</th>
+            <th style="min-width: 100px;">姓名</th>
+            <th style="min-width: 110px;">工種</th>
+            <if condition="$has_schedule_detail_right_edit">
+              <th style="min-width: 50px;">操作</th>
+            </if>
+            <th style="min-width: 100px;">上班點名</th>
+            <th style="min-width: 100px;">下班點名</th>
+            <th style="min-width: 75px;" class="text-right">時薪</th>
+            <th style="min-width: 100px;" class="text-right">正規工時(H)</th>
+            <th style="min-width: 75px;" class="text-right">加班時薪</th>
+            <th style="min-width: 100px;" class="text-right">加班工時(H)</th>
+            <th style="min-width: 100px;" class="text-right">獎懲調薪(可負)</th>
+            <th style="min-width: 100px;" class="text-right">應付薪資</th>
+            <th style="min-width: 100px;">會計驗收</th>
+            <th style="min-width: 250px;">備註</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="(schedule,schedule_index) in schedule_date_users" :class="[schedule.used>1 ? 'used_remind' : '', schedule.rest>0 ? 'rest_remind' : '']">
+            <td class="text-right"><span v-text="schedule_index+1"></span></td>
+            <td>
+              <span class="item d-inline-block" v-text="schedule.schedule_date_user_name"></span>
+              <span class="item d-inline-block" v-text="'('+ schedule.schedule_date_user_ename +')'" v-if="schedule.schedule_date_user_ename"></span>
+            </td>
+            <td>
+              <div>
+                <span v-text="schedule.worktime_s_format.substr(11,5)"></span> ~
+                <span v-text="schedule.worktime_e_format.substr(11,5)"></span>
+              </div>
+              <select v-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" class="mr-2"
+                      v-model="schedule.user_skill"
+                      @change="update_schedule_date_user(schedule_index, 'user_skill')">
+                <option v-if="schedule.salary_records_skill.length==0" value="0">無</option>
+                <template v-for="vo in schedule.salary_records_skill">
+                  <option :value="vo.user_skill_id" v-text="vo.user_skill_name"></option>
+                </template>
+              </select>
+              <span v-else v-text="schedule.user_skill_name"></span>
+            </td>
+            <if condition="$has_schedule_detail_right_edit">
+              <td>
+                <button type="button" class="btn delate" @click="delete_schedule_date_user(schedule.schedule_date_user_primary)">
+                  <i aria-hidden="true" class="far fa-trash-alt"></i>
+                </button>
+              </td>
+            </if>
+            <td>
+              <template v-if="schedule.roll_call_come">
+                <span v-html="schedule.roll_call_come_format.slice(0, 16).replace(' ', '<br>')"></span>
+                <if condition="$my_access['schedule_all'] eq 1">
+                  <br><span v-text="schedule.roll_call_come_name"></span>
+                </if>
+              </template>
+              <a v-else-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" href="###" 
+                @click="update_schedule_date_user(schedule_index, 'roll_call_come')">
+                <button class="btn btn-warning">點名</button>
+              </a>
+            </td>
+            <td>
+              <template v-if="schedule.roll_call_leave">
+                <span v-html="schedule.roll_call_leave_format.slice(0, 16).replace(' ', '<br>')"></span>
+                <if condition="$my_access['schedule_all'] eq 1">
+                  <br><span v-text="schedule.roll_call_leave_name"></span>
+                </if>
+              </template>
+              <a v-else-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" href="###" 
+                  @click="update_schedule_date_user(schedule_index, 'roll_call_leave')">
+                  <button class="btn btn-warning">點名</button>
+              </a>
+            </td>
+            <td class="text-right">
+              <template v-if="has_schedule_detail_right_view || schedule.schedule_date_user_user_id=={$adminId}">
+                <span v-text="schedule.user_hour_pay"></span>
+              </template>
+            </td>
+            <td class="text-right">
+                <input v-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" 
+                  type="number" step="0.001" min="0" class="text-right" 
+                  v-model="schedule.do_hour" 
+                  @focus="save_ori_data(schedule_index, 'do_hour')"
+                  @blur="update_schedule_date_user(schedule_index, 'do_hour')">
+                <span v-else v-text="schedule.do_hour"></span>
+            </td>
+            <td class="text-right">
+              <span v-text="schedule.user_hour_pay_over"></span>
+            </td>
+            <td class="text-right">
+              <input v-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" 
+                     type="number" step="0.001" min="0" class="text-right"
+                     v-model="schedule.do_hour_overtime"
+                     @focus="save_ori_data(schedule_index, 'do_hour_overtime')"
+                     @blur="update_schedule_date_user(schedule_index, 'do_hour_overtime')">
+              <span v-else v-text="schedule.do_hour_overtime"></span>
+            </td>
+            <td class="text-right">
+              <template v-if="has_schedule_detail_right_view || schedule.schedule_date_user_user_id=={$adminId}">
+                <input v-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" 
+                       type="number" step="1" class="text-right"
+                       v-model="schedule.change_num" 
+                       @focus="save_ori_data(schedule_index, 'change_num')"
+                       @blur="update_schedule_date_user(schedule_index, 'change_num')">
+                <span v-else v-text="schedule.change_num"></span>
+              </template>
+            </td>
+
+            <td class="text-right">
+              <template v-if="has_schedule_detail_right_view || schedule.schedule_date_user_user_id=={$adminId}">
+                <span v-text="count_pay(schedule)"></span>
+              </template>
+            </td>
+            <td>
+              <template v-if="schedule.roll_call_confirm">
+                <span v-html="schedule.roll_call_confirm_format.slice(0, 16).replace(' ', '<br>')"></span>
+                <if condition="$my_access['schedule_all'] eq 1">
+                  <br><span v-text="schedule.roll_call_confirm_name"></span>
+                </if>
+              </template>
+              <a v-else-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" href="###" 
+                 @click="update_schedule_date_user(schedule_index, 'roll_call_confirm')">
+                <button class="btn btn-warning">確認</button>
+              </a>
+            </td>
+            <td>
+              <template v-if="has_schedule_detail_right_view || schedule.schedule_date_user_user_id=={$adminId}">
+                <input v-if="has_schedule_detail_right_edit && !schedule.turn_salary_time" 
+                       type="text" class="w100"
+                       v-model="schedule.note"
+                       @focus="save_ori_data(schedule_index, 'note')"
+                       @blur="update_schedule_date_user(schedule_index, 'note')">
+                <span v-else v-text="schedule.note"></span>
+              </template>
+            </td>
+          </tr>
+          <tr v-if="has_schedule_detail_right_view">
+            <if condition="$has_schedule_detail_right_edit">
+              <td colspan="11" class="text-right">累計總計</td>
+              <else />
+              <td colspan="10" class="text-right">累計總計</td>
+            </if>
+            <td class="text-right" v-text="count_pay_all"></td>
+            <td colspan="2"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-center text-danger">
+      <div style="max-width: 1000px;">
+        <!-- 正規薪資 = 時薪 * 正規工時 + 加班時薪 * 加班工時<br> -->
+        應付薪資 = 時薪 * 正規工時 + 加班時薪 * 加班工時 + 獎懲調薪(可負)<br> <!--  - 投保自負額 -->
+        P.S. 若上下班皆未打卡，拋轉薪資時會將時數歸0(無法跟客戶請款)，也不會於顯示「時薪付薪」(無法計薪，不論是否有「獎懲調薪」)
+      </div>
+    </div>
+    <div class="d-flex flex-sm-row flex-column flex-wrap justify-content-center align-items-center mt-2">
+      <a href="{:U('ScheduleDetail/index')}" class="mr-sm-2 mr-0 mb-2">
+        <button class="btn btn-primary pl-4 pr-4">回我的班表</button>
+      </a>
+      <a v-if="has_schedule_detail_right_view && schedule"
+        :href="'{:U('ScheduleDetail/report')}?schedule_date_primary=' + schedule_date_primary" class="mr-sm-4 mr-0 mb-2">
+        <button class="btn btn-primary pl-4 pr-4" v-if="schedule.examine_time">查看完工照片</button>
+        <button class="btn btn-warning pl-4 pr-4" v-else>上傳完工照片</button>
+      </a>
+      <if condition="in_array(154, $use_function_top)">
+        <template v-if="schedule">
+          <template v-if="schedule.turn_salary_time">
+            <span class="d-inline-block text-center">
+              <span class="d-inline-block mb-2">拋轉薪資資料時間：</span>
+              <span class="d-inline-block mb-2 mr-2" v-text="schedule.turn_salary_time_format.substr(0, 16)"></span>
+              <if condition="$my_access['schedule_all'] eq 1">
+                <span class="d-inline-block mb-2" v-text="schedule.turn_salary_time_name"></span>
+              </if>
+            </span>
+          </template>
+          <template v-else>
+            <if condition="$has_schedule_detail_right_examine">
+              <a href="###" @click="turn_salary" class=" mb-2">
+                <button class="btn btn-warning pl-4 pr-4">拋轉薪資資料</button>
+              </a>
+            </if>
+          </template>
+        </template>
+      </if>
+    </div>
+  </div>
+</section>
+<!-- Modal -->
+<a id="schedule_panel_btn" class="d-none" data-toggle="modal" data-target="#schedule_panel">設定人員</a>
+<div class="modal big_modal fade" id="schedule_panel" tabindex="-1" role="dialog" aria-labelledby="schedule_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="schedule_panelTitle">設定人員</h5>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex flex-wrap align-items-center">
+          <span>
+            部門：
+            <select class="mr-2" v-model="apartmentid" @change="get_user">
+              <option value="">全部</option>
+              <foreach name="eip_apart" key="key" item="vo">
+                <option value="{$vo['id']}">{$vo['name']}</option>
+              </if>
+              </foreach>
+            </select>
+          </span>
+          <span>
+            工種：
+            <select class="mr-2" v-model="skillid" @change="get_user">
+              <option value="">不限</option>
+              <foreach name="user_skill" key="key" item="vo">
+                <option value="{$vo['id']}">{$vo['name']}</option>
+              </if>
+              </foreach>
+            </select>
+            <span class="text-danger">切換工種可篩選出相符的人選，並更改選擇時對之工種及時薪</span>
+          </span>
+        </div>
+        <div class="d-flex flex-wrap align-items-center">
+          <span>上班時間：</span>
+          <input type="time" v-model="worktime_s" @change="change_worktime_e">
+          <span>~</span>
+          <input type="time" v-model="worktime_e">
+        </div>
+        <div class="d-flex flex-wrap align-items-center">
+          <input class="w100 mr-2" v-model="mens_keyword" placeholder="姓名/別稱/手機/電話/信箱" style="max-width: 300px;">
+          <a href="###" class="btn addbtn mr-3" @click="get_user">搜尋</a>
+          <span class="used_remind d-inline-block" style="width: 1rem; height: 1rem;"></span> : 重複標記&nbsp;&nbsp;
+          <span class="rest_remind d-inline-block" style="width: 1rem; height: 1rem;"></span> : 請假標記
+        </div>
+        <div class="edit_form">
+          <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 940px;">
+            <thead class="edit_table_thead">
+              <tr class="edit_table tr ">
+                <th style="min-width: 70px">
+                  <input id="ck_all" type="checkbox">
+                  <label class="mb-0" for="ck_all">項次</label>
+                </th>
+                <th style="min-width: 100px;">姓名</th>
+                <th style="min-width: 100px;">手機</th>
+                <th style="min-width: 100px;">工種</th>
+                <th style="min-width: 75px;" class="text-right">時薪</th>
+                <th style="min-width: 200px;">系統通知mail</th>
+                <th style="width: 70px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item,key) in users" :class="[item.used>0 ? 'used_remind' : '', item.rest>0 ? 'rest_remind' : '']">
+                <td>
+                  <input :id="'ck_'+item.id" type="checkbox" class="groups" :value="item.id">
+                  <label :for="'ck_'+item.id" v-text="key+1"></label>
+                </td>
+                <td>
+                  <span class="item" v-text="item.name"></span>
+                  <span class="item" v-text="'('+ item.ename +')'" v-if="item.ename"></span>
+                </td>
+                <td><span class="item" v-text="item.mphone"></span></td>
+                <td>
+                  <span class="item" v-text="item.salary_records_skill.length>0 ? item.salary_records_skill[0].user_skill_name : '無'"></span>
+                </td>
+                <td class="text-right"><span class="item" v-text="item.hour_pay"></span></td>
+                <td><span class="item" v-text="item.email"></span></td>
+                <td>
+                  <!-- 選擇 -->
+                  <a href="###" class="btn sendbtn" @click="select_user(item.id)">選擇</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="text-left">
+          <a href="###" class="btn sendbtn"  @click="select_users">
+						批次選擇
+					</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const schedule_id = '{$schedule_id}';
+  const schedule_date_primary = '{$schedule_date_primary}';
+  const schedule_div_data = {    
+    has_schedule_detail_right_edit : '{$has_schedule_detail_right_edit}',
+    has_schedule_detail_right_examine : '{$has_schedule_detail_right_examine}',
+    has_schedule_detail_right_view : '{$has_schedule_detail_right_view}',
+    
+    apartmentid: '',
+    skillid: '',
+    worktime_s: '',
+    worktime_e: '',
+    mens_keyword: '',
+    users: [],
+
+    users_skills: [],
+    search_params: {
+      schedule_id: schedule_id,
+      schedule_date_primary: schedule_date_primary,
+      user_skill: '',
+      mens_keyword: '',
+    },
+    schedule: null,
+    schedule_date_users: [],
+    ori_data:'',
+  };
+  const schedule_divVM = new Vue({
+    el:'#schedule_div',
+    data: schedule_div_data,
+    computed: {
+      count_pay_all : function(){
+        var pay = 0;
+        for (let i = 0; i < this.schedule_date_users.length; i++) {
+          const element = this.schedule_date_users[i];
+          pay += this.count_pay(element);
+        }
+        return pay;
+      },
+    },
+    methods: {
+      open_add: function(){
+        schedule_panelVM.get_user();
+        $('#schedule_panel_btn').click();
+      },
+      get_schedule_dates: function(){
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: {
+            schedule_id: schedule_divVM.search_params.schedule_id,
+            schedule_date_primary: schedule_divVM.search_params.schedule_date_primary,
+          },
+          url: "{:u('ScheduleDetail/get_schedule_dates')}",
+          success:function(res){
+            schedule_divVM.schedule = res.list ? res.list[0] : null;
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      get_schedule_date_users: function(){
+        data = JSON.parse(JSON.stringify(schedule_divVM.search_params));
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('ScheduleDetail/get_schedule_date_users')}",
+          success:function(res){
+            schedule_divVM.schedule_date_users = res.list;
+
+            /*處理已選人員的技能篩選選單*/
+            skills = {};
+            for (let i = 0; i < res.length; i++) {
+              const element = res[i];
+              skills['k_'+element['user_skill']] = {
+                user_skill_id: element['user_skill'],
+                user_skill_name: element['user_skill_name'] ? element['user_skill_name'] : '無',
+              }
+            }
+            skills = Object.values(skills);
+            if(schedule_divVM.users_skills.length <= skills.length){
+              schedule_divVM.users_skills = skills;
+            }
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      delete_schedule_date_user: function(schedule_date_user_primary){
+        if(!confirm('確定刪除?')){ return; }
+        $('#body_block').show();
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: {
+            schedule_date_user_primary: schedule_date_user_primary,
+          },
+          url: "{:u('ScheduleDetail/delete_schedule_date_user')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_divVM.get_schedule_date_users();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      save_ori_data(schedule_index, column){
+        this.ori_data = schedule_divVM.schedule_date_users[schedule_index][column];
+      },
+      update_schedule_date_user: function(schedule_index, column){
+        post_data = {
+          schedule_date_user_primary: schedule_divVM.schedule_date_users[schedule_index].schedule_date_user_primary,
+        };
+        post_data[column] = schedule_divVM.schedule_date_users[schedule_index][column];
+        if(this.ori_data==post_data[column] && ['roll_call_come','roll_call_leave','roll_call_confirm'].indexOf(column)==-1){
+          return;
+        }
+        $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: post_data,
+          url: "{:u('ScheduleDetail/update_schedule_date_user')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_divVM.get_schedule_date_users();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      count_pay: function(schedule){
+        if(schedule.turn_salary_time){ /*已拋轉薪資*/
+          pay = schedule.pay_total;
+        }else if(schedule.examine_time){ /*已總驗收*/
+          if(schedule.roll_call_come || schedule.roll_call_leave){ /*有點過名*/
+            pay = Number(schedule.do_hour) * Number(schedule.user_hour_pay);
+            pay += Number(schedule.do_hour_overtime) * Number(schedule.user_hour_pay_over);
+          }else{
+            pay =0;
+          }
+        }else{
+          pay = Number(schedule.do_hour) * Number(schedule.user_hour_pay);
+          pay += Number(schedule.do_hour_overtime) * Number(schedule.user_hour_pay_over);
+        }
+
+        pay = Number(pay) + Number(schedule.change_num);
+        return Math.round(pay);
+      },
+
+      turn_salary: function(){
+        if(!confirm('點名及時數已確認無誤，確定拋轉資料嗎?\n未點過名者工時將被調整為0(不計薪)，且拋轉後不可再修改')){ return; }
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: {
+            schedule_date_primary: schedule_date_primary,
+          },
+          url: "{:u('ScheduleDetail/schedule_date_turn_salary')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show('操作成功', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              location.reload();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+    },
+  });
+  const schedule_panelVM = new Vue({
+    el:'#schedule_panel',
+    data: schedule_div_data,
+    methods: {
+      change_worktime_e(){
+        if(this.worktime_s){
+          temp = new Date('2023-01-01 '+this.worktime_s);
+          temp_time = temp.getTime();
+          temp_time += 2*60*60*1000; /*加兩小時*/
+          temp = new Date(temp_time);
+          this.worktime_e = temp.getHours().toString().padStart(2, '0') + ':' + temp.getMinutes().toString().padStart(2, '0');
+        }
+      },
+      select_user: function(user_id){
+        ids = [user_id];
+        schedule_panelVM.set_schedule_date_user(ids);
+      },
+      select_users: function(){
+        units = $('input.groups:checked');
+        ids = [];
+        for (var i = 0; i < units.length; i++) {
+          ids.push($(units[i]).val());
+        }
+        if(ids.length==0){ 
+          Vue.toasted.show('請選擇人員', { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          return;
+        }
+        schedule_panelVM.set_schedule_date_user(ids);
+      },
+      set_schedule_date_user: function(ids){
+        $('#body_block').show();
+        return $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: { 
+            schedule_date_primary: schedule_panelVM.search_params.schedule_date_primary,
+            ids: ids,
+            skillid:schedule_panelVM.skillid,
+            worktime_s:schedule_panelVM.worktime_s,
+            worktime_e:schedule_panelVM.worktime_e,
+          },
+          url: "{:u('ScheduleDetail/set_schedule_date_user')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_panelVM.get_user();
+              schedule_divVM.get_schedule_date_users();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+
+      get_user: function(){
+        $("#ck_all").prop('checked',false)
+        $('.groups').prop('checked',false);
+        return $.ajax({
+          type:'POST',
+          dataType:'json',
+          data:{
+            schedule_date_primary: schedule_panelVM.search_params.schedule_date_primary,
+            params:{
+              apartmentid:schedule_panelVM.apartmentid,
+              skillid:schedule_panelVM.skillid,
+              searchtext: schedule_panelVM.mens_keyword,
+            }
+          },
+          url:"{:U('ScheduleDetail/get_mens_available')}",
+          success:function(res){
+            schedule_panelVM.users = res.users;
+            schedule_panelVM.$forceUpdate();
+          }
+        });
+      },
+    },
+  });
+
+  async function init_data(){
+    await schedule_divVM.get_schedule_dates();
+    await schedule_divVM.get_schedule_date_users();
+  }
+  init_data();
+</script>
+<script type="text/javascript">
+	function init_checkbox_event(){
+		$("#ck_all").off();
+		$("#ck_all").click(function(){
+			if($(this).prop('checked'))
+			{
+				$('.groups').prop('checked',true);
+			}else
+			{
+				$('.groups').prop('checked',false);
+			}
+		});
+	}
+  init_checkbox_event();
+</script>

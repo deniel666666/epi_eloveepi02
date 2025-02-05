@@ -1,0 +1,1637 @@
+<script type="text/javascript">
+    var first_search = true;
+    function do_active_tab(target_tab){
+        save_active_tab(target_tab);
+        $('.content_menu .nav-item a').removeClass('active show');
+        $('.content_menu .nav-item a[href="'+target_tab+'"]').addClass('active');
+        $(target_tab).addClass('active show');
+    }
+    function save_active_tab(target_tab){
+        crm_vueVM.active_tab = target_tab;
+        localStorage.setItem('Custo.active_tab', target_tab);   
+    }
+    function do_active_lab(target_lab){
+        save_active_lab(target_lab);
+        $('a[href="'+target_lab+'"]').click();
+        $('.manageTabs a.right_lab').removeClass('active show');
+        $('.manageTabs a.right_lab[href="'+target_lab+'"]').addClass('active');
+        $('.manageTabs .tab-pane.right_lab').removeClass('active show');
+        $(target_lab).addClass('active show');
+    }
+    function save_active_lab(target_lab){
+        crm_vueVM.active_lab = target_lab;
+        localStorage.setItem('Custo.active_lab', target_lab);
+    }
+
+    function init_view_html(){
+        /*操作面板 頁籤初始化*/
+        $(".content_menu").tabs({
+            create: function(event, ui){
+                var select_key = "{$_GET['select_key']}";
+                var search_text = "{$_GET['search_text']}";
+                var tab = "{$_GET['tab']}";
+                if(select_key && search_text){ /*有傳入搜尋參數*/
+                    crm_vueVM.input_selesearch = select_key;
+                    crm_vueVM.input_text = search_text;
+
+                    /*強制開啟搜尋頁籤*/
+                    active_tab = "#tab7";
+                    if(window.innerWidth<=991){
+                        $("#menu-operate").prop('checked', true);
+                    }
+                }
+                else if(tab){
+                    /*強制指定頁籤*/
+                    active_tab = "#" + tab;
+                    if(window.innerWidth<=991){
+                        $("#menu-operate").prop('checked', true);
+                    }
+                }
+                else{
+                    /*載入紀錄資料*/
+                    var input_selesearch = localStorage.getItem('Custo.input_selesearch');
+                    var input_text = localStorage.getItem('Custo.input_text');
+                    if(input_selesearch && input_text){
+                        crm_vueVM.input_selesearch = input_selesearch;
+                        crm_vueVM.input_text = input_text;
+                    }
+
+                    /*載入紀錄的頁籤*/
+                    var active_tab = localStorage.getItem('Custo.active_tab');
+                    active_tab = active_tab ? active_tab : '#tab1';  /*預設開啟的左側頁籤*/
+                }
+
+                /*設定頁籤active*/
+                crm_vueVM.active_tab = active_tab;
+                $('.content_menu .nav-item a[href="'+active_tab+'"]').click();
+                do_active_tab(crm_vueVM.active_tab);
+
+                first_search = false;
+            }
+        });
+
+        $(".tabtitle").tabs({
+            create: function( event, ui ) {
+                var active_lab = localStorage.getItem('Custo.active_lab');
+                active_lab = active_lab ? active_lab : '#lab1';  /*預設開啟的右側頁籤*/
+
+                /*預設active頁籤*/
+                if(active_lab){
+                    do_active_lab(active_lab);
+                }
+            }
+        });
+
+        $("li.newcrm").on("click",function(){ /*新增客戶*/
+            window.open("{:u('Custo/addcrm')}?id=-1");
+        });
+        $("li.newcontract").on("click",function(){ /*新增收款合約*/
+            crm_vueVM.$forceUpdate();
+            window.open("{:u('Alllist/add')}?id="+crm_vueVM.newbier.id);
+        });
+        $("li.newcontract_pay").on("click",function(){ /*新增付款合約*/
+            crm_vueVM.$forceUpdate();
+            window.open("{:u('Alllistpay/add')}?id="+crm_vueVM.newbier.id);
+        });
+        $("li.newevent").on("click",function(){ /*新增事件*/
+            crm_vueVM.$forceUpdate();
+            window.open("{:u('Fig/addcontent')}?id="+crm_vueVM.newbier.id);
+        });
+    };
+</script>
+<script>
+    function do_number_add_comma(number){
+        number = number ? number : "0";
+        number = number.toString();
+        number = number.split('.'); /*拆分成小數點前+小點後*/
+        patten = new RegExp("(\\d{1,3})(?=(\\d{3})+(?:$|\\D))", "g");
+        number[0] = number[0].toString().replace(patten, "$1,");
+        number = number.join('.');
+        return number;
+    }
+
+    Vue.component('crm_list_normal', {
+        template:`
+            <div class="level-content">
+                <ul>
+                    <li>
+                        <input class="seleteAll" type="checkbox" @click="$parent.select_all_crm_list($event)">
+                        <div class="lavel-head check-menu">
+                            <div class="lavel">{$system_parameter["等級"]}</div>
+                            <div class="name">{$system_parameter["簡稱"]}</div>
+                            <if condition="in_array(115, $use_function_top)">
+                                <div v-if="!appmdate" class="industry">{$system_parameter["產業別"]}</div>
+                            </if>
+                            <if condition="in_array(51, $use_function_top)">
+                                <div v-if="datecount" class="num">倒數天數</div>
+                            </if>
+                            <div v-if="appmdate" class="num">預約時間</div>
+                        </div>
+                    </li>
+                    <li v-for="crm in $parent.crm_list" :class="{'bg-warning': crm.id==$parent.crmId}">
+                        <input class="selete" type="checkbox"
+                               :value="crm.id" v-model="$parent.crm_list_selected"
+                               @click="$parent.select_all_check($event)">
+                        <label class="check-menu">
+                            <div class="lavel" v-text="crm.level_name">等級</div>
+                            <div :class="['name', 'crm_type'+crm.typeid]">
+                                <a :href="'{:u('Custo/view')}?id='+crm.id"
+                                   @click="$parent.search_chats_text='';$parent.left_change_crm(crm.id, $event)"
+                                   v-text="crm.show_name"
+                                   style="min-height: 1rem; min-width: 64px; display: inline-block;"
+                                >簡稱</a>
+                            </div>
+                            <if condition="in_array(115, $use_function_top)">
+                                <div v-if="!appmdate" class="industry">
+                                    <span v-text="crm.industr">產業別</span>
+                                    <span v-if="crm.industr2" v-text="'-'+ crm.industr2">產業別(次)</span>
+                                </div>
+                            </if>
+                            <if condition="in_array(51, $use_function_top)">
+                                <div v-if="datecount" class="num" v-text="crm.datecount">倒數天數</div>
+                            </if>
+                            <div class="num"  
+                                 v-if="appmdate && crm.appmdate && crm.appmdate!='0'" 
+                                 v-text="crm.appmdate_format.slice(0,16)">預約時間</div>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+        `,
+        props: {
+            datecount: Boolean,
+            appmdate: Boolean,
+        },
+        methods:{
+        }
+    });
+    Vue.component('crm_right_event', {
+        template:`
+            <div class="event-cont">
+                <table class="table event-table execution-table">
+                    <thead>
+                        <tr class="event-head">
+                            <th>事件編號</th>
+                            <th>{$system_parameter['合約']}編號</th>
+                            <th>主旨</th>
+                            <th>目前位置</th>
+                            <th>執行工作</th>
+                            <th>進度</th>
+                            <th>等級</th>
+                            <th>狀態</th>
+                            <th>發佈者</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="event in $parent.eve_events">
+                            <td>
+                                <a :href="'{:u('Fig/view')}?id='+event.id" target="_blank" v-text="event.evesno">
+                                    事件編號
+                                </a>
+                            </td>
+                            <td v-text="event.case_name">{$system_parameter['合約']}編號</td>
+                            <td v-text="event.title">主旨</td>
+                            <td v-text="event.user_name">目前位置</td>
+                            <td v-text="event.role_name + '-' + event.es_content">執行工作</td>
+                            <td v-text="event.schedule">進度</td>
+                            <td v-text="$parent.role_level[event.eve_level]">等級</td>
+                            <td v-text="$parent.role_flow[event.result]">狀態</td>
+                            <td v-text="event.publish_name">發佈者</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `,
+        props: {
+        },
+        methods:{
+        }
+    });
+    Vue.component('crm_right_contract', {
+        template:`
+            <table class="table edit_table" style="min-width: 1750px;">
+                <thead>
+                    <tr class="execution-head">
+                        <th style="width: 150px;" class="text-left">{$system_parameter['合約']}號</th>
+                        <th style="width: 100px;" class="text-right">{$system_parameter['合約']}金額</th>
+                        <th style="width: 100px" class="text-right">{$system_parameter['合約']}訂金</th>
+
+                        <if condition="in_array(71, $use_function_top)">
+                            <th style="width: 100px;" class="text-right" v-text="$parent.words['已收']+'金額'"></th>
+                            <th style="width: 100px;" class="text-right" v-text="$parent.words['收款']+'率'"></th>
+
+                            <th style="width: 100px" class="text-right" v-text="'剩餘'+$parent.words['預收']+'款'"></th>
+
+                            <th style="width: 100px;" class="text-right" v-text="'未'+$parent.words['出貨']+'金額'"></th>
+                            <th style="width: 100px;" class="text-right" v-text="'已'+$parent.words['出貨']+'金額'"></th>
+                            <th style="width: 100px;" class="text-right" v-text="$parent.words['出貨']+'率'"></th>
+
+                            <th style="width: 225px;" class="text-center">款項明細</th>
+
+                            <th style="width: 100px;" class="text-right" v-text="$parent.words['超收']"></th>
+                            <th style="width: 100px;" class="text-right">總損益</th>
+                        </if>
+                        <th style="width: 75px;" class="text-center" v-text="$parent.words['收款']+'狀態'"></th>
+                        <th style="width: 75px;" class="text-center">{$system_parameter['合約']}狀態</th>
+                        <th style="width: 110px;" class="text-left">結案日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(list, list_index) in $parent.contracts">
+                        <td>
+                            <a :class="'cate_'+list.flag+'_color'" v-if="get_or_pay==0"
+                               :href="'{:u('Alllist/view')}?id='+list.id" target="_blank" v-text="list.sn"></a>
+                            <a :class="'cate_'+list.flag+'_color'" v-if="get_or_pay==1"
+                               :href="'{:u('Alllistpay/view')}?id='+list.id" target="_blank" v-text="list.sn"></a>
+                        </td>
+                        <td class="text-right" v-text="list.allmoney"></td>
+                        <td class="text-right" v-text="list.money"></td>
+
+                        <if condition="in_array(71, $use_function_top)">
+                            <td class="text-right" v-text="list.money_count.real_get_paid.toFixed(2)"></td>
+                            <td class="text-right">
+                                <template v-if="Number(list.allmoney)">
+                                    <span v-text="(list.money_count.real_get_paid/list.allmoney*100).toFixed(2)"></span>%
+                                </template>
+                            </td>
+
+                            <td class="text-right" v-text="list.money_count.allmoney_prepaid.toFixed(2)"></td>
+
+                            <td class="text-right" v-text="list.money_count.shipments_un.toFixed(2)"></td>
+                            <td class="text-right" v-text="list.money_count.shipments.toFixed(2)"></td>
+                            <td class="text-right">
+                                <template v-if="Number(list.allmoney)">
+                                    <span v-text="(list.money_count.shipments/list.allmoney*100).toFixed(2)"></span>%
+                                </template>
+                            </td>
+
+                            <td class="text-center">
+                                <template v-if="list.flag!=0">
+                                    <a v-if="get_or_pay==0" :href="'{:u('Course/receivedetail')}?id='+list.id" target="_blank">款項明細</a>
+                                    <a v-if="get_or_pay==1" :href="'{:u('Coursepay/receivedetail')}?id='+list.id" target="_blank">款項明細</a>
+                                    <if condition="$access['getmoney_new'] eq '1'">
+                                        <template v-if="(list.money != 0 || list.flag != 0) && list.flag2==1 && list.flag3!=1">
+                                            <a target="_blank" class="btn addbtn ml-2" v-if="get_or_pay==0"
+                                               :href="'{:u('Getmoney/records')}?id='+list.id">申請</a>
+                                            <a target="_blank" class="btn addbtn ml-2" v-if="get_or_pay==1"
+                                               :href="'{:u('Getmoneypay/records')}?id='+list.id">申請</a>
+                                        </template>
+                                        <template v-if="(list.cate == 1) && list.flag2==1 && list.flag3!=1">
+                                            <a :href="'{:u('Getmoney/create_money_seo')}?caseid='+list.id+'&qh={$current_qh}'" target="_blank" class="btn addbtn ml-2">
+                                                前月請款
+                                            </a>
+                                        </template>
+                                    </if>
+                                </template>
+                            </td>
+
+                            <td class="text-right">
+                                <template v-if="list.money_count.real_get > list.allmoney">
+                                    <span v-text="list.money_count.real_get - list.allmoney"></span>
+                                </template>
+                                <template v-if="list.money_count.real_get <= list.allmoney">0</template>
+                            </td>
+                            <td class="text-right" v-text="list.money_count.tips.toFixed(2)"></td>
+                        </if>
+                        <td class="text-center">
+                            <template v-if="list.flag3 != 1"><span v-text="$parent.words['收款']+'中'"></span></template>
+                            <template v-if="list.flag3 == 1" style="background-color: gray;color: white;">
+                                <span v-text="'款'+$parent.words['收罄']"></span>
+                            </template>
+                        </td>
+                        <td class="text-center">
+                            <template v-if="list.flag == 0">提案</template>
+                            <template v-if="list.flag == 1">已簽約</template>
+                            <template v-if="list.flag == 2">問題案</template>
+                        </td>
+                        <td v-text="list.endtime_format"></td>
+                    </tr>
+                    <tr class="table_total" v-if="$parent.contracts_all_search">
+                        <td colspan="">分頁總計</td>
+                        <td class="text-right" v-text="$parent.contracts_all_search.allmoney.toFixed(2)"></td>
+                        <td class="text-right" v-text="$parent.contracts_all_search.money.toFixed(2)"></td>
+
+                        <if condition="in_array(71, $use_function_top)">
+                            <td class="text-right" v-text="$parent.contracts_all_search.real_get_paid.toFixed(2)"></td>
+                            <td></td>
+                            <td class="text-right" v-text="$parent.contracts_all_search.allmoney_prepaid.toFixed(2)"></td>
+                            <td class="text-right" v-text="$parent.contracts_all_search.shipments_un.toFixed(2)"></td>
+                            <td class="text-right" v-text="$parent.contracts_all_search.shipments.toFixed(2)"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-right" v-text="$parent.contracts_all_search.tips.toFixed(2)"></td>
+                        </if>
+                        <td colspan="3"></td>
+                    </tr>
+                    <tr class="table_total">
+                        <td colspan="18" class="p-0"><hr class="m-0"></td>
+                    </tr>
+                    <tr class="table_total" v-if="$parent.contracts_all">
+                        <td colspan="">搜尋總計</td>
+                        <td class="text-right" v-text="$parent.contracts_all.allmoney.toFixed(2)"></td>
+                        <td class="text-right" v-text="$parent.contracts_all.money.toFixed(2)"></td>
+
+                        <if condition="in_array(71, $use_function_top)">
+                            <td class="text-right" v-text="$parent.contracts_all.real_get_paid.toFixed(2)"></td>
+                            <td></td>
+                            <td class="text-right" v-text="$parent.contracts_all.allmoney_prepaid.toFixed(2)"></td>
+                            <td class="text-right" v-text="$parent.contracts_all.shipments_un.toFixed(2)"></td>
+                            <td class="text-right" v-text="$parent.contracts_all.shipments.toFixed(2)"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-right" v-text="$parent.contracts_all.tips.toFixed(2)"></td>
+                        </if>
+                        <td colspan="3"></td>
+                    </tr>
+                </tbody>
+            </table>
+        `,
+        props: {
+            get_or_pay: Number,
+        },
+        methods:{
+            number_add_comma: function(number){
+                return do_number_add_comma(number);
+            },
+        }
+    });
+
+    var myId = '{$myId}';
+    var crmId = '{$crmId}';
+    if("{$_GET['id']}"){
+        crmId = "{$_GET['id']}";
+    }
+    var keypress_target = 'keypress_target';
+    $(document).on('keypress', function(e){
+        var keynum;
+        if(window.event) { // IE                  
+            keynum = e.keyCode;
+        }else if(e.which){ // Netscape/Firefox/Opera                 
+            keynum = e.which;
+        }
+        if(keynum=='17'){ /*Ctrl+Q 進入上下切換客戶模式*/
+            crm_vueVM.init_left_keypress_change_crm();
+        }
+        if(keynum=='2'){ /*Ctrl+B 切換大小螢幕模式*/
+            if($('body').hasClass('force_hide_left_panel')){
+                $('body').removeClass('force_hide_left_panel');
+            }else{
+                $('body').addClass('force_hide_left_panel');
+            }
+        }
+        console.log(keynum);
+    });
+
+    var teamid = '{$teamid}';
+    var eid = '{$Think.session.adminId}';
+    crm_vue_data = {
+        myId: myId,
+        crmId: crmId,
+        teamid: teamid,
+
+        success_funtion: null,
+        callId: '',
+
+        /*搜尋功能*/
+            input_selesearch: "name",
+            input_selesearch_option: [
+                {value:'name', name:'{$system_parameter["公司名稱"]}'},
+                {value:'bossname', name:'<if condition="$system_parameter['負責人'] || $system_parameter['聯絡人']">人名</if>'},
+                {value:'bossphone', name:'{$system_parameter["公司電話"]}'},
+                {value:'bossmobile', name:'{$system_parameter["公司手機"]}'},
+                {value:'bossmail', name:'{$system_parameter["公司MAIL"]}'},
+                {value:'country', name:'{$system_parameter["地址"]}'},
+                {value:'url1', name:'{$system_parameter["官方網站"]} {$system_parameter["網群"]}'},
+                {value:'no', name:'{$system_parameter["統編"]}'},
+                {value:'industr', name:'<if condition="in_array(115, $use_function_top)">{$system_parameter["產業別"]}</if>'},
+            ],
+            input_text: "",
+
+            search_selesearch: "",
+            search_text: "",
+            search_level: 'all',
+            search_typeid: '-1',
+            conversation_type: '=',
+
+        /*客戶列表*/
+            active_tab: '',
+            active_lab: '',
+            status_supplier: "",
+            crm_types:[],
+            crm_levels: [],
+            crm_levels_count: [],
+            crm_cum_sourse: [],
+            crm_industr: [],
+            crm_list: [],
+            crm_list_pages: [],
+            crm_list_total_page: 1,
+            crm_list_current_page: 1,
+            crm_level_description: {},
+
+        /*編輯功能(操作面板)*/
+            crm_list_selected: [],
+
+        /*右側crm 操作*/
+            newbier: {
+                id: 0,
+                status_supplier: 1,
+            },
+            crm_contact_top: {},
+            crm_cum_pri: [],
+
+            /*訪談紀錄*/
+                crm_chats: [],
+                crm_chats_pages: [],
+                crm_chats_current_page: 1,
+                crmChatqulity: [],
+                eip_user: [],
+                chattype_option:{ /*訪談方式*/
+                    0: '面談',
+                    1: '電訪'
+                },
+                chattype2_option:{ /*預約方式*/
+                    0: '面談',
+                    1: '致電'
+                },
+                crm_contact: [],
+                input_chats_text: "",
+                search_chats_text: "",
+                new_crm_chats:{
+                    lxrid: 0,
+                    qulid: 0,
+                    chattype: 1,
+                    chattype2: 1,
+                    content: "",
+                    appmdate: "",
+                    doid: 0,
+                },
+            
+            /*小事*/
+                smallthing_type: "smallthings_undo",
+                smallthings_show: [],
+                smallthings_undo:[],
+                smallthings_done:[],
+                edit_smallthing: { chat_id:"", doevt:"", do_response:"", do_time:"", do_time_format:"", },
+
+            /*綜合事項*/
+                crm_memo:[],
+                new_crm_memo:{},
+
+            /*聯絡人*/
+                crm_contact:[],
+                new_crm_contact:{},
+
+            /*合約列表*/
+                words:{},
+                get_or_pay: 0,
+                contracts_cate: '', /*合約類別*/
+                contracts_cates: [],
+                contracts_cate_pay: '', /*合約類別*/
+                contracts_cates_pay: [],
+                contracts_flag: -1, /*-1.全部 0.提案 1.已簽約*/
+                contracts_flag2: 1, /*1.執行區 2.結案區*/
+                contracts: [],
+                contracts_all_search: null, /*分頁計算結果*/
+                contracts_all: null,        /*總計算結果*/
+                contracts_pages: [],
+                contracts_total_page: 1,
+                contracts_current_page: 1,
+
+            /*事件列表*/
+                eve_type: 'index',
+                eve_events: [],
+                role_flow: [],
+                role_level: [],
+                events_pages: [],
+                events_total_page: 1,
+                events_current_page: 1,
+
+            /*網群*/
+                crm_website: [],
+                new_crm_website:{},
+
+            /*特性管理*/
+                crm_property: [],
+
+            /*提供服務*/
+                columns_out: typeof columns_out=='undefined' ? [] : columns_out,
+    };
+    var crm_vueVM = new Vue({
+        el: '#crm_vue',
+        data: crm_vue_data,
+        computed: {
+            smallthings_done_not_read: function(){
+                count = 0;
+                for (var i = 0; i < this.smallthings_done.length; i++) {
+                    if(this.smallthings_done[i]['do_review_time']==null && 
+                       this.smallthings_done[i]['eid']==eid){
+                        count += 1;
+                    }
+                }
+                return count;
+            },
+        },
+        methods: {
+            /*操作面板功能*/
+                /*搜尋功能*/
+                    init_crm_right_data: function(){
+                        self = this;
+                        return $.ajax({
+                            type: 'GET',
+                            dataType:'json',
+                            url: "{:u('Custo/ajax_init_crm_right_data')}",
+                            success:function(res){
+                                self.crm_types = res.crm_cum_type;
+                                self.crm_levels = res.levels;
+                                self.crm_cum_sourse = res.crm_cum_sourse;
+                                self.crm_industr = res.crm_industr;
+                                res.crm_cum_cat.unshift({id:'', name:'全部'});
+                                self.contracts_cates = res.crm_cum_cat;
+                                self.contracts_cate = '';
+                                res.crm_cum_cat_pay.unshift({id:'', name:'全部'});
+                                self.contracts_cates_pay = res.crm_cum_cat_pay;
+                                self.contracts_cate_pay = '';
+
+                                /*預設active執行合約、結案合約*/
+                                setTimeout(function(){
+                                    $('.first_contract').addClass('active');
+                                }, 10);
+                            },
+                        });
+                    },
+                    reset_search_parameter: function(){
+                        self = this;
+                        self.search_selesearch = "";
+                        self.search_text = "";
+                        if(first_search){
+                            var search_level = localStorage.getItem('Custo.search_level');
+                            if(search_level){
+                                self.search_level = search_level;
+                            }
+                        }else{
+                            self.search_level = 'all';
+                        }
+                        localStorage.setItem('Custo.search_level', self.search_level);
+                        self.crm_list = [];
+                        self.crm_list_selected = [];
+                        self.crm_levels_count = [];
+                        self.search_typeid = '-1';
+                        self.crm_list_current_page = 1;
+                        self.conversation_type = '=';
+
+                        $('.seleteAll').prop('checked', false);
+                    },
+                    init_pages: function(target, totalPages=1){
+                        self = this;
+                        self[target+'_pages'] = [];
+                        self[target+'_total_page'] = totalPages;
+                        for (var i=-2; i <= 2; i++) { /*最多顯示5頁*/
+                            if( self[target+'_current_page'] + i >= 1 &&
+                                self[target+'_current_page'] + i <= self[target+'_total_page']
+                            ){
+                                self[target+'_pages'].push(self[target+'_current_page'] + i);
+                            }
+                        }
+                    },
+                    /*更換頁數*/
+                    change_crm_list_page: function(page){
+                        self = this
+                        if(self.crm_list_current_page != page){
+                            if(1<=page && page<=self.crm_list_total_page){
+                                self.crm_list_current_page = page;
+                                
+                                self.renew_crm_list(); /*更新crm_list*/
+                            }
+                        }
+                    },
+                    /*更換等級*/
+                    change_crm_list_level: function(level){
+                        self = this;
+                        if(self.search_level != level){
+                            self.search_level = level;
+                            self.crm_list_current_page = 1;
+
+                            localStorage.setItem('Custo.search_level', level);
+                            self.renew_crm_list(); /*更新crm_list*/
+                        }
+                    },
+                    renew_crm_list: function(){
+                        self = this;
+                        $('.seleteAll').prop('checked', false);
+                        self.crm_list_selected = [];
+
+                        if(['#tab1','#tab2','#tab3','#tab7'].indexOf(self.active_tab)!=-1){
+                            self.ajax_get_crm_list();
+                        }
+                        else if(['#tab5'].indexOf(self.active_tab)!=-1){
+                            self.ajax_get_smallthings();
+                        }
+                        else if(['#tab4', '#tab6'].indexOf(self.active_tab)!=-1){
+                            self.ajax_get_conversation();
+                        }
+                    },
+                    
+                /*載入搜尋客戶(新進、潛在、成交、搜尋)*/
+                    search_by_input: function($event){
+                        self = this;
+                        if($event){ $event.preventDefault(); }
+                        $('.left-content .nav-item a').removeClass('active');
+                        $('.tabs-menu .nav-item[aria-expanded="true"]').attr('aria-expanded', false);
+                        var active_tab = '#tab7';
+                        do_active_tab(active_tab);
+                        if(self.input_selesearch && self.input_text){
+                            self.reset_search_parameter();
+                            localStorage.setItem('Custo.input_selesearch', self.input_selesearch);
+                            localStorage.setItem('Custo.input_text', self.input_text);
+                            self.search_selesearch = self.input_selesearch;
+                            self.search_text = self.input_text.trim();
+                            self.ajax_get_crm_list();
+                        }
+                    },
+                    search_by_typeid: function(typeid){
+                        self = this;
+                        save_active_tab('#tab'+typeid);
+
+                        self.reset_search_parameter();
+                        self.search_typeid = typeid;
+                        self.ajax_get_crm_list();
+                    },
+                    ajax_get_crm_list: function($event){
+                        self = this;
+                        if($event){ $event.preventDefault(); }
+                        self.crm_level_description = {};
+                        self.crm_list = [];
+                        self.crm_list_selected = [];
+
+                        /*取得客戶資料*/
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/ajax_get_crm_list')}",
+                            data: {
+                                teamid: self.teamid,
+                                key: self.search_selesearch,
+                                val: self.search_text,
+                                levelid: self.search_level,
+                                typeid: self.search_typeid,
+                                p: self.crm_list_current_page,
+                                status_supplier: self.status_supplier,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                self.crm_list = res.crmlist;
+                                self.crm_levels = res.levels;
+                                self.crm_levels_count = res.levels_count;
+                                
+                                self.init_pages('crm_list' , res.pagwAllA.totalPages);
+                                self.crm_level_description = res.crm_level_description;
+
+                                if(self.success_funtion){
+                                    self.success_funtion();
+                                    self.success_funtion = null;
+                                }
+                            },
+                            beforeSend:function(XMLHttpRequest){
+                                Vue.toasted.show("開始搜尋，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                            complete:function(XMLHttpRequest,textStatus){
+                                Vue.toasted.show("搜尋結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                        });
+                    },
+                    
+
+                /*載入小事件*/
+                    search_by_smallthings: function(){
+                        self = this;
+                        save_active_tab('#tab5'); 
+                        do_active_lab('#lab2');
+                        self.reset_search_parameter();
+                        self.ajax_get_smallthings();
+                    },
+                    ajax_get_smallthings: function($event){
+                        self = this;
+                        if($event){ $event.preventDefault(); }
+                        self.crm_level_description = {};
+                        self.crm_list = [];
+                        self.crm_list_selected = [];
+
+                        /*取得客戶資料*/
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/ajax_get_smallthings')}",
+                            data: {
+                                // id: self.crmId,          /*看某客戶的*/ 
+                                doid: self.myId,            /*看自己要處理的*/
+                                levelid: self.search_level, /*客戶等級*/
+                                p: self.crm_list_current_page,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                self.crm_list = res.smallthings;
+                                self.crm_levels = res.levels;
+                                self.crm_levels_count = res.levels_count;
+
+                                self.init_pages('crm_list' , res.totalPages);
+
+                                if(self.success_funtion){
+                                    self.success_funtion();
+                                    self.success_funtion = null;
+                                }
+                            },
+                            beforeSend:function(XMLHttpRequest){
+                                Vue.toasted.show("開始搜尋，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                            complete:function(XMLHttpRequest,textStatus){
+                                Vue.toasted.show("搜尋結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                        });
+                    },
+
+                /*載入訪談客戶(今天、預約、逾期、對話)*/
+                    search_by_conversation: function(tab){ /*今天、預約、逾期*/
+                        self = this;
+                        save_active_tab(tab);
+                        self.reset_search_parameter();
+                        self.ajax_get_conversation();
+                    },
+                    search_by_conversation_today: function(){  /*對話*/
+                        self = this;
+                        save_active_tab('#tab6');
+                        self.reset_search_parameter();
+                        self.conversation_type = '=7';
+                        self.ajax_get_conversation();
+                    },
+                    ajax_get_conversation: function($event){
+                        self = this;
+                        if($event){ $event.preventDefault(); }
+                        self.crm_level_description = {};
+                        self.crm_list = [];
+                        self.crm_list_selected = [];
+
+                        /*取得客戶資料*/
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/ajax_get_conversation')}",
+                            data: {
+                                conversation_type: self.conversation_type, /*查詢方式*/
+                                levelid: self.search_level,                /*客戶等級*/
+                                p: self.crm_list_current_page,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                self.crm_list = res.cum_list;
+                                self.crm_levels = res.levels;
+                                self.crm_levels_count = res.levels_count;
+
+                                self.init_pages('crm_list' , res.totalPages);
+
+                                if(self.success_funtion){
+                                    self.success_funtion();
+                                    self.success_funtion = null;
+                                }
+                            },
+                            beforeSend:function(XMLHttpRequest){
+                                Vue.toasted.show("開始搜尋，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                            complete:function(XMLHttpRequest,textStatus){
+                                Vue.toasted.show("搜尋結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                        });
+                    },
+
+                /*編輯功能*/
+                    select_all_crm_list: function($event){
+                        self = this;
+                        self.crm_list_selected = [];
+
+                        var select_all = $($event.currentTarget);
+                        if(select_all.prop('checked')==true){
+                            for (var i = 0; i < self.crm_list.length; i++) {
+                                self.crm_list_selected.push(self.crm_list[i].id);
+                            }
+                        }
+                    },
+                    select_all_check: function($event){
+                        self = this;
+
+                        var check_select_all = true;
+                        for (var i = 0; i < self.crm_list.length; i++) {
+                            if(self.crm_list_selected.indexOf(self.crm_list[i].id) == -1){
+                                check_select_all = false;
+                                break;
+                            }
+                        }
+                        
+                        /*修改權選的勾選狀態*/
+                        var select_all = $($event.currentTarget).parent().parent().find('.seleteAll');
+                        select_all.prop('checked', check_select_all)
+                    },
+                    update_crm_list: function(){
+                        self = this;
+                        var post_data = {'wid': '-1'};
+
+                        var edit_typeid = $('#edit_typeid').val();
+                        if(edit_typeid!='-1'){
+                            post_data['typeid'] = edit_typeid;
+                        }
+                        var edit_levelid = $('#edit_levelid').val();
+                        if(edit_levelid!='-1'){
+                            post_data['levelid'] = edit_levelid;
+                        }
+                        if(jQuery.isEmptyObject(post_data)){
+                            Vue.toasted.show("請選擇{$system_parameter['客戶']}{$system_parameter['類別']}或{$system_parameter['等級']}", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+                            return;
+                        }
+
+                        if(self.crm_list_selected.length==0){
+                            Vue.toasted.show("請勾選{$system_parameter['客戶']}", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+                            return;
+                        }
+                        post_data['sele'] = self.crm_list_selected;
+
+                        // console.log(post_data);return;
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/patchupdate')}",
+                            data: post_data,
+                            success:function(res){
+                                // console.log(res);
+                                if(res.status==1){
+                                    bg_class = "bg-success";
+                                }else{
+                                    bg_class = "bg-danger";
+                                }
+
+                                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                                if(res.status==1){ self.renew_crm_list(); /*更新crm_list*/ }
+                            },
+                            error:function(res){
+                                Vue.toasted.show("網路錯誤，請稍後再試", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                            },
+                        });
+                    },
+
+            
+                /*載入右側詳細資料*/
+                    init_left_keypress_change_crm: function(){
+                        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+                            return; /*手機等不啟用鍵盤功能*/
+                        }
+                        self = this;
+                        $('#'+keypress_target).off('keypress');
+                        document.getElementById(keypress_target).focus();
+                        $('#'+keypress_target).on('keypress', function(e) {
+                            var keynum;
+                            if(window.event) { // IE                  
+                                keynum = e.keyCode;
+                            }else if(e.which){ // Netscape/Firefox/Opera                 
+                                keynum = e.which;
+                            }
+                            key = String.fromCharCode(keynum);
+                            if(key=='w' || key=='W'){ /*往上*/
+                                var has_id = false;
+                                for (var i = self.crm_list.length-1; i>=0; i--) { /*逆找*/
+                                    if(self.crm_list[i].id==self.crmId){ /*找到當前active*/
+                                        has_id = true;
+                                        if(i>0){ /*可往上一個*/
+                                            self.get_crm_data(self.crm_list[i-1].id, null);
+                                            break;
+                                        }
+                                        else if(self.crm_list_current_page>1){ /*可往上一頁*/
+                                            self.success_funtion = function(){
+                                                crm_vueVM.get_crm_data(crm_vueVM.crm_list[self.crm_list.length-1].id, null);
+                                                document.getElementById(keypress_target).focus();
+                                            }
+                                            self.change_crm_list_page(self.crm_list_current_page-1);
+                                        }
+                                        else{
+                                            Vue.toasted.show("往上已無{$system_parameter['客戶']}", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+                                        }
+                                    }
+                                    else if(i == 0){ /*比對到第一個*/
+                                        if(!has_id){ /*當前無active*/
+                                            crm_vueVM.get_crm_data(crm_vueVM.crm_list[self.crm_list.length-1].id, null); /*載入最後一個*/
+                                        } 
+                                    }
+                                }   
+                            }
+                            else if(key=='s' || key=='S'){ /*往下*/
+                                var has_id = false;
+                                for (var i = 0; i < self.crm_list.length; i++) {  /*順找*/
+                                    if(self.crm_list[i].id==self.crmId){ /*找到當前active*/
+                                        has_id = true;
+                                        if(i<self.crm_list.length-1){ /*可往下一個*/
+                                            self.get_crm_data(self.crm_list[i+1].id, null);
+                                            break;
+                                        }
+                                        else if(self.crm_list_current_page<self.crm_list_total_page){ /*可往下一頁*/
+                                            self.success_funtion = function(){
+                                                crm_vueVM.get_crm_data(crm_vueVM.crm_list[0].id, null);
+                                                document.getElementById(keypress_target).focus();
+                                            }
+                                            self.change_crm_list_page(self.crm_list_current_page+1);
+                                        }
+                                        else{
+                                            Vue.toasted.show("往下已無{$system_parameter['客戶']}", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+                                        }                              
+                                    }
+                                    else if(i == self.crm_list.length-1){ /*比對到最後一個*/
+                                        if(!has_id){ /*當前無active*/
+                                            crm_vueVM.get_crm_data(crm_vueVM.crm_list[0].id, null); /*載入第一個*/
+                                        }
+                                    }
+                                }
+                            }
+                            else if(key==' '){ /*撥話&掛斷*/
+                                if(self.callId==''){
+                                    phone = self.newbier.comphone ? self.newbier.comphone : self.newbier.commobile;
+                                    self.phone_call(phone);
+                                }else{
+                                    Vue.toasted.show("掛斷中...", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                                    $.ajax({
+                                        method:'post',
+                                        data:{ "callId":self.callId, },
+                                        dataType:'json',
+                                        url:"{:U('Custo/phone_call_off')}",
+                                        success:function(res){
+                                            if(res.status==1){
+                                                bg_class = "bg-success";
+                                            }else{
+                                                bg_class = "bg-danger";
+                                            }
+                                            self.callId = '';
+                                            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                                        },
+                                    });
+                                }
+                                // if(!has_id){
+                                //     crm_vueVM.get_crm_data(crm_vueVM.crm_list[0].id, null);
+                                // }
+                            }
+                            else if(key=='q' || key=='Q'){ /**/
+                            }
+                        });
+                    },
+                    left_change_crm: async function(crmId, $event){
+                        self = this;
+                        $('#body_block').show();
+                        await self.get_crm_data(crmId, $event);
+                        await self.init_crm_cum_cat_unit();
+                        self.init_left_keypress_change_crm();
+
+                        if(['#lab5','#lab5_1'].indexOf(this.active_lab)){
+                            self.ajax_get_contracts();
+                        }
+                        $('#menu-operate').prop('checked', false); /*關閉操作面板*/
+                        $('#body_block').hide();
+                    },
+                    get_crm_data: function(crmId, $event){
+                        self = this;
+                        if($event){ $event.preventDefault(); }
+
+                        self.crmId = crmId;
+                        state = { id:crmId };
+                        url = new URL(location);
+                        url.searchParams.set('id', crmId);
+                        history.pushState(state, "", url);
+
+                        return $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/ajax_crm_one_data')}",
+                            data: {
+                                teamid: self.teamid,
+                                id: self.crmId,
+                            },
+                            beforeSend:function(XMLHttpRequest){
+                                Vue.toasted.show("資料載入中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                            success:function(res){
+                                if(!res.newbier){ return; }
+                                // console.log(res.newbier);
+                                self.crm_contact_top = res.crm_contact_top; /*置頂聯絡人*/
+                                self.newbier = res.newbier; /*客戶詳細資料*/
+
+                                /*協同人員*/
+                                self.crm_cum_pri = res.crm_cum_pri;
+
+                                /*特性*/
+                                self.crm_property = res.crm_property;
+
+                                /*訪談紀錄*/
+                                if(self.search_chats_text){
+                                    self.do_search_chats();
+                                }else{
+                                    self.crm_chats = res.crm_chats;
+                                    self.crm_chats_pages = res.crm_chats_pages;
+                                }
+                                self.crmChatqulity = res.crmChatqulity;
+                                self.eip_user = res.eip_user;
+                                /*預設聯絡對象為上次訪談的對象*/
+                                if(self.crm_chats.length!=0){
+                                    self.new_crm_chats['lxrid'] = self.crm_chats[0].lxrid;
+                                }else{
+                                    self.new_crm_chats['lxrid'] = 0;
+                                }
+
+                                /*小事*/
+                                self.smallthings_undo = res.smallthings;
+                                self.smallthings_done = res.smallthings_done.sort((a, b)=>{
+                                    if ( a.dateline > b.dateline ){
+                                    return -1;
+                                    }
+                                    if ( a.dateline < b.dateline ){
+                                    return 1;
+                                    }
+                                    return 0;
+                                });
+                                self.change_smallthings('smallthings_undo');
+
+                                /*綜合事項*/
+                                self.crm_memo = res.crm_memo;
+
+                                /*聯絡人*/
+                                self.crm_contact = res.crm_contact;
+
+                                /*網群*/
+                                self.crm_website = res.crm_website;
+
+                                if(self.active_lab=='#lab5'){ /*如果當前開的右側頁籤是 合約歷程*/
+                                    self.contracts_current_page = 1;
+                                    self.ajax_get_contracts();
+                                }
+                                else if(self.active_lab=='#lab6'){ /*如果當前開的右側頁籤是 事件列表*/
+                                    self.events_current_page = 1;
+                                    self.ajax_get_events();
+                                }
+
+                                Vue.toasted.show("資料載入結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                            error: function(){
+                                Vue.toasted.show("發生錯誤，請重整頁面", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                            },
+                        });
+                    },
+
+            /*右側crm 操作*/
+                save_one_value: function(dbname="", id="", column="", $event=""){
+                    if(!dbname){ return; }
+                    if(!id){ return; }
+                    if(!column){ return; }
+                    if(!$event){ return; }
+                    var value = $($event.currentTarget).val();
+                    ajax_save_one_value(dbname, id, column, value);
+                },
+                save_one_pass_value: function(dbname="", id="", column="", value=""){
+                    if(!dbname){ return; }
+                    if(!id){ return; }
+                    if(!column){ return; }
+                    ajax_save_one_value(dbname, id, column, value);
+                },
+                /*右上區塊修改資料*/
+                    change_data: function(column){
+                        self = this;
+                        setTimeout(function(){
+                            ajax_save_one_value('crm_crm', self.crmId, column, self.newbier[column].join(","))
+                        },100)
+                    },
+                    change_data_yesno: function(column){
+                        self = this;
+                        setTimeout(function(){
+                            var new_value = self.newbier[column] ? "1" : "0";
+                            ajax_save_one_value('crm_crm', self.crmId, column, new_value);
+                        },100)
+                    },
+
+                /*訪談紀錄*/
+                    set_chat_edit: function(chat_index){
+                        self = this;
+
+                        if(self.crm_chats[chat_index]['save']==1){ /*允許編輯*/
+                            self.crm_chats[chat_index]['edit']=1;
+                            self.$forceUpdate();
+
+                            setTimeout(function(){
+                                var datetime = "";
+                                if(self.crm_chats[chat_index].appmdate && self.crm_chats[chat_index].appmdate!=0){
+                                    datetime = self.crm_chats[chat_index].appmdate_format.slice(0,10)+'T'+self.crm_chats[chat_index].appmdate_format.slice(11,16);
+                                }else{
+                                    datetime = "{$current_datetime_local_value}";
+                                }
+                                $('.chat_record:nth-child('+(chat_index+1)+')').find('input[type="datetime-local"]').val(datetime);
+                            }, 200)
+                        }
+                    },
+                    do_search_chats: function(){
+                        self = this;
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/ajax_get_chats')}",
+                            data: {
+                                crmId: self.crmId,
+                                page: self.crm_chats_current_page,
+                                search_text: self.search_chats_text,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                /*訪談紀錄*/
+                                self.crm_chats = res.crm_chats;
+                                self.crm_chats_pages = res.crm_chats_pages;
+                            },
+                            beforeSend:function(XMLHttpRequest){
+                                Vue.toasted.show("資料載入中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                            complete:function(XMLHttpRequest,textStatus){
+                                Vue.toasted.show("資料載入結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                            },
+                        });
+                    },
+                    search_chats: function($event){
+                        self = this;
+                        if($event){ $event.preventDefault(); }
+                        self.crm_chats_current_page = 1;
+                        self.search_chats_text = self.input_chats_text;
+                        self.do_search_chats();
+                    },
+                    change_crm_chats_page: function(page){
+                        self = this;
+                        if(1<=page && page<=self.crm_chats_pages.length){
+                            self.crm_chats_current_page = page;
+                            self.do_search_chats();
+                        }
+                    },
+                    add_new_chat: function(){
+                        self = this;
+                        post_data = Object.assign({}, self.new_crm_chats);
+                        if(!post_data.qulid){ return; }
+                        post_data.appmdate = $('#appmdate').val();
+                        post_data.cumid = self.crmId;
+                        post_data.dbname = 'crm_chats';
+                        post_data.smevt = post_data.doid!=0 ? 1 : 0;
+
+                        $('#body_block').show();
+                        Vue.toasted.show("處理中，請稍後", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/viewadd')}",
+                            data: post_data,
+                            success:function(res){
+                                // console.log(res);
+                                if(res.status==1){
+                                    // self.new_crm_chats['lxrid'] = 0;
+                                    self.new_crm_chats['qulid'] = 0;
+                                    self.new_crm_chats['chattype'] = 1;
+                                    self.new_crm_chats['chattype2'] = 1;
+                                    self.new_crm_chats['content'] = "";
+                                    self.new_crm_chats['appmdate'] = "";
+                                    self.new_crm_chats['doid'] = 0;
+                                    $('#appmdate').val("");
+                                    bg_class = "bg-success";
+                                }else{
+                                    bg_class = "bg-danger";
+                                    self.new_crm_chats.qulid = 0;
+                                }
+                                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                                if(res.status==1){ self.get_crm_data(self.crmId); /*更新右側資料*/ }
+                                $('#body_block').hide();
+
+                                document.getElementById(keypress_target).focus();
+                            },
+                            error: function(res){
+                                $('#body_block').hide();
+                            }
+                        });
+                    },
+
+                /*小事*/
+                    change_smallthings: function(smallthing_type){
+                        $('.smallthings_change').removeClass('active');
+                        $('#'+smallthing_type).addClass('active');
+                        self.smallthing_type = smallthing_type;
+                        self = this;
+                        self.smallthings_show = [...self[self.smallthing_type]];
+                    },
+                    show_smallthing_response: function(chat){
+                        self = this;
+                        if(chat.doevt==1 && chat.eid==eid && chat.do_review_time==null){
+                            ajax_save_one_value('crm_chats', chat.chat_id, 'do_review_time', '1').done(function(e){
+                                if(e.status==1){
+                                    for (var i = 0; i < self.smallthings_done.length; i++) {
+                                        if(self.smallthings_done[i].chat_id==chat.chat_id){
+                                            self.smallthings_done[i]['do_review_time'] = 1;
+                                        }
+                                    }
+                                    for (var i = 0; i < self.crm_chats.length; i++) {
+                                        if(self.crm_chats[i].chat_id==chat.chat_id){
+                                            self.crm_chats[i]['do_review_time'] = 1;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        self.edit_smallthing = Object.assign({}, chat);
+
+                        /*portal slot-props資料不知為何不能及時同步，強制延時多設定一次資料*/
+                        setTimeout(function(){
+                            self.edit_smallthing = Object.assign({}, chat);
+                            $('#smallthing_response_btn').click();
+                        }, 100);
+                    },
+                    do_smallthing: function(){
+                        self = this;
+                        ajax_save_one_value('crm_chats', self.edit_smallthing.chat_id, 'do_response', self.edit_smallthing.do_response).done(function(e){
+                            if(e.status==1){
+                                self.edit_smallthing = { chat_id:"", doevt:"", do_response:"" };
+                                self.get_crm_data(self.crmId); /*更新右側資料*/
+                                $('#smallthing_response').modal('hide');
+                            }
+                        });
+                    },
+
+                /*綜合事項、聯絡人...*/
+                    set_item_edit: function(tartget_data, tartget_index){
+                        self = this;
+                        self[tartget_data][tartget_index]['edit']=1;
+                        self.$forceUpdate();
+                    },
+                    add_new_item: function(tartget_data){
+                        self = this;
+                        post_data = Object.assign({}, self['new_'+tartget_data]);
+                        // console.log(post_data);return;
+                        if( jQuery.isEmptyObject(post_data) ){
+                            Vue.toasted.show("請輸入內容", { duration: 1500, className: ["toasted-primary", 'bg-warning'] });
+                            return;
+                        }
+
+                        post_data.cumid = self.crmId;
+                        post_data.dbname = tartget_data;
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/viewadd')}",
+                            data: post_data,
+                            success:function(res){
+                                // console.log(res);
+                                if(res.status==1){
+                                    self['new_'+tartget_data] = {};
+                                    bg_class = "bg-success";
+                                }else{
+                                    bg_class = "bg-danger";
+                                }
+                                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                                if(res.status==1){ self.get_crm_data(self.crmId); /*更新右側資料*/ }
+                            },
+                        });
+                    },
+                    delete_item: function(tartget_data, tartget_id){
+                        if(!tartget_data || !tartget_id){
+                            return;
+                        }
+                        post_data = {};
+                        post_data.dbname = tartget_data;
+                        post_data.id = tartget_id;
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/viewdelete')}",
+                            data: post_data,
+                            success:function(res){
+                                // console.log(res);
+                                if(res.status==1){
+                                    self['new_'+tartget_data] = {};
+                                    bg_class = "bg-success";
+                                }else{
+                                    bg_class = "bg-danger";
+                                }
+                                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                                if(res.status==1){ self.get_crm_data(self.crmId); /*更新右側資料*/ }
+                            },
+                        })
+                    },
+                    save_crm_contact_top: function(contact_id){
+                        self = this;
+                        $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/save_crm_contact_top')}",
+                            data: {
+                                cumid: self.crmId,
+                                id: contact_id,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                if(res.status==1){
+                                    bg_class = "bg-success";
+                                }else{
+                                    bg_class = "bg-danger";
+                                }
+                                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                                if(res.status==1){ self.get_crm_data(self.crmId); /*更新右側資料*/ }
+                            },
+                        });
+                    },
+                    save_multil_addr: function(tartget, $event){
+                        self = this;
+                        var check = $($event.currentTarget).prop('checked');
+                        if(!check){
+                            self.newbier[tartget] = "請輸入地址";
+                        }else{
+                            self.newbier[tartget] = "1";
+                            ajax_save_one_value('crm_crm', self.crmId, tartget, "1").done(function(e){
+                                if(e.status==1){
+                                    self.get_crm_data(self.crmId); /*更新右側資料*/
+                                }
+                            });
+                        }
+                    },
+
+                /*事件列表*/
+                    change_eve_type: function(eve_type){
+                        self = this;
+                        self.eve_type = eve_type;
+                        self.events_current_page = 1;
+                        self.ajax_get_events();
+                    },
+                    change_events_page: function(page){
+                        self = this;
+                        if(1<=page && page<=self.events_total_page){
+                            self.events_current_page = page;
+                            self.ajax_get_events();
+                        }
+                    },
+                    ajax_get_events: function(){
+                        self = this;
+                        $.ajax({
+                            type: 'GET',
+                            dataType:'json',
+                            url: "{:u('Fig/ajax_get_events')}",
+                            data:{
+                                p: self.events_current_page,
+                                view_type: self.eve_type,
+                                cum_id: self.crmId,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                self.eve_events = res.eve_events;
+                                self.role_flow = res.role_flow;
+                                self.role_level = res.role_level;
+
+                                res.total_page = res.total_page ? res.total_page : 1;
+                                self.init_pages('events', res.total_page);
+                            },
+                        })
+                    },
+
+                /*合約列表*/
+                    number_add_comma: function(number){
+                        return do_number_add_comma(number);
+                    },
+                    change_contracts_cate: function(contracts_cate){
+                        self = this;
+                        if(self.get_or_pay==0){
+                            self.contracts_cate = contracts_cate;
+                        }else{
+                            self.contracts_cate_pay = contracts_cate;
+                        }
+                        self.contracts_current_page = 1;
+                        self.ajax_get_contracts();
+                    },
+                    change_contracts_page: function(page){
+                        self = this;
+                        if(1<=page && page<=self.contracts_total_page){
+                            self.contracts_current_page = page;
+                            self.ajax_get_contracts();
+                        }
+                    },
+                    ajax_get_contracts: function(contracts_flag2=false, contracts_flag=false){
+                        self = this;
+                        if(contracts_flag2!==false){
+                            self.contracts_flag2 = contracts_flag2;
+                        }
+                        if(contracts_flag!==false){
+                            self.contracts_flag = contracts_flag;
+                        }
+                        $.ajax({
+                            type: 'GET',
+                            dataType:'json',
+                            url: self.get_or_pay==0 ? "{:u('Course/ajax_get_course')}" : "{:u('Coursepay/ajax_get_course')}",
+                            data:{
+                                p: self.contracts_current_page,
+                                get_or_pay: self.get_or_pay,
+                                flag2: self.contracts_flag2,
+                                flag: self.contracts_flag,
+                                crm_id: self.crmId,
+                                cate: self.get_or_pay==0 ? self.contracts_cate : self.contracts_cate_pay,
+                            },
+                            success:function(res){
+                                // console.log(res);
+                                self.contracts = res.list_search;
+                                self.contracts_all_search = res.all_search;
+                                self.contracts_all = res.all;
+                                self.words = res.words
+
+                                res.total_page = res.total_page ? res.total_page : 1;
+                                self.init_pages('contracts', res.total_page);
+                            },
+                        });
+                    },
+        
+                /*提供服務*/
+                    async init_crm_cum_cat_unit(){
+                        await this.$refs['crm_cum_cat_unit_selector_provided'].get_cat_unit();
+                        await this.$refs['crm_cum_cat_unit_selector_unprovided'].get_cat_unit();
+                    },
+                    do_select_crm_cum_cat_unit_crm(items){
+                        self = this;
+                        var crm_cum_cat_unit_ids = [];
+                        for (let i = 0; i < items.length; i++) {
+                            crm_cum_cat_unit_ids.push(items[i].id); 
+                        }
+                        if(crm_cum_cat_unit_ids.length==0){
+                            Vue.toasted.show("請選擇項目", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+                            return;
+                        }
+                        return $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/add_crm_cum_cat_unit_crm')}",
+                            data:{
+                                crm_id: self.crmId,
+                                crm_cum_cat_unit_ids: crm_cum_cat_unit_ids,
+                            },
+                        })
+                        .then((res)=>{
+                            self.$refs['crm_cum_cat_unit_selector_provided'].get_cat_unit();
+                            return res;
+                        });
+                    },
+                    do_delete_crm_cum_cat_unit_crm(items){
+                        self = this;
+                        var crm_cum_cat_unit_ids = [];
+                        for (let i = 0; i < items.length; i++) {
+                            crm_cum_cat_unit_ids.push(items[i].id); 
+                        }
+                        if(crm_cum_cat_unit_ids.length==0){ 
+                            Vue.toasted.show("請選擇項目", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+                            return;
+                        }
+                        return $.ajax({
+                            type: 'POST',
+                            dataType:'json',
+                            url: "{:u('Custo/delete_crm_cum_cat_unit_crm')}",
+                            data:{
+                                crm_id: self.crmId,
+                                crm_cum_cat_unit_ids: crm_cum_cat_unit_ids,
+                            },
+                        })
+                        .then((res)=>{
+                            self.$refs['crm_cum_cat_unit_selector_unprovided'].get_cat_unit();
+                            return res;
+                        });
+                    },
+
+                /*特性管理*/
+                    select_file: function(property_index, $event){
+                        self = this;
+                        
+                        var t_input = $($event.currentTarget)[0];
+                        var base64 =""; var file_name ="";
+                        ans = {
+                            file_name: file_name,
+                            data: base64,
+                        };
+                        if(t_input.files[0]){ /*有上傳檔案*/
+                            var file = t_input.files[0];
+
+                            var reader = new FileReader();
+                            reader.onload = (function(theFile){
+                                var fileName = theFile.name;
+                                return function(e){
+                                    // console.log(fileName);
+                                    // console.log(e.target.result);
+                                    self.crm_property[property_index].ans.file_name = fileName;
+                                    self.crm_property[property_index].ans.data = e.target.result;
+                                    self.save_crm_property().done(function(e){
+                                        if(e.status==1){
+                                            self.get_crm_data(self.crmId); /*更新右側資料*/
+                                        }
+                                    });
+                                };
+                            })(file);
+                            reader.readAsDataURL(file);
+                        }
+                    },
+                    cancel_file: function(property_index){
+                        self = this;
+                        self.crm_property[property_index].ans.file_name = "";
+                        self.crm_property[property_index].ans.data = "delete";
+                        $('#field_id_' + self.crm_property[property_index].id).val("");
+                        self.save_crm_property().done(function(e){
+                            if(e.status==1){
+                                self.get_crm_data(self.crmId); /*更新右側資料*/
+                            }
+                        });
+                    },
+                    save_crm_property: function(){
+                        self = this;
+                        // console.log(self.crm_property);
+                        post_data = {};
+                        for (var i = 0; i < self.crm_property.length; i++) {
+                            post_data['field_id_'+self.crm_property[i].id] = self.crm_property[i].ans;
+                        }
+                        return ajax_save_one_value('crm_crm', self.crmId, 'fields_data', post_data);
+                    },
+        
+            /*串接撥打電話*/
+            phone_call : function(phone_number, $event=null){
+                self = this;
+                if($event){
+                    $event.preventDefault();
+                }
+                phone_number = '0' + phone_number;
+                phone_number = phone_number.replaceAll('(', '');  //取代空白
+                phone_number = phone_number.replaceAll(')', '');  //取代空白
+                phone_number = phone_number.replaceAll('-', '');  //取代空白
+                phone_number = phone_number.replaceAll(' ', '');  //取代空白
+                phone_number = phone_number.replaceAll('#', ','); //延遲撥號
+
+                var userAgentInfo = navigator.userAgent;
+                var iphone=new RegExp('iPhone')
+                var andriod=new RegExp('Android')
+                
+                if('{$isMobile}'!='0'){
+                    if (iphone.test(userAgentInfo)){
+                        window.location = "ezucplusapp://ezuc/call?phoneAction=sipDial&phoneNumber=" + phone_number;
+                        /*ezphoneapp 低版本*/
+                        return;
+                    }
+                    else if (andriod.test(userAgentInfo)){
+                        window.location  = "ezphoneapptel:" + phone_number;
+                        return;
+                    }
+                }
+                else{
+                    // 可掛斷通話
+                    // $.ajax({
+                    //     method:'post',
+                    //     data:{ "destNumber":phone_number, },
+                    //     dataType:'json',
+                    //     url:"{:U('Custo/phone_call')}",
+                    //     success:function(res){
+                    //         if(res.status==1){
+                    //             bg_class = "bg-success";
+                    //             self.callId = res.info;
+                    //             res.info = '開始撥話';
+                    //         }else{
+                    //             bg_class = "bg-danger";
+                    //         }
+                    //         Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                    //     },
+                    // });
+                    // return;
+
+                    // 一般通話
+                    Vue.toasted.show('撥話中', { duration: 1500, className: ["toasted-primary", 'bg-success'] });
+                    phone_call_url = 'http://localhost:8780/dialout?number=' + phone_number;
+                    dialog_contentFrame.location = phone_call_url;
+                    return;
+                }
+
+                window.location = 'tel:'+phone_number;
+                return;
+            },
+        },
+    });
+
+    function ajax_save_one_value(dbname, id, column, value){
+        return $.ajax({
+            method:'post',
+            data:{
+                teamid: crm_vueVM.teamid,
+
+                dbname: dbname,
+                id: id,
+                column: column,
+                value: value,
+            },
+            dataType:'json',
+            url:"{:U('Custo/ajax_save_one_value')}",
+            success:function(res){
+                if(res.status==1){
+                    bg_class = "bg-success";
+                }else{
+                    bg_class = "bg-danger";
+                }
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+            },
+        });
+    }
+</script>

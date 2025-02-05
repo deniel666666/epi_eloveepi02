@@ -1,0 +1,49 @@
+
+<script src="__PUBLIC__/js/custom.js?0000"></script>
+<script src="/Public/qhand/js/jquery.toaster.js"></script>
+<script>
+    // 離開頁面時是否檢確認離開
+    var check_renew = false;
+    
+    $( document ).ready(function() {
+        // 使用搜尋
+        $('input.submit_button').on('click', function(e){
+            var title = $('input[name="title"]').val();
+            url = "{:U('Km/search', ['type'=>$fileCode])}?title="+title;
+            history.pushState({}, "", url);
+            $.ajax({
+                method:'get',
+                dataType:'text',
+                url:url,
+                success:function(res){
+                    ajax_change_right(res) //定義在Km/js.html
+                }
+            });
+            e.preventDefault();
+        })
+
+        // 點擊已發佈、垃圾桶、暫停或未發佈
+        $('a.typeBtn').on('click', function(e){
+            url = $(e.currentTarget).attr('href');
+            if(url !='' && url !='#' && url != 'javascript:void(0)'){
+                if($('#edit_section_title').length>0){ //如果是在新增/編輯文張章頁面
+                    if(!confirm("確定離開當前頁面嗎？\n系統可能不會儲存您所做的變更。")){
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                history.pushState({}, "", url);
+                $.ajax({
+                    method:'get',
+                    dataType:'text',
+                    url:url,
+                    success:function(res){
+                        ajax_change_right(res) //定義在Km/js.html
+                    }
+                });
+            }
+            e.preventDefault();
+        })
+    });
+</script>

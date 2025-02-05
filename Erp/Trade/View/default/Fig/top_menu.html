@@ -1,0 +1,65 @@
+<div class="run-list">
+	<div class="menu-sub-btn">
+		<ol>
+			<li>
+				<a href="{:U('Fig/addnew')}" class="navBtnStyle {$addnew_Btn_on}">
+					<i class="fas fa-external-link-alt"></i> 發佈事件
+				</a>
+			</li>
+			<li>
+				<a href="{:U('Fig/getlist')}" class="navBtnStyle {$getlist_Btn_on}">
+					<i class="far fa-folder-open"></i> 事件處理
+					<if condition="($getlist_ck+$publish_count) neq 0 ">
+						<div class="index_read_ck_circle">
+							<div class="index_read_ck_circle2">
+								<div class='index_read_ck' >
+									{$getlist_ck+$publish_count}
+								</div>
+							</div>
+						</div>
+					</if>
+				</a>
+			</li>
+			<li>
+				<a href="{:U('Fig/runing')}" class="navBtnStyle {$runing_Btn_on}">
+					<i class="far fa-list-alt"></i> 我的進度
+					<if condition="$runing_ck neq 0 ">
+						<div class="index_read_ck_circle">
+							<div class="index_read_ck_circle2">
+								<div class='index_read_ck'>
+									{$runing_ck}
+								</div>
+							</div>
+						</div>
+					</if>
+				</a>
+			</li>
+			<li>
+				<a href="{:U('Fig/index')}" class="navBtnStyle {$index_Btn_on}">
+					<i class="far fa-list-alt"></i> 全部事件
+				</a>
+			</li>
+			<li>
+				<a href="{:U('Fig/work_calendar')}" class="navBtnStyle {$calendar_Btn_on}"> <i class="far fa-calendar-check"></i>
+					人員進度表
+				</a>
+			</li>
+			
+		</ol>
+		
+	</div>
+	<!-- <ol class="vright">
+		<li>
+			<a href="{:U('Events/index')}" class="navBtnStyle modelEdit  {$events_Btn_on}"> 模組設定
+			</a>
+		</li>
+		<li>
+			<a href="{:U('Fig/trash_can')}" class="navBtnStyle  modelEdit  {$trash_can_Btn_on}"> 垃圾桶
+			</a>
+		</li>
+		<li>
+			<a href="{:U('Fig/file')}" class="navBtnStyle  modelEdit  {$file_Btn_on}">	 歸檔區
+			</a>
+		</li>
+	</ol> -->
+</div>

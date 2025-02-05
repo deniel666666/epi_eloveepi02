@@ -1,0 +1,43 @@
+{
+  "name": "傳訊光-快手特助",
+  "short_name": "快手特助",
+  "description": "傳訊光-快手特助EIP，您企業內控的最好夥伴",
+  "theme_color": "#d2ecfa",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/index.php/Index/index.html",
+  "icons": [
+      {
+        "src": "/Public/manifest/favicon.ico.png",
+        "type": "image/png",
+        "sizes": "37x37",
+        "purpose": "any"
+      },
+      {
+        "src": "/Public/manifest/favicon.ico-192.png",
+        "type": "image/png",
+        "sizes": "192x192",
+        "purpose": "any"
+      },
+      {
+        "src": "/Public/manifest/favicon.ico-192.png",
+        "type": "image/png",
+        "sizes": "192x192",
+        "purpose": "maskable"
+      },
+      {
+        "src": "/Public/manifest/favicon.ico-384.png",
+        "type": "image/png",
+        "sizes": "384x384",
+        "purpose": "maskable"
+      },
+      {
+        "src": "/Public/manifest/favicon.ico-512.png",
+        "type": "image/png",
+        "sizes": "512x512",
+        "purpose": "maskable"
+      }
+  ]
+}

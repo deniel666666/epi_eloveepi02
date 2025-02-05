@@ -1,0 +1,858 @@
+<include file="Public:header2" />
+<head>
+  <style>
+    #contract_user_modal .edit_table th{
+      position: sticky;
+      top: 0px;
+      z-index: 2;
+    }
+  </style>
+</head>
+
+
+<section class="main ">
+  <!---->
+  <div id="right">
+    <div class="contract-new">
+      <h3 class="company-title mr-3">
+        <if condition="in_array(75, $use_function_top)">
+          <a href="{:u('Custo/view_re')}?id={$one[id]}" target="_blank">
+        <else />
+          <a href="{:u('Custo/addcrm')}?id={$one[id]}" target="_blank">
+        </if>
+          <i class="fas fa-users mr-1"></i>{$one['show_name']}
+        </a>
+      </h3>
+      <p>{$crm_cum_pri[0]['name']}：
+        {$eip_user[$one['eid']]['name']}
+      </p>
+    </div>
+    <!-- 合約共用內容 -->
+    <div class="container-fluid">
+      <div class="contract-main row">
+        <div class="item-L">
+          <div class="main">
+            <div class="container-fluid contract-top pl-0 pr-0">
+              <div class="row w-100 m-0">
+                <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+                  {$system_parameter['合約']}類型：<span class="type">{$type}</span>
+                </div>
+                <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+                  {$system_parameter['合約']}號：<span class="type">{$one.sn}</span>
+                </div>
+                <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+                  總金額：<span class="type sale" id="allmoney_span">{$one.allmoney|number_format_sys=$control_money_input}</span>
+                </div>
+                <div class="col-lg-3 col-md-6 col-12 p-0 mb-2">
+                  {$one.count_type}
+                </div>
+              </div>
+            </div>
+            <div class="container-fluid contract-item pl-0 pr-0">
+              <div class="row w-100 m-0">
+                <div class="col-lg-6 col-md-6 col-12">
+                  <label>{$system_parameter['合約']}主題：</label>{$one.topic}
+                </div>
+                <div class="col-lg-3 col-md-6 col-12">
+                  <label>{$system_parameter['合約']}訂金：</label>{$one.money|number_format_sys=$control_money_input}
+                </div>
+                <div class="col-lg-3 col-md-6 col-12">
+                  <label>{$收款}方式：</label>{$one.paymenttype}
+                </div>
+                <div class="col-lg-3 col-md-6 col-12">
+                  <label>發票：</label>{$one.invoice}
+                </div>
+                <if condition="$control_auto_sale_day neq 0">
+                  <div class="col-lg-3 col-md-6 col-12">
+                    <label>分期出帳數：</label>
+                    <if condition="$one.contracttime neq 0">
+                      {$one.contracttime}期
+                    <else/>
+                      不使用
+                    </if>
+                  </div>
+                  <div class="col-lg-3 col-md-6 col-12">
+                    <label>開始日期：</label>{$one.starttime}
+                  </div>
+                  <div class="col-lg-3 col-md-6 col-12">
+                    <label>{$出貨}品名：</label>{$one.sale_items}
+                  </div>
+                </if>
+
+                <div class="col-12">
+                  <label>{$system_parameter['合約']}內容：</label>
+                  <textarea type="text" rows="8" style="width:100%" id="note" name="content">{$one['content']}</textarea>
+                </div>
+                <div class="col-12">
+                  <label>備註：</label>{$one.note}
+                </div>
+                <div class="col-12">
+                  <div class="d-flex flex-wrap">
+                    <label>{$system_parameter['合約']}檔案：</label>
+                    <div id="google_storage_alllist">
+                      <table>
+                        <if condition="count($upload_files) neq 0">
+                          <tr>
+                            <th class="p-1">檔名</th>
+                            <th class="p-1">更新時間</th>
+                            <th class="p-1">操作</th>
+                          </tr>
+                        </if>
+                        <foreach name="upload_files" item="vo">
+                          <tr>
+                            <td class="p-1">{$vo.name}</td>
+                            <td class="p-1">{$vo.updated}</td>
+                            <td class="p-1">
+                              <button type="button" class="btn btn-primary" @click="download_file('{$vo.path}')">
+                                <i aria-hidden="true" class="fa fa-cloud-download"></i>
+                              </button>
+                              <button type="button" class="btn delate" @click="delete_file('{$vo.path}')">
+                                <i aria-hidden="true" class="far fa-trash-alt"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        </foreach>
+                      </table>
+                      <form action="{:U($CONTROLLER_NAME.'/upload_file')}?pid={$one.pid}" method="post" enctype="multipart/form-data" 
+                          class="d-flex align-items-center">
+                        <input type="file" name="google_file" class="mr-2">
+                        <button class="btn sendbtn">上傳附件</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 合約特別內容 -->
+          <switch name="one[cate]">
+            <case value="1">
+              <!---------------------------S E O----------------------------------->
+              <if condition="$one.cate eq 1">
+                <div class="toll-add">
+                  <div class="items">
+                    <div class="list">
+                      <label>收費上限：</label>{$data['upmoney']}
+                    </div>
+                    <div class="list">
+                      <label>計費日期：</label>
+                      <if condition="$data['date']">
+                        {$data['date']|date='Y-m-d', ###}
+                      </if>
+                    </div>
+                  </div>
+                </div>
+              </if>
+              <table class="table contract-seo-table">
+                <thead>
+                  <tr>
+                    <th>關鍵字</th>
+                    <th>搜索引擎</th>
+                    <th>排名網址</th>
+                    <th>排名區間</th>
+                    <th>月單價(實收)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <foreach name="seolist" item="list">
+                    <tr>
+                      <td data-th="關鍵字">{$list.key_name}</td>
+                      <td data-th="搜索引擎">{$list.engine}</td>
+                      <td data-th="排名網址">{$list.url1}</td>
+                      <td data-th="排名區間">
+                        <switch name="list[starts]">
+                          <case value="1">1-10</case>
+                          <case value="12">1~20</case>
+                          <case value="2">1~30</case>
+                          <case value="3">1~3</case>
+                          <case value="4">1~5</case>
+                          <case value="5">4~10</case>
+                          <case value="6">6~10</case>
+                          <default />default
+                        </switch>
+                      </td>
+                      <td data-th="月單價(實收)">{$list.price|number_format_sys=$control_money_input}</td>
+                    </tr>
+                  </foreach>
+                </tbody>
+              </table>
+            </case>
+
+            <case value="2">
+              <!---------------------------網頁設計----------------------------------->
+              <div class="toll-add">
+                <div class="items">
+                  <div class="list">
+                    <label>執行網址：</label>
+                    <a href="{$one.url1}">{$one.url1}</a>
+                  </div>
+                </div>
+              </div>
+            </case>
+
+            <case value="3">
+              <!---------------------------主機域名維護----------------------------------->
+              <div class="toll-add">
+                <div class="items">
+                  <div class="list">
+                    
+                    <label>主機總額：</label>
+                    <span class="mr-2">{$data['h_num']} </span>
+                    <label>主機訂金：</label>
+                    <span class="mr-2">{$data['h_money']}</span>
+                  </div>
+                  <div class="list">
+                    
+                    <label>域名總額：</label>
+                    <span class="mr-2">{$data['d_num']}</span>
+                    <label>域名訂金：</label>
+                    <span class="mr-2">{$data['d_money']}</span>
+                  </div>
+                  <div class="list">
+                    
+                    <label>SSL總額：</label>
+                    <span class="mr-2">{$data['s_num']} </span>
+                    <label>SSL訂金：</label>
+                    <span class="mr-2">{$data['s_money']}</span>
+                  </div>
+                </div>
+              </div>
+            </case>
+
+            <default />
+            <!---------------------------其他----------------------------------->
+          </switch>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <a href="{:U('Balance/contract')}?caseid={$one.pid}">
+        <button class="btn btn-primary">查看合約收支</button>
+      </a>
+    </div>
+    <if condition="$contracts_belongs_to">
+      <div class="container-fluid">
+        <div class="d-flex flex-wrap align-items-baseline">
+          <span class="casetitle border-0 mr-3 mb-0">主約:</span>
+          <a href="{:U($CONTROLLER_NAME.'/view')}?id={$contracts_belongs_to['id']}" target="_blank">{$contracts_belongs_to['sn']}</a>
+        </div>
+        <div class="casetitle d-flex flex-wrap align-items-baseline">
+          <span class="mr-3"></span>
+        </div>
+      </div>
+    </if>
+    <if condition="$contracts_pay_to">
+      <div class="container-fluid">
+        <div class="d-flex flex-wrap align-items-baseline">
+          <span class="casetitle border-0 mr-3 mb-0">收款合約:</span>
+          <a href="{:U('Alllist/view')}?id={$contracts_pay_to['id']}" target="_blank">{$contracts_pay_to['sn']}</a>
+        </div>
+        <div class="casetitle d-flex flex-wrap align-items-baseline">
+          <span class="mr-3"></span>
+        </div>
+      </div>
+    </if>
+    <div class="container-fluid
+                {$one['belongs_to']|compare_return=0, 'default_block', 'default_none'}
+                {$one['pay_to']|compare_return=0, 'default_block', 'default_none'}">
+      <div class="casetitle d-flex flex-wrap align-items-baseline">
+        <span class="mr-3">副約:</span>
+        <ul class="tabs-menu d-inline-flex flex-wrap mb-0 mr-3">
+          <li class="nav-item mr-4">
+            <h6 class="d-inline-block ml-2">副約總額：{$contracts_belongs_sum}</h6>
+          </li>
+        </ul>
+      </div>
+      <div class="edit_form">
+        <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 950px; width: auto;">
+          <thead class="edit_table_thead">
+            <tr class="edit_table tr ">
+              <th style="width: 80px">
+                <label class="mb-0">項次</label>
+                <!-- <a class="btn addbtn text-white" target="_blank" href="{:U($CONTROLLER_NAME.'/add')}?id={$one.crm_id}&belongs_to={$one.pid}"> -->
+                <a class="btn addbtn text-white" target="_blank" href="{:U($CONTROLLER_NAME_Conlist.'/index')}?belongs_to={$one.pid}">
+                  <i aria-hidden="true" class="fas fa-plus"></i>
+                </a>
+              </th>
+              <th style="width: 200px">{$system_parameter['合約']}號</th>
+              <th style="width: 150px">合約類型</th>
+              <th style="width: 250px">主題</th>
+              <th style="width: 100px">狀態</th>
+              <th style="width: 100px">簽約日期</th>
+              <th class="text-right" style="width: 150px">總金額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <foreach name="contracts_belongs" item="vo" key="vo_idx">
+              <tr>
+                <td>{$vo_idx+1}</td>
+                <td><a href="{:U($CONTROLLER_NAME.'/view')}?id={$vo['id']}" target="_blank">{$vo['sn']}</a></td>
+                <td>{$vo['cate_name']}</td>
+                <td>{$vo['topic']}</td>
+                <td>{$vo['flag_name']}</td>
+                <td><if condition="$vo['sign_date_f']">{$vo['sign_date_f']|substr=0,10}</if></td>
+                <td class="text-right">{$vo['allmoney']}</td>
+              </tr>
+            </foreach>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="contract_user">
+      <if condition="$get_or_pay eq 0 AND in_array(151, $use_function_top)">
+        <div class="container-fluid
+                  {$one['belongs_to']|compare_return=0, 'default_block', 'default_none'}
+                  {$one['pay_to']|compare_return=0, 'default_block', 'default_none'}">
+          <div class="casetitle d-flex flex-wrap align-items-baseline">
+            <span class="mr-3">自行排班員工:</span>
+            <ul class="tabs-menu d-inline-flex flex-wrap mb-0 mr-3">
+              <li class="nav-item mr-4">
+                <h6 class="d-inline-block ml-2">設定的員工將可自行安排指定此合約的日程組(上班地點)的上班日期與時間</h6>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="container-fluid mb-3">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 460px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr">
+                  <th style="width: 80px">
+                    序號
+                    <span class="btn addbtn text-white cursor_pointer" @click="open_contract_user_modal">
+                      <i aria-hidden="true" class="fas fa-plus"></i>
+                    </span>
+                  </th>
+                  <th style="width: 100px">編號</th>
+                  <th style="width: 100px">姓名</th>
+                  <th style="width: 100px">別稱</th>
+                  <th style="width: 80px">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(user, user_idx) in contract_users">
+                  <td><span v-text="user_idx+1"></span></td>
+                  <td v-text="user.no"></td>
+                  <td v-text="user.name"></td>
+                  <td v-text="user.ename"></td>
+                  <td>
+                    <button class="btn delate" @click="delete_user_one(user.id)">
+                      <i aria-hidden="true" class="far fa-trash-alt"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </if>
+    </div>
+    <div class="container-fluid" id="contract_uints">
+      <div class="casetitle d-flex flex-wrap align-items-baseline
+                  {$use_function_top|in_array=121, ###|compare_return=1, 'default_block', 'default_none'}
+                  {$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}
+                  {$use_function_top|in_array=144, ###|compare_return=1, 'default_block', 'default_none'}">
+        <span class="mr-3">執行項目:</span>
+        <ul class="tabs-menu d-inline-flex flex-wrap mb-0 mr-3">
+          <li class="nav-item {$use_function_top|in_array=121, ###|compare_return=1, 'default_block', 'default_none'}">
+            <a href="#crm_contract_unit">提供服務</a>
+          </li>
+          <li class="nav-item
+                {$get_or_pay|compare_return=0, 'default_block', 'default_none'}
+                {$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}">
+            <a href="#skill_price">人力請款</a>
+          </li>
+          <li class="nav-item
+                    {$get_or_pay|compare_return=0, 'default_block', 'default_none'}
+                    {$use_function_top|in_array=144, ###|compare_return=1, 'default_block', 'default_none'}">
+            <a href="#contract_pay">支出合約</a>
+          </li>
+          <if condition="$get_or_pay eq 0">
+            <li class="nav-item mr-4">
+              <h6 class="d-inline-block ml-2">本約利潤：<span id="allmoney_profit"></span></h6>
+            </li>
+          </if>
+          <li class="nav-item"></li>
+        </ul>
+      </div>
+      <div id="crm_contract_unit">
+        <section id="use_function_top-121" class="{$use_function_top|in_array=121, ###|compare_return=1, 'default_block', 'default_none'}">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1180px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 70px">
+                    <label class="mb-0">項次</label>
+                  </th>
+                  <th v-for="column in columns_aj_add"
+                    :class="['list_price', 'sale_price', 'profit', 'orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                    v-text="column.name"
+                    width="100"
+                  ></th>
+                  <th style="width: 70px" class="text-right">數量</th>
+                  <if condition="$system_parameter['商品售價']">
+                    <th style="width: 100px" class="text-right">{$system_parameter['商品售價']}</th>
+                  </if>
+                  <th style="width: 100px" class="text-right">優惠總價</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item,key) in units">
+                  <td>
+                    <label v-text="(currentPage-1)*countOfPage + key+1"></label>
+                  </td>
+                  <td v-for="column in columns_aj_add"
+                    :class="['list_price', 'sale_price', 'profit'].indexOf(column.key)!=-1 ? 'text-right' : ''">
+                    <span class="item" v-text="item[column.key]"></span>
+                  </td>
+                  <td><div class="text-right" v-text="item['num']"></div></td>
+                  <if condition="$system_parameter['商品售價']">
+                    <td><div class="text-right" v-text="item['sale_price']"></div></td>
+                  </if>
+                  <td><div class="text-right" v-text="item['total_dis']"></div></td>
+                </tr>
+                <tr>
+                  <td :colspan="columns_aj_add.length + column_additional_length"></td>
+                  <td class="text-right">總計</td>
+                  <td class="text-right" v-text=total_uints></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div id="skill_price">
+        <section id="use_function_top-153" class="{$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 450px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr">
+                  <th style="width: 90px">工種名稱</th>
+                  <th style="width: 150px" class="text-right">請款金額(hr)</th>
+                  <th style="width: 150px" class="text-right">加班請款金額(hr)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item,key) in skills">
+                  <td v-text="item.name"></td>
+                  <td><div class="text-right" v-text="item['hour_price']"></div></td>
+                  <td><div class="text-right" v-text="item['hour_price_over']"></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div id="contract_pay">
+        <section id="use_function_top-144" class="{$use_function_top|in_array=144, ###|compare_return=1, 'default_block', 'default_none'}">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 950px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 80px">
+                    <label class="mb-0">項次</label>
+                    <a class="btn addbtn text-white" target="_blank" href="{:U('Conlistpay/index')}?pay_to={$one.pid}">
+                      <i aria-hidden="true" class="fas fa-plus"></i>
+                    </a>
+                  </th>
+                  <th style="width: 200px">{$system_parameter['合約']}號</th>
+                  <th style="width: 150px">合約類型</th>
+                  <th style="width: 150px">{$system_parameter['客戶']}</th>
+                  <th style="width: 250px">主題</th>
+                  <th style="width: 100px">狀態</th>
+                  <th style="width: 100px">簽約日期</th>
+                  <th class="text-right" style="width: 150px">總金額</th>
+                </tr>
+              </thead>
+              <tbody>
+                <foreach name="contracts_pay" item="vo" key="vo_idx">
+                  <tr>
+                    <td>{$vo_idx+1}</td>
+                    <td><a href="{:U('Alllistpay/view')}?id={$vo['id']}" target="_blank">{$vo['sn']}</a></td>
+                    <td>{$vo['name']}</td>
+                    <td>{$vo['cate_name']}</td>
+                    <td>{$vo['topic']}</td>
+                    <td>{$vo['flag_name']}</td>
+                    <td><if condition="$vo['sign_date_f']">{$vo['sign_date_f']|substr=0,10}</if></td>
+                    <td class="text-right">{$vo['allmoney']}</td>
+                  </tr>
+                </foreach>
+                <tr>
+                  <td colspan="7" class="text-right">總計</td>
+                  <td class="text-right">{$contracts_pay_sum}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+    
+    <if condition="$access[strtolower($CONTROLLER_NAME).'_edi'] eq '1'">
+      <div class="text-center mb-3">
+        <a href="{:u($CONTROLLER_NAME.'/add')}?id={$one.id}&pid={$one.pid}">
+          <input type="button" value="修改" class="btn sendbtn pl-4 pr-4"/>
+        </a>
+      </div>
+    </if>
+  </div>
+</section>
+
+<a id="contract_user_modal_btn" data-toggle="modal" data-target="#contract_user_modal"></a>
+<div class="modal fade" id="contract_user_modal" tabindex="-1" role="dialog"
+       aria-labelledby="contract_user_modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="contract_user_modalTitle">選擇員工</h5>
+      </div>
+      <div class="modal-body">
+        <select v-model="search.apartmentid" @change="search_user">
+            <option value="">所有部門</option>
+            <foreach name="eip_apart" key="key" item="em">
+                <option value="{$em['id']}">{$em['name']}</option>
+            </foreach>
+        </select>
+        <input v-model="search.searchtext" @keydown.enter="search_user" placeholder="請輸入姓名/別稱/手機"/>
+        <button class="btn btn-primary" @click="search_user">搜尋</button>
+        <div class="edit_form" style="max-height: 70vh;">
+          <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 460px; width: auto;">
+            <thead class="edit_table_thead">
+              <tr class="edit_table tr">
+                <th style="width: 80px">
+                  <input id="contract_user_modal_checkall" type="checkbox" v-model="checkall" @change="do_checkall">
+                  <label for="contract_user_modal_checkall" class="mb-0">序號</label>
+                </th>
+                <th style="width: 100px">編號</th>
+                <th style="width: 100px">姓名</th>
+                <th style="width: 100px">別稱</th>
+                <th style="width: 80px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(user, user_idx) in users">
+                <td>
+                  <input :id="'contract_user_modal_'+user_idx+1" type="checkbox" v-model="selected" :value="user.id">
+                  <label :for="'contract_user_modal_'+user_idx+1" class="mb-0">
+                    <span v-text="user_idx+1"></span>
+                  </label>
+                </td>
+                <td v-text="user.no"></td>
+                <td v-text="user.name"></td>
+                <td v-text="user.ename"></td>
+                <td>
+                  <button class="btn sendbtn" @click="select_user_one(user.id)">選擇</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn sendbtn" @click="select_user_batch">批次選擇</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--right end-->
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const contract_user_data = {
+    contract_users: [],
+
+    search:{
+      caseid: "{$one['pid']}",
+      apartmentid: '',
+      searchtext: '',
+    },
+    checkall: false,
+    selected: [],
+    users: [], /*待選擇名單*/
+  };
+  contract_userVM = new Vue({
+    el: '#contract_user',
+    data: contract_user_data,
+    created(){
+      this.get_users();
+    },
+    methods: {
+      open_contract_user_modal(){
+        $('#contract_user_modal_btn').click();
+        contract_user_modalVM.search_user();
+      },
+      async get_users(){
+        $('#body_block').show();
+        resp = await this.get_crm_contract_user_selected();
+        this.contract_users = resp.users;
+        $('#body_block').hide();
+      },
+      get_crm_contract_user_selected(){
+        this.checkall = false;
+        this.selected = [];
+        this.users = [];
+        return $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/get_crm_contract_user_selected')}",
+          data: JSON.parse(JSON.stringify(this.search)),
+        });
+      },
+      async delete_user_one(user_id){
+        $('#body_block').show();
+        await this.contract_delete_user([user_id]);
+        $('#body_block').hide();
+      },
+      async contract_delete_user(user_ids){
+        if(user_ids.length==0){ 
+          Vue.toasted.show('請選擇要加入的員工', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        resp = await $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/contract_delete_user')}",
+          data: {
+            caseid: this.search.caseid,
+            user_ids: JSON.parse(JSON.stringify(user_ids)),
+          },
+        });
+        if(resp.status==1){
+          bg_class = "bg-success";
+          resp = await this.get_crm_contract_user_selected();
+          this.contract_users = resp.users;
+        }else{
+          bg_class = "bg-danger";
+        }
+        Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+      },
+    },
+  });
+  contract_user_modalVM = new Vue({
+    el: '#contract_user_modal',
+    data: contract_user_data,
+    methods: {
+      async search_user(){
+        $('#body_block').show();
+        resp = await this.get_crm_contract_user_not_selected();
+        this.users = resp.users;
+        $('#body_block').hide();
+      },
+      get_crm_contract_user_not_selected(){
+        this.checkall = false;
+        this.selected = [];
+        this.users = [];
+        return $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/get_crm_contract_user_not_selected')}",
+          data: JSON.parse(JSON.stringify(this.search)),
+        });
+      },
+      do_checkall(){
+        this.selected = [];
+        if(this.checkall){
+          this.users.forEach(user => {
+            this.selected.push(user.id)   
+          });
+        }
+      },
+      async select_user_batch(){
+        $('#body_block').show();
+        await this.contract_select_user(this.selected);
+        $('#body_block').hide();
+      },
+      async select_user_one(user_id){
+        $('#body_block').show();
+        await this.contract_select_user([user_id]);
+        $('#body_block').hide();
+      },
+      async contract_select_user(user_ids){
+        if(user_ids.length==0){ 
+          Vue.toasted.show('請選擇要加入的員工', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        resp = await $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U($CONTROLLER_NAME.'/contract_select_user')}",
+          data: {
+            caseid: this.search.caseid,
+            user_ids: JSON.parse(JSON.stringify(user_ids)),
+          },
+        });
+        if(resp.status==1){
+          bg_class = "bg-success";
+          await contract_userVM.get_users();
+          resp = await this.get_crm_contract_user_not_selected();
+          this.users = resp.users;
+        }else{
+          bg_class = "bg-danger";
+        }
+        Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+      },
+    },
+  });
+  
+</script>
+<script type="text/javascript">
+  var column_additional_length = Number("{$system_parameter['商品售價']|compare_return='', 1, 2}");
+  // 提供服務
+  var columns_aj_add = [
+    {name:'分類', key:'category_name'},
+    {name:'商品代號', key:'number'},
+    {name:'品名', key:'name'},
+    {name:'規格', key:'type'},
+    {name:'單位', key:'unit'},
+    {name:'{$system_parameter[商品網路價]}', key:'list_price'},
+    {name:'<if condition="$get_or_pay==0">業績BV</if>', key:'profit'},
+  ].filter((item)=>{ return item.name!=''; });
+
+  var contract_uints_data = {
+    columns_aj_add: columns_aj_add,
+    column_additional_length: column_additional_length,
+    units: [],
+
+    searchKeyword:"",
+
+    countOfPage: 0,
+    currentPage: 1,
+    totalPage: 1,
+    pages: [],
+    p_prev: "",
+    p_next: "",
+
+    total_uints: 0,
+  };
+  var contract_uintsVM = new Vue({
+    el: '#use_function_top-121',
+    data: contract_uints_data,
+    methods: {
+      count_price: function(index){
+        price = this.units[index]['sale_price'] * this.units[index]['num'];
+        this.units[index]['total'] = price;
+        this.units[index]['total_dis'] = price;
+        this.count_total_uints();
+      },
+      count_total_uints: function(){
+        this.total_uints = 0;
+        for (var i = 0; i < this.units.length; i++) {
+          this.total_uints += Number(this.units[i]['total_dis']);
+        }
+        allmoney = parseFloat( $('#allmoney_span').text().replaceAll(',', '') );
+        $('#allmoney_profit').text(allmoney - {$contracts_pay_sum} );
+      },
+    },
+  });
+  // 載入資料
+  function get_crm_contract_unit(){
+    contract_uintsVM.units = [];
+    $.ajax({
+      method:'post',
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/get_crm_contract_unit_ajax', ['pid'=>$one['pid']])}",
+      data:{
+        cond: {
+          currentPage: contract_uintsVM.currentPage,
+          searchKeyword: contract_uintsVM.searchKeyword,
+        },
+      },
+      success:function(res){
+        // console.log(res)
+        contract_uintsVM.units=res.cat_units;
+
+        contract_uintsVM.count_total_uints();
+      }
+    });
+  }
+  get_crm_contract_unit();
+</script>
+<script type="text/javascript">
+  // 人力請款
+  var skill_price_data = {
+    skills: [],
+  };
+  var skill_price_VM = new Vue({
+    el: '#use_function_top-153',
+    data: skill_price_data,
+    computed: {
+    },
+    methods: {
+    },
+  });
+  // 載入資料
+  function get_user_skill(){
+    skill_price_VM.skills = [];
+    $.ajax({
+      method:'get',
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/get_user_skill', ['pid'=>$one['pid']])}",
+      data:{
+      },
+      success:function(res){
+        // console.log(res)
+        skill_price_VM.skills = res;
+      }
+    });
+  }
+  get_user_skill();
+</script>
+<script>
+  $(function() {
+    $("#contract_uints").tabs({ active: 0 });
+  });
+</script>
+
+<script language="javascript" type="text/javascript">
+  // 初始化文字編輯器
+  var editor;
+  editor = KindEditor.create('#note', {
+    afterBlur: function(){this.sync();},
+    langType : 'zh_TW',
+    items:[
+      'source', '|',
+      'undo', 'redo', '|', 'preview', 'cut', 'copy', 'paste','plainpaste', 'wordpaste', '|',
+      'justifyleft', 'justifycenter', 'justifyright','justifyfull', 'link', 'unlink', 'selectall', '|',
+      'fontname', 'fontsize', '|',
+      'forecolor','hilitecolor', 'bold', 'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|',
+      'hr',  '|',
+      'fullscreen', '|',
+      'about'
+    ],
+    width:'100%',
+    height:'300%',
+    resizeType:0
+  });
+  editor.readonly(true) // 不允許編輯
+</script>
+<script type="text/javascript">
+  var google_storage_alllist_data = {
+    pid: '{$one.pid}',
+  };
+  var google_storage_alllistVM = new Vue({
+    el: '#google_storage_alllist',
+    data: google_storage_alllist_data,
+    computed: {
+        },
+    methods: {
+      download_file: function(path){
+        self = this;
+        href = "{:U($CONTROLLER_NAME.'/download_file')}?pid="+self.pid+"&file_path="+encodeURIComponent(path);
+        window.open(href);
+      },
+      delete_file: function(path){
+        if(confirm('確定刪除?')){
+          self = this;
+          href = "{:U($CONTROLLER_NAME.'/delete_file')}?pid="+self.pid+"&file_path="+encodeURIComponent(path);
+          location.href = href;
+        }
+      },
+    },
+  });
+</script>

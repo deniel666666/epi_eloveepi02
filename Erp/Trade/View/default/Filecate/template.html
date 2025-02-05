@@ -1,0 +1,130 @@
+<include file="Public:header2" />
+
+
+<!-- Start document_template -->
+	<section class="main document">
+		<div class="top_bar">
+			<div class="ms_swich">
+				<a href="{:u('Km/index', ['type'=>'FI'])}">我的文件</a>
+				<a class="swich_on Filecate_auto_no" href="{:u('Filecate/index')}">
+					共用文件
+					<volist name="menu_list" id="vo" key="k">
+						<if condition="$vo['id']=='km_1' && $vo[read_ck]">({$vo[read_ck]})</if>
+					</volist>
+				</a>
+			</div>
+		</div>
+		<div class="below">
+			<!-- 共用階層列表 -->
+			<include file="Filecate:leftlist" />
+			<!-- END 共用階層列表 -->
+			<!--<a style="left:66%" href="{:u('Filecate/others')}">
+						<input type="button" style="margin:1% 0 1% 0;" value="暫停或未發佈" />
+					</a>-->
+			<div class="right">
+				<div class="document_edit">
+					<div class="document-mode">
+						<form action="{:u('Filecate/index')}" method="get">
+							<div class="d-flex flex-wrap">
+								<label for="">搜尋文章：</label>
+								<div class="search_bar">
+									<input class="text" type="text" name="title" value="{$_GET['title']}" placeholder="請輸入文章/階層標題或內容"
+										style="width: 250px;">
+									<input class="submit submit_button" type="submit" value="">
+								</div>
+							</div>
+						</form>
+						<!-- <div class="search_select">
+								<label for="">排序：</label>
+								<div class="inbox">
+									<select name="" id="">
+										<option value="">篩選條件</option>
+										<option value="">時間</option>
+									</select>
+								</div>
+							</div> -->
+						<!--<a class="add_btn" href="{:u('Filecate/edit')}"></a>-->
+					</div>
+				</div>
+				
+
+				<!-- //////////////////////////// 搜尋頁 ////////////////////////// -->
+				<if condition="($_GET['title'] neq '') or ($_GET['title'] neq null)">
+					<table class="document_list table">
+						<thead>
+							<tr>
+								<th class="document_head">主標題</th>
+								<th class="document_time">公告日期</th>
+								<th class="document_pub">發佈者</th>
+							</tr>
+						</thead>
+						<tbody>
+							<foreach name="file" item="vo">
+								<tr id="del{$vo.id}">
+									<td>
+										<a href="{:u('Filecate/read')}?id={$vo.id}">
+											{$vo['title']}
+										</a>
+									</td>
+									<td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+									<td>{$vo.name}</td>
+								</tr>
+							</foreach>
+						</tbody>
+						
+						
+					</table>
+				</if>
+				<!-- 換頁按鈕 -->
+				<!-- <div class="page">
+							{$show}
+						</div> -->
+				<!-- ///////////////////////////// END /////////////////////////// -->
+			</div>
+			<div class="clearfix"></div>
+		</div>
+	</section>
+	<!-- End document_list -->
+<include file="Public:footer" />
+<script src="__PUBLIC__/js/custom.js?0000"></script>
+<script>
+	$( document ).ready(function() {
+		// 點擊上方文章目錄、共用文件
+		$('a.Filecate_auto_no').on('click', function(e){
+			localStorage.setItem('Filecate_auto', 'no');
+		})
+
+		// 使用搜尋
+		$('input.submit_button').on('click', function(e){
+			var title = $('input[name="title"]').val();
+			url = "{:u('Filecate/search')}?title="+title;
+			localStorage.setItem('Filecate_read_url', url);
+            $.ajax({
+                method:'get',
+                dataType:'text',
+                url:url,
+                success:function(res){
+                    $('.document .right').html(res)
+                    localStorage.setItem('Filecate_auto', 'yes');
+                }
+            });
+			e.preventDefault();
+		})
+
+		// 自動載入文章
+		var auto = localStorage.getItem('Filecate_auto');
+		if(auto != 'no'){
+			var Filecate_read_url = localStorage.getItem('Filecate_read_url');
+			if(Filecate_read_url){
+				$.ajax({
+						method:'get',
+						dataType:'text',
+						url:Filecate_read_url,
+						success:function(res){
+							$('.document .right').html(res)
+						}
+				});
+			}
+	    }
+	});
+</script>

@@ -1,0 +1,142 @@
+<include file="Public:header2" />
+<section class="document main">
+    <div id="right">
+        <include file="Fig:top_menu" />
+        <div class="content-table">
+            <div class="eventsContainer">
+                
+                <!-- ////////////////////////// events_List ////////////////////////// -->
+                <div class="cardContainer">
+                    <div class="cardContainer-title">
+                        <h3 class="casesubtitle">發佈事件 - 選擇{$system_parameter['客戶']}</h3>
+                        <form id="search_add" class="chooseCo searchform ml-md-2" method="post" action="{:u('Fig/addnew')}">
+                            <ol class="headerOl rightR">
+                                <li><label class="name mb-0">篩選條件:</label>
+                                    <select name="wid">
+                                        <option value="%">選擇{$crm_cum_pri[0]['name']}</option>
+                                        <foreach name="eip_user" key="key" item="em">
+                                            <if condition="$em['name'] neq ''">
+                                                <option value="{$em['id']}"
+                                                        {$em['id']|compare_return=$wid_input, 'selected'}>{$em['name']}</option>
+                                            </if>
+                                        </foreach>
+                                    </select>
+                                    <select name="levellist">
+                                        <option value="%">全部{$system_parameter['等級']}</option>
+                                        <foreach name="levellist" key="key" item="em">
+                                            <if condition="$em['name'] neq ''">
+                                                <option value="{$em['id']}" 
+                                                        {$em['id']|compare_return=$levellist_input, 'selected'}>{$em['name']}</option>
+                                            </if>
+                                        </foreach>
+                                    </select>
+                                </li>
+
+                                <li>
+                                    <label class="name mb-0">依分類搜尋:</label>
+                                    <select name="rowname" class="rowname">
+                                        <option value="name" {$rowname_input|compare_return='name', 'selected'}>{$system_parameter['公司名稱']}</option>
+                                        <option value="addr" {$rowname_input|compare_return='addr', 'selected'}>{$system_parameter['地址']}</option>
+                                        <if condition="in_array(115, $use_function_top)">
+                                            <option value="industr" {$rowname_input|compare_return='industr', 'selected'}>{$system_parameter['產業別']}</option>
+                                        </if>
+                                        <option value="no" {$rowname_input|compare_return='no', 'selected'}>{$system_parameter['統編']}</option>
+                                    </select>
+                                </li>
+                                <li>
+                                    <div class="search_bar">
+                                        <label for=""></label>
+                                        <input id="but_ser" class="text" 
+                                               type="text" name="value" 
+                                               style="width: 225px;" 
+                                               value="{$value_input}"
+                                               placeholder="請輸入{$system_parameter['客戶']}{$system_parameter['公司名稱']}/{$system_parameter['簡稱']}"/>
+                                        <button type="submit" class="submit btn"></button>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="search_bar">
+                                        <a href="{:U('Fig/addnew')}">
+                                            <input id="searchname" type="text" readonly placeholder="清除搜尋" class="text text-center" 
+                                                   style="width: 80px; cursor: pointer; padding: 0px;">
+                                        </a>
+                                    </div>
+                                </li>
+                            </ol>
+                        </form>
+                    </div>
+                    <div class="edit_form">
+                        <table id="seatab" class="myFormTheme table edit_table" style="min-width: 1000px;">
+                            <thead>
+                                <tr >
+                                    <th style="width: 30px" class="text-right">序號</th>
+                                    <th style="width:60px" class="text-center">操作</th>
+                                    <th style="width: 100px" class="text-left">{$system_parameter['簡稱']}</th>
+                                    <th style="width: 75px;" class="text-left">{$system_parameter['負責人']}</th>
+                                    <th style="width: 50px" class="text-left">{$system_parameter['等級']}</th>
+                                    <if condition="in_array(115, $use_function_top)">
+                                        <th style="width: 150px" class="text-left">{$system_parameter['產業別']}</th>
+                                    </if>
+                                    <th style="width: 300px" class="text-left">{$system_parameter['地址']}</th>
+                                    <th style="width: 75px" class="text-left">{$crm_cum_pri[1]['name']}</th>
+                                    <th style="width: 50px" class="text-left">{$system_parameter['類別']}</th>
+                                    <th style="width: 100px" class="text-left">{$system_parameter['統編']}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <foreach name="crmlist" key="num" item="one">
+                                    <if condition="$num%2 eq 0">
+                                        <tr class="c{$one.id}" class="color1">
+                                    <else />
+                                        <tr class="c{$one.id}">
+                                    </if>
+                                        <?php if($_GET['p']==null)$_GET['p']=1 ?>
+                                        <td class="text-right">{$num+1+(($_GET['p']*50)-50)}</td>
+                                        <td class="text-center">
+                                            <a href="{:u('Fig/addcontent')}?id={$one.id}"
+                                                class="chooseBtn addbtn btn">發單</a>
+                                        </td>
+                                        <td class="crm_type{$one.typeid}">
+                                            <if condition="in_array(75, $use_function_top)">
+                                                <a href="{:u('Custo/view_re')}?id={$one.id}" target="_blank">
+                                            <else />
+                                                <a href="{:u('Custo/addcrm')}?id={$one.id}" target="_blank">
+                                            </if>
+                                                {$one.show_name}
+                                            </a>
+                                        </td>
+                                        <td>{$one.bossname}</td>
+                                        <td>{$crm_cum_level[$one['levelid']]['rname']}</td>
+                                        <if condition="in_array(115, $use_function_top)">
+                                            <td>{$one.industr} - {$one.industr2}</td>
+                                        </if>
+                                        <td>{$one.show_addr}</td>
+                                        
+                                        <td>{$eip_user[$one[wid]]['rname']}</td>
+                                        <td>{$crm_cum_type[$one['typeid']]['rname']}</td>
+                                        <td>{$one.no}</td>
+                                        
+                                    </tr>
+                                </foreach>
+                                <tr>
+                                    <td colspan="11">
+                                        <div class="page">
+                                            {$show}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+      
+                          </table>
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="footer-mobile">
+    <include file="Public:footer" />
+</div>
+

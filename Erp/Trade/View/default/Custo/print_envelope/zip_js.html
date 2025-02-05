@@ -1,0 +1,96 @@
+<script>
+	document.getElementById('print').addEventListener('click', function(){
+		document.getElementById('print').remove();
+		window.print();
+	});
+
+	// 修改客戶資料
+	function ajax_save_one_value(id, value){
+        return $.ajax({
+            method:'post',
+            data:{
+                teamid: 0,
+
+                dbname: 'crm_crm',
+                id: id,
+                column: 'zip',
+                value: value,
+            },
+            dataType:'json',
+            url:"{:U('Custo/ajax_save_one_value')}",
+            success:function(res){
+            },
+        });
+    }
+	// api 取得郵遞區號
+    let do_count = 1;
+    let do_count_all = 0;
+    function get_zip_code(address, target){
+        Vue.toasted.show(
+            "生成郵遞區號中："+do_count+'/'+do_count_all, 
+            { duration: 3000, className: ["toasted-primary", "bg-success"] }
+        );
+        do_count+=1;
+        console.log(address);
+        return $.ajax({
+            type:'GET',
+            dataType:'text',
+            url:"https://zip5.5432.tw/zip/" + address,
+            success:function(res){
+                var zipcode = $(res).find('#zipcode');
+                if(zipcode){
+                    zipcode = zipcode.text();
+                    console.log(zipcode);
+                    // words = [...(zipcode+address)];
+                    $('#addr_'+target).html(zipcode);
+                    ajax_save_one_value(target, zipcode);
+                }
+            }
+        })
+    }
+    // 等待
+    function delay(milliseconds){
+	    return new Promise(resolve => {
+	        setTimeout(resolve, milliseconds);
+	    });
+	}
+
+    async function get_zip(){
+        <volist name="crmlist" id="one" key="num">
+            <if condition="!$one['zip']">
+                do_count_all += 1;
+            </if>
+        </volist>//
+
+        if(do_count_all>0){
+        	$('body').append('\
+    		<div id="body_block" class="bg-dark position-fixed w-100" style="\
+                position: fixed;\
+                height: 100vh;\
+                width: 100vw;\
+                z-index: 10000;\
+                opacity: 0.5;\
+                top: 0;\
+                background: black;\
+            "></div>');
+
+    		<volist name="crmlist" id="one" key="num">
+    			<if condition="!$one['zip']">
+    				try{
+    					await get_zip_code("{$one.address}", "{$one.id}");
+    					await delay(3000);
+    				}catch(e){
+    			        Vue.toasted.show("生成郵遞區號發生錯誤！！！", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+    			    }
+    			</if>
+    		</volist>
+
+    		$('#body_block').hide();
+    		Vue.toasted.show(
+                "生成郵遞區號已生成完畢，請確認", 
+                { duration: 1500, className: ["toasted-primary", "bg-success"] }
+            );
+        }
+	}
+	get_zip();
+</script>

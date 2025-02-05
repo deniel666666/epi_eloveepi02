@@ -1,0 +1,265 @@
+<include file="Public:header2" />
+
+  <!-- Start document_template -->
+  <section class="main document">
+    <!-- 共用路徑 -->
+    <div class="top_bar">
+      <if condition="$page_title eq '我的文件'">
+        <!-- 我的文件 -->
+        <div class="ms_swich">
+          <a class="swich_on Km_auto_no" href="">我的文件</a>
+          <a href="{:u('Filecate/index')}">
+            共用文件
+            <if condition="$file_share_num neq 0">({$file_share_num})</if>
+          </a>
+        </div>
+      </if>
+    </div>
+
+    <div class="below">
+      <!-- 共用階層列表 -->
+      <include file="Km:leftlist" />
+      <!-- END 共用階層列表 -->
+      <div class="right">
+
+        <!-- ///////////////////////// 閱覽頁 /////////////////////////// -->
+        <div class="document_read document_edit" id="print_div">
+
+          <div class="title_bar read-top">
+
+            <h3 class="edit_section_title">{$file['title']}
+              <if condition="$acc[$right_edi] eq '1'">
+                <a class="article_sort_btn" href="{:U('Km/edit', ['type'=>$fileCode])}?id={$file['id']}">編輯</a>
+              </if>
+              <!--<a class="add_btn" href="{:U('Km/level_select', ['type'=>$fileCode])}"></a>-->
+              <if condition="$file['file_layer'] eq 0">
+                <img class="print" style="height:20px;" src="/Public/qhand/images/common/printer.jpg"
+                  onclick="printer(print_div);">
+              </if>
+            </h3>
+
+            <div class="time">建立者：{$file['user_name']} {$file['start_time']|date="Y-m-d H:i",###}</div>
+
+          </div>
+          <div class="content_box">
+            <div class="text_area" style="word-break:break-all;width:100%;">
+              {$file['note']}
+            </div>
+            <div class="more_info">
+              <if condition="$file['file_layer'] eq 0">
+                <ul class="download_append">
+                  <li>
+                    附件：
+                    <if condition="$file['file'] neq ''">
+                      <foreach name="file['file']" item="vo">
+                        {$vo}<br>
+                      </foreach>
+                      <else />
+                      無
+                    </if>
+                  </li>
+
+
+                </ul>
+              </if>
+              <ul class="data_info">
+                <li>公告人數：<span>{$read_num['all']}人</span></li>
+                <li>已讀取人數：<span>{$read_num['read']}人</span></li>
+                <li>未讀取人數：<span>{$read_num['unread']}人</span></li>
+                <li>讀取率：<span>{$read_num['rate']}%</span></li>
+
+              </ul>
+              <a class="read_person">
+                <span class="read_person_display">
+                  顯示詳細資料
+                </span>
+              </a>
+              <!--<ul class="children_link">
+                    <h4>近期文章：</h4>
+                    <li><a href="#">文章一</a></li>
+                    <li><a href="#">文章二</a></li>
+                    <li><a href="#">文章三</a></li>
+                    <li><a href="#">文章四</a></li>
+                    <li><a href="#">文章五</a></li>
+                  </ul>-->
+            </div>
+            <div id="full_read_person" class="full_read_person" style="display:none">
+              <div class="item">可讀取人員：
+                <foreach name="read_person['all']" item="vo">
+                  {$vo['name']}&nbsp;
+                </foreach>
+              </div>
+              <div class="item">已讀取人員：
+                <foreach name="read_person['read']" item="vo">
+                  {$vo['name']}&nbsp;
+                </foreach>
+              </div>
+              <div class="item">未讀取人員：
+                <foreach name="read_person['unread']" item="vo">
+                  {$vo['name']}&nbsp;
+                </foreach>
+              </div>
+            </div>
+          </div>
+          <if condition="$file['file_layer'] eq 0">
+            <div class="page_bar">
+              <div class="btn_group">
+                <if condition="$pageup neq ''">
+                  <a href="{:U('Km/read', ['type'=>$fileCode])}?id={$pageup['id']}" class="prev file_click"
+                    year="{$pageup['type']|date='Y',###}" month="{$pageup['type']|date='Ym',###}"
+                    fid="{$pageup['id']}"><i class="fas fa-angle-left"></i> 上一篇</a>
+                </if>
+                <if condition="$pagedown neq ''">
+                  <a href="{:U('Km/read', ['type'=>$fileCode])}?id={$pagedown['id']}" class="next file_click"
+                    year="{$pagedown['type']|date='Y',###}" month="{$pagedown['type']|date='Ym',###}"
+                    fid="{$pagedown['id']}">下一篇 <i class="fas fa-angle-right"></i></a>
+                </if>
+              </div>
+            </div>
+            <div class="comments_area">
+              <h4 class="edit_section_title"><i class="fas fa-comment-dots"></i> 留言板</h4>
+              <div class="leave_comments_box">
+                <form>
+                  <input type="hidden" name="message" id="message" fid="{$file['id']}">
+                  <input type="reset" class="reset" style="display:none">
+                </form>
+                <input class="btn addbtn add_message mt-2" style="width:80px;" type="submit" value="留言">
+
+              </div>
+              <h5 class="message_count" count="{$count}">共{$count}則留言</h5>
+              <ul class="message_list"></ul>
+              <ul class="comments_list">
+                <foreach name="message" item="vo">
+                  <li>
+                    <div class="message-top">
+                      <div><i class="fas fa-user"></i> {$vo['name']}</div>
+                      <div>{$vo['time']|date="Y-m-d H:i",###}</div>
+
+                    </div>
+                    <div class="message-content">{$vo['message']}</div>
+                  </li>
+
+                </foreach>
+              </ul>
+            </div>
+          </if>
+        </div>
+        <!-- ///////////////////// END-閱覽頁 /////////////////////////// -->
+
+        <script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+        <script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+        <script type="text/javascript">
+          // 離開頁面時是否檢確認離開
+          var check_renew = false;
+
+          var read_person_click = false;
+          $(".read_person").click(function () {
+            if (read_person_click == false) {
+              read_person_click = true;
+              $(".read_person_display").html("隱藏詳細資料");
+              $("#full_read_person").css("display", "block");
+            } else {
+              read_person_click = false;
+              $(".read_person_display").html("顯示詳細資料");
+              $("#full_read_person").css("display", "none");
+            }
+          });
+
+          var $count = parseInt($(".message_count").attr("count"));
+          $(".add_message").click(function () {
+            $count++;
+            $.ajax({
+              method: 'post',
+              data: {
+                fid: $("#message").attr("fid"),
+                message: $("#message").val()
+              },
+              dataType:'json',
+              url: "{:U('Km/save_message', ['type'=>$fileCode])}",
+              success: function (res) {
+                if(res.status==1){
+                  $(".reset").click();
+                  res_html =`
+                    <li>
+                      <div class="message-top">
+                        <div><i class="fas fa-user" aria-hidden="true"></i> `+ res.name +`：</div>
+                        
+                        <div>`+ res.time +`</div>
+                      </div>
+                      <div class="message-content">`+ res.message +`</div>
+                    </li>
+                  `;
+                  $(".message_list").prepend(res_html);
+                  $(".message_count").html("共"+$count+"則留言");
+                          bg_class = "bg-success";
+                      }else{
+                          bg_class = "bg-danger";
+                      }
+                      Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+              }
+            });
+          });
+
+          function printer(htmlBlock) {
+            var content = htmlBlock.innerHTML;
+            var printPage = window.open("", "printPage", "");
+            printPage.document.open();
+            printPage.document.write("<HTML><head>");
+            printPage.document.write("</head><BODY onload='window.print();window.close()'>");
+            printPage.document.write(content);
+            printPage.document.close("</BODY></HTML>");
+          }
+
+          $(document).ready(function () {
+            // 點擊上一頁、下一頁
+            $('.btn_group a, a.article_sort_btn').on('click', function (e) {
+              url = $(e.currentTarget).attr('href');
+              if (url != '' && url != '#') {
+                history.pushState({}, "", url);
+                $.ajax({
+                  method: 'get',
+                  dataType:'text',
+                  url: url,
+                  success: function (res) {
+                    ajax_change_right(res) //定義在Km/js.html
+                  }
+                });
+              }
+              e.preventDefault();
+            })
+
+            setTimeout(function () {
+              var editor;
+              editor = KindEditor.create('#message', {
+                afterBlur: function () {
+                  this.sync();
+                },
+                langType: 'zh_TW',
+                items: [],
+                width: '100%',
+                height: '200%',
+                resizeType: 0
+              });
+            }, 500);
+
+            //修改路徑
+            $('#mainPath').html(`
+                  <span>></span><a class="Km_auto_no" href="{:U('Km/index', ['type'=>$fileCode])}">文章目錄</a>
+                `)
+            $('#secondPath').html(`
+                  <span>></span>{$file['title']}
+                `)
+            $('#thirdPath').html(``)
+          });
+        </script>
+        <include file="Km:js" />
+
+      </div>
+      <!--right_end -->
+    </div>
+  </section>
+  <!-- End document_list -->
+
+
+<include file="Km:js_read" />
+

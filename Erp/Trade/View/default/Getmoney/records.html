@@ -1,0 +1,693 @@
+<include file="Public:header2" />
+<style>
+  .bottomtable td{
+    background: none;
+  }
+  #outerIframe{
+      width: 100%;
+      min-width: 820px;
+  }
+</style>
+
+<section class="main ">
+  <!---->
+  <div id="right">
+    <div class="contract-new">
+      <h3 class="company-title mr-3">
+        <if condition="in_array(75, $use_function_top)">
+          <a :href="'{:u('Custo/view_re')}?id='+contract.cid" target="_blank">
+        <else />
+          <a :href="'{:u('Custo/addcrm')}?id='+contract.cid" target="_blank">
+        </if>
+          <i class="fas fa-users mr-1"></i><span v-text="contract.ename"></span>
+        </a>
+      </h3>
+      <p>負責{$crm_cum_pri[0]['name']}：<span v-text="contract.uname"></span></p>
+    </div>
+    <!---->
+    <div class="container-fluid">
+      <div class="contract-main row">
+        <div class="item-L col-md-4 col-sm-12">
+          <div class="main">
+            <ul class="contract-top contract-box mb-2">
+              <li class="type">{$system_parameter['合約']}類型：<span v-text="contract.cate_name"></span></li>
+              <li class="number">{$system_parameter['合約']}號：
+                <a :href="'{:u('Alllist/view')}?id='+contract.id" target="_blank">
+                  <span v-text="contract.sn"></span>
+                </a>
+              </li>
+              <li class="sale allmoney">{$system_parameter['合約']}總額：<span v-text="Number(contract.allmoney).toLocaleString('en-US')"></span></li>
+              <li class="money">{$system_parameter['合約']}訂金：<span v-text="Number(contract.money).toLocaleString('en-US')"></span></li>
+              <li class="sell">未{$出貨}總額：<span v-text="Number((contract.allmoney - total.replace(/[,]+/g, '')).toFixed(0)).toLocaleString('en-US')"></span></li>
+              <li class="sell">剩餘{$預收}款：<span v-text="Number(contract.money_remained.toFixed(0)).toLocaleString('en-US')"></span></li>
+              <li class="count_type">發票：<span v-text="contract.invoice"></span></li>
+              <li class="count_type"></li>
+              <li class="count_type">
+                {$system_parameter['合約']}備註：
+                <textarea class="w-100" v-text="contract.note" style="min-height: 26px; resize: vertical;" disabled></textarea>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="item-R col-md-8 col-sm-12">
+          <if condition="$access[strtolower($CONTROLLER_NAME).'_new'] eq '1'">
+            <template v-if="contract.flag!=0">
+              <h3 class="casetitle">款項申請</h3>
+              <template v-if="contract.cate==1">
+                <a :href="'{:u($CONTROLLER_NAME.'/create_money_seo')}?caseid='+contract.id+'&qh={$current_qh}'" class="btn addbtn">
+                  生成/更新 前月請款
+                </a>
+              </template>
+              <ship_item_setting :key="componentKey"></ship_item_setting>
+              <div class="text-right">
+                <input type="submit" class="addbtn bg-warning btn" value="生成{$預收}款申請"  @click="create_money_prepaid"/>
+
+                <template v-if="contract.cate!=1">
+                  <input type="submit" class="addbtn btn ml-4" value="生成{$出貨}請款單"  @click="create_money(0)"/>
+                  <!-- 生成後需再進入請款單設定銷貨內容及金額 -->
+                </template>
+              </div>
+              
+            </template>
+          </if>
+        </div>
+      </div>
+
+      <!-- 出貨紀錄 開始 -->
+      <h3 class="casetitle send d-flex justify-content-between">
+        <sapn>
+          款項紀錄
+          <span class="d-inline-flex align-items-center" style="font-size:1rem; font-weight: normal;">
+            <span class="prepaid_1_bg d-inline-block" style="width:1rem; height: 1rem;"></span>：{$預收}款(無法銷{$預收})
+          </span>
+        </sapn>
+        <crm_index_pages 
+          :change_page="change_page"
+          :current_page="current_page" 
+          :count_of_items="count_of_items" 
+          :count_of_page="count_of_page"
+          ></crm_index_pages>
+      </h3>
+      <ul class="runitems">
+        <li>
+          <table class="table apply-table">
+            <thead>
+              <tr>
+                <th style="width: 120px;">期數</th>
+                <th>
+                  內容
+                  <span class="text-danger" v-if="contract.cate==1">(更新排名後請記得更新{$應收}金額)</span>
+                </th>
+                <th class="text-lg-right" style="min-width: 150px;">總申請金額</th>
+                <th class="text-lg-right" style="min-width: 150px;">本期{$應收}</th>
+                <th class="text-lg-right" style="min-width: 150px;">本期銷{$預收}</th>
+                <th class="text-left" style="min-width: 120px;">狀態</th>
+                <th class="text-left" style="min-width: 150px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(one, one_idx) in money" :class="'prepaid_'+one.prepaid+'_bg'">
+                <td data-th="期數">
+                  <span class="mr-4" v-text="one.qh_count"></span>
+                </td>
+                <td data-th="內容">
+                  <template v-if="one.ship_status==0">
+                  <button v-if="contract.cate!=1 || one.prepaid!=0"
+                      type="button" class="btn btn-primary mr-1" 
+                      @click="set_money_conent(one.mid, one.prepaid)">
+                    修改內容
+                  </button>
+                  </template>
+                  <template v-if="contract.cate==1 && one.prepaid==0">
+                    <a :href="'{:u($CONTROLLER_NAME.'/monthput')}?id='+contract.id+'&qh='+one.qh_seo" target="_blank" class="btn btn-primary">
+                      排名內容
+                    </a>
+                  </template>
+                  <template v-if="contract.cate!=1 || one.prepaid!=0">
+                    <span v-text="one.ship_countent"></span>
+                  </template>
+                </td>
+                <td data-th="總申請金額" class="text-lg-right" v-text="one.dqmoney"></td>
+                <td data-th="本期{$應收}" class="text-lg-right">
+                  <if condition="$access[strtolower($CONTROLLER_NAME).'_new'] eq '1'">
+                    <template v-if="one.ship_status==0 && one.prepaid!=1">
+                      <input type="text" size="8" class="w-100 text-right" v-model="one.xqj" @blur="save_xqj(one, one.xqj)" />
+                    </template>
+                    <template v-if="one.ship_status==1 || one.prepaid==1">
+                      <input type="text" size="8" class="w-100 text-right" v-model="one.xqj" disabled="true"/>
+                    </template>
+                  <else />
+                    <span v-text="one.xqj"></span>
+                  </if>
+                </td>
+                <td data-th="本期銷{$預收}" class="text-lg-right" v-text="one.xdj"></td>
+                
+                <td data-th="狀態">
+                  <span v-if="one.ship_status==0">未確認金額</span>
+                  <span v-if="one.ship_status==1">確認金額</span>
+                </td>
+                <td data-th="操作">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-primary" @click="see_money(one, one_idx)">查看單據</button>
+
+                    <if condition="$access[strtolower($CONTROLLER_NAME).'_del'] eq '1'">
+                      <template v-if="one.ship_status==0">
+                        <button type="button" class="btn delate" @click="del_money(one.mid)">
+                          <i aria-hidden="true" class="far fa-trash-alt"></i>
+                        </button>
+                      </template>
+                    </if>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </li>
+        <li class="run-total">
+          <div class="item">
+            <div>已請{$預收}款總額：<span v-text="total2"></span></div>
+            <div>已{$出貨}總額：<span v-text="total"></span></div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<a id="money_edit_btn" class="d-none" data-toggle="modal" data-target="#money_edit">修改內容</a>
+<div class="modal fade big_modal" id="money_edit" tabindex="-1" role="dialog" aria-labelledby="money_editTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="money_editTitle">修改內容</h5>
+            </div>
+            <div class="modal-body">
+            <ship_item_setting :key="componentKey"></ship_item_setting>
+        <div class="text-right">
+          <input type="submit" class="addbtn btn" value="添加" @click="add_ship"/>
+        </div>
+
+        <hr class="mt-4 mb-4">
+        <h6>已開出金額：<span v-text="money_edit.total"></span></h6>
+        <table class="table apply-table">
+          <thead>
+            <tr>
+              <th>開出日期</th>
+              <th>品名</th>
+              <th>規格</th>
+              <th>單位</th>
+              <th class="text-right">數量</th>
+              <th class="text-right">金額</th>
+              <th>刪除</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="shipment in money_edit.shipments">
+              <td data-th="開出日期" v-text="shipment.time_format"></td>
+              <td data-th="品名" v-text="shipment.name"></td>
+              <td data-th="規格" v-text="shipment.content"></td>
+              <td data-th="單位" v-text="shipment.unit"></td>
+              <td data-th="數量" class="text-right" v-text="shipment.num"></td>
+              <td data-th="金額" class="text-right" v-text="shipment.money"></td>
+              <td>
+                <button type="button" class="btn delate" @click="del_shipment(shipment.id)">
+                  <i aria-hidden="true" class="far fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<a id="exampleModalCenter_btn" class="d-none" data-toggle="modal" data-target="#exampleModalCenter">跳出視窗</a>
+<div class="modal fade big_modal" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">{$出貨}單</h5>
+            </div>
+            <div class="modal-body">
+              <iframe width=90%; height="800px" id="outerIframe" src=""></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+<script>
+  Vue.component('ship_item_setting', {
+    template: `
+      <div>
+        <div style="font-size:1rem" align="right">p.s. {$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}。若該品項不需{$出貨}，{$出貨}數量保持「空白」即可</div>
+        <table class="table apply-table">
+          <thead>
+            <tr>
+              <if condition="in_array(121, $use_function_top)">
+                <th style="width:150px;">商品代號</th>
+              </if>
+              <th style="width:150px;">品名</th>
+              <th style="width:150px;">規格</th>
+              <th style="width:150px;">單位</th>
+              <if condition="$system_parameter['商品網售價']">
+                <th style="width:150px;" class="text-right">售價</th>
+              </if>
+              <if condition="in_array(121, $use_function_top)">
+                <th style="width:100px;" class="text-right">數量</th>
+                <th style="width:100px;" class="text-right">可領數量</th>
+                <th style="width:100px;" class="text-right">單價</th>
+                <th style="width:100px;" class="text-right">優惠總價</th>
+              </if>
+              <th style="width:100px;" class="text-right">{$出貨}數量</th>
+              <th style="width:100px;" class="text-right">金額({$control_money_input|compare_return=0,'未稅','實收'})</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="(unit, index) in $parent.units" name="units">
+              <tr>
+                <if condition="in_array(121, $use_function_top)">
+                  <td data-th="商品代號" v-text="unit.number"></td>
+                </if>
+                <td data-th="品名">
+                  <if condition="in_array(121, $use_function_top)">
+                    <input type="hidden" v-model="$parent.ships[index]['name']">
+                    <span v-text="unit.name"></span>
+                  <else />
+                    <input type="text" class="input" v-model="$parent.ships[index]['name']">
+                  </if>
+                </td>
+                <td data-th="規格">
+                  <input type="text" class="input" v-model="$parent.ships[index]['content']">
+                </td>
+                <td data-th="單位">
+                  <input type="text" class="input" v-model="$parent.ships[index]['unit']">
+                </td>
+                <if condition="$system_parameter['商品網售價']" >
+                  <td data-th="售價" class="text-right" v-text="unit.sale_price"></td>
+                </if>
+                <if condition="in_array(121, $use_function_top)">
+                  <td data-th="數量" class="text-lg-right" v-text="unit.num"></td>
+                  <td data-th="可領數量" class="text-lg-right" v-text="unit.num - unit.used_num"></td>
+                  <td data-th="單價" class="text-lg-right" v-text="unit.sale_price"></td>
+                  <td data-th="優惠總價" class="text-lg-right" v-text="unit.total_dis"></td>
+                </if>
+                <td data-th="{$出貨}數量" class="num text-lg-right">
+                  <input type="text" class="input text-right input_num" v-model="$parent.ships[index]['num']" @blur="$parent.count_input_money(index)">
+                </td>
+                <td data-th="金額({$control_money_input|compare_return=0,'未稅','實收'})" class="text-lg-right">
+                  <input type="number" class="input text-right input_money" v-model="$parent.ships[index]['money']" step="0.01" min="0"/>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    `,
+  });
+  right_data = {
+    id: '{$id}',
+
+    contract: { allmoney:0, money_remained:0, },
+    units: [],
+    ships: [],  
+    total: '0',
+    total2: '0',
+
+    current_page: 1,
+    count_of_items: 0,
+    count_of_page: 20,
+    money: [],
+    money_edit:{
+      moneyid: 0,
+      prepaid: 0,
+      shipments: [],
+      total: 0,
+    },
+
+    componentKey: 0,
+  };
+  const rightVM = new Vue({
+    el: '#right',
+    data: right_data,
+    methods: {
+      get_data: function(){
+        self = this;
+        $.ajax({
+          method: 'GET',
+          dataType:'json',
+          url: "{:u($CONTROLLER_NAME.'/ajax_records_data')}?id="+self.id,
+          success: function(resp){
+            self.contract = resp.contract;
+            self.total = resp.total;
+            self.total2 = resp.total2;
+            self.units = resp.units;
+            self.init_ships();
+          },
+        });
+      },
+      init_ships: function(){
+        self = this;
+        for (var i = 0; i < self.units.length; i++) {
+          const unit = self.units[i];
+          self.ships[i] = {
+            name: unit.name,
+            contract_unit_id: unit.id,
+            content: unit.type,
+            unit: unit.unit,
+            num: '',
+            money: 0,
+          };
+        }
+        self.componentKey += 1;
+      },
+      change_page: function(page){ /*配合分頁元件*/
+        self = this;
+        self.current_page = page;
+        self.get_money();
+      },
+      get_money: function(){
+        self = this;
+        return $.ajax({
+          method: 'GET',
+          dataType:'json',
+          data: {
+            caseid: self.id,
+            p: self.current_page,
+            page_count: self.count_of_page,
+          },
+          url: "{:u($CONTROLLER_NAME.'/ajax_get_money')}",
+          success: function(resp){
+            // console.log(resp.crm_contract);
+            self.money = resp.crm_contract;
+            self.count_of_items = resp.count_of_items;
+          },
+        });
+      },
+      renew_total: function(){
+        self = this;
+        return $.ajax({
+          type:'post',
+          dataType:'json',
+          data: {
+            caseid: self.id,
+          },
+          url: "{:u($CONTROLLER_NAME.'/aj_total')}",
+          success: function(resp2){
+            self.total = resp2.total;
+            self.total2 = resp2.total2;
+            self.units = resp2.units;
+            self.init_ships();
+          },
+        });
+      },
+      get_ships: function(moneyid){
+        self = this;
+        return $.ajax({
+          method: 'GET',
+          dataType:'json',
+          data: {
+            caseid: self.id,
+            moneyid: moneyid,
+          },
+          url: "{:u($CONTROLLER_NAME.'/ajax_get_ships')}",
+          success: function(resp){
+            self.money_edit.shipments = resp;
+            self.money_edit.total = 0;
+            for (var i = 0; i < resp.length; i++) {
+              self.money_edit.total += Number(resp[i].money);
+            }
+          },
+        });
+      },
+
+      count_input_money: function(index){
+        self = this;
+        if(self.ships[index]['num']){
+          if(!isNaN(self.ships[index]['num'])){
+            self.ships[index]['money'] = self.units[index]['sale_price'] * self.ships[index]['num'];
+          }
+        }else{
+          self.ships[index]['money'] = 0;
+        }
+        self.componentKey += 1;
+      },
+
+      create_money_prepaid: function(){
+        self = this;
+        self.create_money(1)
+      },
+      create_money: function(prepaid=0){
+        self = this;
+        var result = self.check_ship_num();
+        if(result){
+          self.create_money_ajax(prepaid, self.ships).then(()=>{
+            self.init_ships();
+          });
+        }
+      },
+      check_ship_num: function(){
+        self = this;
+        for (var i = 0; i < self.ships.length; i++) {
+          const ship = self.ships[i];          
+          if(ship.num){ /*有輸入數量*/
+            if(Number(ship.num)<=0 && !isNaN(Number(ship.num))){ /*數量小於等於0 且 非NaN*/
+              Vue.toasted.show('請設定大於1的數量', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+              return false;
+            }
+            for (let x = 0; x < self.units.length; x++) {
+              const unit = self.units[x];
+              if(unit.id==ship.contract_unit_id){
+                if(Number(ship.num) + Number(unit.used_num) > Number(unit.num)){ /*出貨數量 + 已使用數量 > 簽約數量*/
+                  Vue.toasted.show(ship.name+'超過數量上限', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+                  return false;
+                }
+                break;
+              }
+            }
+          }
+          else{ /*沒有輸入數量*/
+            if(ship.money!=0 ){
+              Vue.toasted.show('金額不為0則請輸入數量', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+              return false;
+            }
+          }
+          if(ship.num && !ship.name){
+            Vue.toasted.show('款項名稱不可空白', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+            return false;
+          }
+        }
+        return true;
+      },
+      create_money_ajax: function(prepaid, ships){
+        $('#body_block').show();
+        self = this;
+        return $.ajax({
+          method: 'POST',
+          dataType:'json',
+          data: {
+            caseid: self.id,
+            prepaid: prepaid,
+            ships: ships,
+          },
+          url: "{:u($CONTROLLER_NAME.'/create_money')}",
+          success: function(resp){
+            if(resp.status==1){
+              bg_class = "bg-success";
+              self.get_money().then(()=>{
+                self.renew_total().then(()=>{
+                  $('#body_block').hide();
+                });
+              });
+            }else{
+              bg_class = "bg-danger";
+              $('#body_block').hide();
+            }
+            Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+
+      set_money_conent: function(moneyid, prepaid){
+        self = this;
+        self.money_edit.moneyid = moneyid;
+        self.money_edit.prepaid = prepaid;
+        self.init_ships();
+        self.get_ships(moneyid);
+        $('#money_edit_btn').click();
+      },
+      save_xqj: function(money, xqj){
+        $('#body_block').show();
+        $.ajax({
+          method: 'POST',
+          dataType:'json',
+          data: {
+            caseid: self.id, 
+            moneyid: money.mid, 
+            val: xqj,
+          },
+          url: "{:U($CONTROLLER_NAME.'/save_xqj')}",
+          success: function(resp){
+            if(resp.status==1){
+              bg_class = "bg-success";
+              self.get_money().then(()=>{
+                $('#body_block').hide();
+              });
+            }else{
+              bg_class = "bg-danger";
+              $('#body_block').hide();
+            }
+            Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+      see_money: function(money, money_idx){
+        self = this;
+        console.log(money.xqj);
+        if(money.xqj==null){ 
+          Vue.toasted.show('請先設定本期{$應收}金額', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          if(money.ship_status==1){
+            self.money[money_idx].ship_status = 0;
+          }
+          return;
+        }
+        $('#exampleModalCenter_btn').click();
+        $('#body_block').show();
+        $('#outerIframe').off();
+        $('#outerIframe').on("load", function() {
+          $('#body_block').hide();
+        });
+        $('#outerIframe').attr('src', "{:u($CONTROLLER_NAME.'/outer')}?caseid="+self.id+"&moneyid="+money.mid);
+      },
+      del_money: function(moneyid){
+        $('#body_block').show();
+        self = this;
+        $.ajax({
+          method: 'GET',
+          dataType:'json',
+          url: "{:u($CONTROLLER_NAME.'/del_money')}?caseid="+self.id+"&moneyid="+moneyid,
+          success: function(resp){
+            if(resp.status==1){
+              bg_class = "bg-success";
+              self.get_money().then(()=>{
+                self.renew_total().then(()=>{
+                  $('#body_block').hide();
+                });
+              });
+            }else{
+              bg_class = "bg-danger";
+              $('#body_block').hide();
+            }
+            Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+    },
+  });
+  rightVM.get_data();
+  rightVM.get_money();
+
+  const money_editVM = new Vue({
+    el: '#money_edit',
+    data: right_data,
+    methods: {
+      count_input_money: function(index){
+        rightVM.count_input_money(index);
+      },
+      add_ship: function(){
+        self2 = this;
+        var result = rightVM.check_ship_num();
+        if(result){
+          self2.add_ship_ajax(self2.ships).then(()=>{
+            rightVM.init_ships();
+          });
+        }
+      },
+      add_ship_ajax: function(ships){
+        $('#body_block').show();
+        self = this;
+        return $.ajax({
+          method: 'POST',
+          dataType:'json',
+          data: {
+            caseid: self.id,
+            moneyid: self.money_edit.moneyid,
+            ships: ships,
+          },
+          url: "{:u($CONTROLLER_NAME.'/add_ship_ajax')}",
+          success: function(resp){
+            if(resp.status==1){
+              bg_class = "bg-success";
+              rightVM.get_money().then(()=>{
+                rightVM.renew_total().then(()=>{
+                  $('#body_block').hide();
+                });
+              });
+              rightVM.get_ships(self.money_edit.moneyid).then(()=>{
+                $('#body_block').hide();
+              });
+            }else{
+              bg_class = "bg-danger";
+              $('#body_block').hide();
+            }
+            Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+      del_shipment: function(shipment_id){
+        $('#body_block').show();
+        self = this;
+        return $.ajax({
+          method: 'POST',
+          dataType:'json',
+          data: {
+            shipment_id: shipment_id,
+          },
+          url: "{:u($CONTROLLER_NAME.'/del_ship_ajax')}",
+          success: function(resp){
+            if(resp.status==1){
+              bg_class = "bg-success";
+              rightVM.get_money().then(()=>{
+                rightVM.renew_total().then(()=>{
+                  $('#body_block').hide();
+                });
+              });
+              rightVM.get_ships(self.money_edit.moneyid).then(()=>{
+                $('#body_block').hide();
+              });
+            }else{
+              bg_class = "bg-danger";
+              $('#body_block').hide();
+            }
+            Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          },
+        });
+      },
+    },
+  });
+
+  /*請款項目編輯視窗*/
+  $('#money_edit').on('hidden.bs.modal', function () {
+    rightVM.init_ships();
+  });
+
+  /*請款單視窗*/
+  var shipment_need_renew = false;
+  $('#exampleModalCenter').on('hidden.bs.modal', function () {
+    if(shipment_need_renew){
+      rightVM.get_money();
+    }
+    shipment_need_renew = false;
+    $('#outerIframe').attr('src', "");
+  });
+</script>

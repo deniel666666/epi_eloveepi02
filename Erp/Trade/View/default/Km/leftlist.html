@@ -1,0 +1,263 @@
+<label class="editmenu-open"> 
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+         fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+    </svg>
+    文章選單
+</label>
+<form action="{:u('Km/order', ['type'=>$fileCode])}" method="post" class="left-file-menu">
+    <div class="list_layer">
+        <div class="menu_controll">
+            <div style=" position: relative;">
+                <a class="open_btn" onclick="open_all()">全開</a>
+                <a class="close_btn" onclick="close_all()">全關</a>
+                <if condition="$acc[$right_edi] eq '1'">
+                    <a class="adj_order_btn">排序</a>
+                </if>
+                <input class="send_order_btn" type="submit" value="修改">
+                <if condition="$acc[$right_new] eq '1'">
+                    <a class="add_layer" href="{:u('Km/edit', ['type'=>$fileCode])}?id=0&parent_id=0">
+                        新增
+                    </a>
+                </if>
+            </div>
+            <div class="close-below" for="left-file-menu" >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-x-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                </svg> 
+            </div>
+        </div>
+        <foreach name="sort" key="k_level1" item="v_level1">
+            <div class="list_group del_{$v_level1['id']}">
+                <div class="layer_1_tab mainMenu text-white d-flex align-items-center" alt="layer_{$v_level1['id']}">
+                    <!-- 文章/階層icon -->
+                    <if condition="$v_level1['file_layer'] eq 0">
+                        <i class="layer_icon fas fa-file-alt mr-1"></i>
+                    <elseif condition="count($v_level1['sub_file']) gt 0" />
+                        <i class="layer_icon fas fa-folder-open mr-1"></i>
+                    <else />
+                        <i class="layer_icon fas fa-folder mr-1"></i>
+                    </if>
+
+                    <a class="w-100 d-flex align-items-center" href="{:U('Km/read', ['type'=>$fileCode])}?id={$v_level1['id']}">
+                        <text class="ellipsis d-inline-block" style="width: calc(100% - 40px);">
+                            {$v_level1['title']}
+                        </text>
+                        <if condition="$v_level1['read_ck'] neq 0">
+                            <text class="read_ck text-danger font-weight-bold" id="file_not_read_{$v_level1['id']}">
+                                {$v_level1['read_ck']}
+                            </text>
+                        </if>
+                    </a>
+
+                    <if condition="$acc[$right_hid] eq '1' || $acc[$right_new] eq '1' ">
+                        <div class="item_setting opt_color_01">
+                            <div class="cog"><i class="fas fa-cog"></i></div>
+                            <div class="opt_group">
+                                <if condition="$acc[$right_new] eq '1' and $v_level1['file_layer'] eq 1">
+                                    <a class="opt_btn addch"
+                                        href="{:U('Km/edit', ['type'=>$fileCode])}?id=0&parent_id={$v_level1['id']}"></a>
+                                </if>
+                                <if condition="$acc[$right_hid] eq '1'">
+                                    <a class="opt_btn del" fid="{$v_level1['id']}"></a>
+                                </if>
+                            </div>
+                        </div>
+                    </if>
+                    <input type="text" style="background-color:#FF00FF;" class="order_input" o_name="file_order[{$v_level1['id']}]" value="{$v_level1['order_id']}">
+                </div>
+                <foreach name="v_level1['sub_file']" key="k_level2" item="v_level2">
+                    <ul class="del_{$v_level2['id']}">
+                        <li class="layer_{$v_level1['id']}">
+                            <div class="layer_2_tab mainMenu text-white d-flex align-items-center" 
+                                 alt="layer_{$v_level1['id']}_{$v_level2['id']}">
+                                <!-- 文章/階層icon -->
+                                <if condition="$v_level2['file_layer'] eq 0">
+                                    <i class="layer_icon fas fa-file-alt mr-1"></i>
+                                <elseif condition="count($v_level2['sub_file']) gt 0" />
+                                    <i class="layer_icon fas fa-folder-open mr-1"></i>
+                                <else />
+                                    <i class="layer_icon fas fa-folder mr-1"></i>
+                                </if>
+
+                                <a class="w-100 d-flex align-items-center" href="{:U('Km/read', ['type'=>$fileCode])}?id={$v_level2['id']}">
+                                    <text class="ellipsis d-inline-block" style="width: calc(100% - 40px);">
+                                        {$v_level2['title']}
+                                    </text>
+                                    <if condition="$v_level2['read_ck'] neq 0">
+                                        <text class="read_ck text-danger font-weight-bold" id="file_not_read_{$v_level2['id']}">
+                                            {$v_level2['read_ck']}
+                                        </text>
+                                    </if>
+                                </a>
+
+                                <if condition="$acc[$right_hid] eq '1' || $acc[$right_new] eq '1'">
+                                    <div class="item_setting opt_color_01">
+                                        <div class="cog"><i class="fas fa-cog" aria-hidden="true"></i></div>
+                                        <div class="opt_group">
+                                            <if condition="$acc[$right_new] eq '1' and $v_level2['file_layer'] eq 1">
+                                                <a class="opt_btn addch"
+                                                    href="{:U('Km/edit', ['type'=>$fileCode])}?id=0&parent_id={$v_level2['id']}"></a>
+                                            </if>
+                                            <if condition="$acc[$right_hid] eq '1'">
+                                                <a class="opt_btn del" fid="{$v_level2['id']}"></a>
+                                            </if>
+                                        </div>
+                                    </div>
+                                </if>
+                                <input type="text" style="background-color:white;" class="order_input"
+                                    o_name="file_order[{$v_level2['id']}]" value="{$v_level2['order_id']}">
+                            </div>
+                            <foreach name="v_level2['sub_file']" key="key" item="vo">
+                                <ul class="del_{$vo['id']}">
+                                    <li class="layer_{$v_level1['id']}_{$v_level2['id']}">
+                                        <div class="layer_3_tab text-white d-flex align-items-center">
+                                            <!-- 文章/階層icon -->
+                                            <i class="fas fa-file-alt mr-1"></i>
+
+                                            <a class="w-100 d-flex align-items-center" href="{:U('Km/read', ['type'=>$fileCode])}?id={$vo.id}" class="">
+                                                <text class="ellipsis d-inline-block" style="width: calc(100% - 40px);">
+                                                    {$vo['title']}
+                                                </text>
+                                                <if condition="$vo['read_ck'] neq 0">
+                                                    <text class="read_ck text-danger font-weight-bold" id="file_not_read_{$vo['id']}">
+                                                        {$vo['read_ck']}
+                                                    </text>
+                                                </if>
+                                            </a>
+                                            <if condition="$acc[$right_hid] eq '1'">
+                                                <div href="#" class="item_setting opt_color_01">
+                                                    <div class="cog"><i class="fas fa-cog" aria-hidden="true"></i></div>
+                                                    <div class="opt_group">
+                                                        <a class="opt_btn del" fid="{$vo['id']}"></a>
+                                                    </div>
+                                                </div>
+                                            </if>
+                                            <input type="text" style="background-color:#C0C0C0;" class="order_input"
+                                                o_name="file_order[{$vo['id']}]" value="{$vo['order_id']}">
+                                        </div>
+                                    </li>
+                                </ul>
+                            </foreach>
+                        </li>
+                    </ul>
+                </foreach>
+            </div>
+        </foreach>
+    </div>
+</form>
+
+<script src="__PUBLIC__/js/custom.js?0000"></script>
+<script>
+    // 左文章選單
+    $(".editmenu-open").click(function (e) {
+        $(this).toggleClass('arrow');
+        $(".left-file-menu").toggleClass('on');
+
+    });
+    $(".close-below").click(function (e) {
+        $(".left-file-menu").removeClass('on');
+        $('.editmenu-open').removeClass('arrow');
+    });
+    $(".list_group a").click(function (e) {
+       $(".left-file-menu").removeClass('on');
+   });
+  
+    
+    $(".cog").click(function (e) {
+        if(!$(this).next('.opt_group').hasClass( "open" )){
+            $(this).next('.opt_group').addClass('open');
+            $(this).parent().css('width', '150px');
+
+        }else {
+            $(this).next('.opt_group').removeClass('open');
+            $(this).parent().css('width', '0px');
+        }
+    });
+ 
+    $('.layer_icon').click(function(e){
+        e.stopPropagation();
+        $('.' + $(this).parent().attr('alt')).stop().slideToggle(300);
+    });
+    $(".del").click(function(e){
+        fid = $(this).attr("fid");
+        if(confirm('確認刪除？')){
+            var opt_btn_data = {
+                id:fid,
+            };
+            $.ajax({
+                method:'post',
+                data:opt_btn_data,
+                dataType:'json',
+                url:"{:U('Km/file_del', ['type'=>$fileCode])}",
+                success:function(res){
+                    console.log(e.currentTarget);
+                    if(res.status){
+                        $(e.currentTarget).css('display', 'none');
+                        $(".del_"+fid).remove();
+                    }
+                }
+            });
+        }
+    });
+
+    /*有修改的才提交修改排序*/
+    $('.order_input').on('change', function(e){
+        item = $(e.currentTarget);
+        o_name =item.attr('o_name');
+        item.attr('name', o_name)
+    });
+    
+    function open_all(){
+        $('.list_group ul>li').slideDown();
+        localStorage.setItem('Km_mainMenu_close', '[]');
+    }
+    function close_all(){
+        $('.list_group ul>li').slideUp();
+        mainMenu = $('.mainMenu');
+        mainMenu_close = [];
+        for (var i = 0; i < mainMenu.length; i++) {
+            mainMenu_close.push($(mainMenu[i]).attr('alt'));
+        }
+        localStorage.setItem('Km_mainMenu_close', JSON.stringify(mainMenu_close));
+    }
+
+    /*紀錄選單開關*/
+        $('.left-file-menu .list_layer').on("scroll", function(e){
+            target = e.currentTarget;
+            localStorage.setItem('Km_mainMenu_scrollTop', $(target)[0].scrollTop);
+        });
+        $('.mainMenu').on('click', function(e){
+            target = e.currentTarget;
+            var target_id = $(target).attr('alt');
+            var mainMenu_close = localStorage.getItem('Km_mainMenu_close');
+            mainMenu_close = mainMenu_close ? JSON.parse(mainMenu_close) : [];
+            index = mainMenu_close.indexOf(target_id);
+            if( index==-1 ){ /*不存在關閉紀錄*/
+                mainMenu_close.push(target_id);
+            }
+            else{
+                mainMenu_close.splice(index, 1);
+            }
+
+            localStorage.setItem('Km_mainMenu_close', JSON.stringify(mainMenu_close));
+        });
+        $(document).ready(function(){
+            var mainMenu_close = localStorage.getItem('Km_mainMenu_close');
+            mainMenu_close = mainMenu_close ? JSON.parse(mainMenu_close) : [];
+            for (var i = 0; i < mainMenu_close.length; i++) {
+                $('[alt="'+mainMenu_close[i]+'"]').click();
+            }
+            localStorage.setItem('Km_mainMenu_close', JSON.stringify(mainMenu_close));
+
+            setTimeout(function(){
+                var mainMenu_scrollTop = localStorage.getItem('Km_mainMenu_scrollTop');
+                mainMenu_scrollTop = mainMenu_scrollTop ? mainMenu_scrollTop : '0';
+                $('.left-file-menu .list_layer')[0].scroll('0', mainMenu_scrollTop);
+            },300);
+        });
+</script>
+

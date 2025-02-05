@@ -1,0 +1,420 @@
+<include file="Public:header2" />
+<style>
+	.small_width{
+		width: 75px;
+		min-width: 75px;
+	}
+	.medium_width{
+		width: 150px;
+		min-width: 150px;
+	}
+	.large_width{
+		width: 200px;
+		min-width: 200px;
+	}
+	.slarge_width{
+		width: 300px;
+		min-width: 300px;
+	}
+	.xlarge_width{
+		width: 500px;
+		min-width: 500px;
+	}
+	.xlarge_width img,
+	.large_width img{
+		width: 100%;
+	}
+	.border_bottom{
+		border-bottom: 1px solid #c7c7c7a6;
+	}
+	.resize_vertical{
+		resize: vertical;
+		overflow: auto;
+		height: 24px;
+		min-height: 24px;
+	}
+</style>
+
+<section class="main" id="perform">
+	<div id="right">
+		<div>
+			<br>
+			<form name="search" id="searchform" action="{:u('Performance/index',$_GET)}" method="get">
+				<input type="hidden" name="cate" value="{$_GET['cate']}" />
+				<ol class="headerOl rightR">
+					<li>
+						<select name="year" v-model="year" @change="search">
+							<option value="">年份</option>
+							<foreach name="years" item="op">
+								<option>{$op}</option>
+							</foreach>
+						</select>
+					</li>
+					<li>
+						<select name="month" v-model="month" @change="search">
+							<option value="">月份</option>
+							<foreach name="months" item="op">
+								<option >{$op}</option>
+							</foreach>
+						</select>
+					</li>
+					<li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
+				</ol>
+				<ol>
+					<li>
+	                    <div>
+	                        <span>請選擇人員：</span>
+	                        <span v-for="item in user">
+	                            <input type="checkbox" :id="'member'+item.id" :value="item" v-model="user_selected"  @click="save_user(item)">
+	                            <label :for="'member'+item.id">{{item.name}}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+	                        </span>
+	                    </div>
+	                </li>
+				</ol>
+			</form>
+		</div>
+
+		<div class="content-table">
+			<h3>&nbsp;&nbsp;<span>{$group_name}</span>&nbsp;&nbsp;<span v-text="year"></span>&nbsp;年度&nbsp;<span v-text="month"></span>&nbsp;月</h3>
+			<div class="edit_form">
+				<table cellpadding="2" cellspacing="1" class="table edit_table">
+					<thead class="edit_table_thead">
+						<tr>
+							<th class="small_width text-left">姓名</th>
+							<th class="small_width text-right">月總目標</th>
+							<th class="small_width text-right">月總達成</th>
+							<th class="small_width text-right">月總外單</th>
+							<th class="small_width text-right">月總內單</th>
+							<th class="small_width text-right">月總獎金</th>
+
+							<!-- 各部門/組別 -->
+							<th>
+								完成案件<br>
+								<table>
+									<tr style="background-color: unset;">
+										<th class="medium_width border-bottom-0 text-left">客戶名稱</th>
+										<th class="large_width border-bottom-0 text-left">{$system_parameter['合約']}/事件編號</th>
+										<th class="medium_width border-bottom-0 text-left">完成日期</th>
+										<th class="small_width border-bottom-0 text-left">{$system_parameter['合約']}類型</th>
+										<th class="small_width border-bottom-0 text-left">內外單</th>
+										<th class="medium_width border-bottom-0 text-right">金額(稅前)</th>
+										<th class="small_width border-bottom-0 text-right">預估工時</th>
+										<th class="small_width border-bottom-0 text-right">實際工時</th>
+										<th class="slarge_width border-bottom-0 text-left">名稱</th>
+										<th class="xlarge_width border-bottom-0 text-left">內容</th>
+									</tr>
+								</table>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="item in user_selected">
+							<td class="border_bottom" v-text="item.name"></td>
+							<td class="border_bottom text-right">{{ month_user_perform(year, month, item.id, 'aim') }}</td>
+							<td class="border_bottom text-right" :style="checkaim( month_user_perform(year, month, item.id, 'complete', 'sum'), month_user_perform(year, month, item.id, 'aim'))">
+								{{ month_user_perform(year, month, item.id, 'complete', 'sum') }}<br>
+								{{ month_user_perform_rate(year, month, item.id, 'complete', 'sum') }}
+							</td>
+							<td class="border_bottom text-right">
+								{{ month_user_perform(year, month, item.id, 'out', 'sum') }}<br>
+								{{ month_user_perform_rate(year, month, item.id, 'out', 'sum') }}
+							</td>
+							<td class="border_bottom text-right">
+								{{ month_user_perform(year, month, item.id, 'in', 'sum') }}<br>
+								{{ month_user_perform_rate(year, month, item.id, 'in', 'sum') }}
+							</td>
+							<td class="border_bottom text-right">{{ month_user_perform(year, month, item.id, 'bonus', 'sum') }}</td>
+
+							<td class="border_bottom" style="padding: 5px 0px 0px 0px;">
+								<table class="item_table">
+									<!-- 依會記入帳項目 -->
+									<tr class="cursor_pointer" v-for="contrcact in user_item(item.id, 'account')" @dblclick="openpage(contrcact.id, 'countract')">
+										<td class="medium_width">{{ contrcact.show_name }}</td>
+										<td class="large_width">{{ contrcact.no }}</td>
+										<td class="medium_width">{{ contrcact.date.slice(0,10) }}</td>
+										<td class="small_width">{{ contrcact.cate_name }}</td>
+										<td class="small_width">{{ contrcact.count_type }}</td>
+										<td class="medium_width text-right">{{ contrcact.money }}</td>
+										<td class="small_width text-right"></td>
+										<td class="small_width text-right"></td>
+										<td class="slarge_width"></td>
+										<td class="xlarge_width"></td>
+									</tr>
+
+									<!-- 會記事件簿分隔線 -->
+									<tr v-if="user_item(item.id, 'account').length>0 && user_item(item.id, 'event').length>0">
+										<td class="border_bottom" colspan="10"></td>
+									</tr>
+
+									<!-- 依事件簿完成項目 -->
+									<tr class="cursor_pointer" v-for="event in user_item(item.id, 'event')" @dblclick="openpage(event.id, 'event')">
+										<td class="medium_width">{{ event.show_name }}</td>
+										<td class="large_width">{{ event.no }}</td>
+										<td class="medium_width">{{ event.date.slice(0,10) }}</td>
+										<td class="small_width">{{ event.cate_name }}</td>
+										<td class="small_width">{{ event.count_type }}</td>
+										<td class="medium_width text-right">{{ event.money }}</td>
+										<td class="small_width text-right">{{ event.estimated_time }}天</td>
+										<td class="small_width text-right">{{ event.exact_time }}天</td>
+										<td class="slarge_width">{{ event.title }}</td>
+										<td class="xlarge_width"><div class="resize_vertical" v-html="event.content"></div></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+
+						<tr style="background-color: var(--light-color)">
+							<td colspan="7"></td>
+						</tr>
+						<tr>
+							<td style="background-color: var(--light-color);" >月總計：</td>
+							<td data-th="月各部門/組別目標" class="text-right">{{ month_group_perform(year, month, group.group_member, 'aim') }}</td>
+							<td colspan="3" style="padding: 0px">
+								<table>
+									<tr>
+										<!-- 月統計 -->
+										<td data-th="月各部門/組別達成" class="text-right small_width" :style="checkaim(month_group_perform(year, month, group.group_member, 'complete') ,month_group_perform(year, month, group.group_member, 'aim'))">{{ month_group_perform(year, month, group.group_member, 'complete') }}</td>
+										<td data-th="月各部門/組別外單" class="text-right small_width">{{ month_group_perform(year, month, group.group_member, 'out') }}</td>
+										<td data-th="月各部門/組別內單" class="text-right small_width">{{ month_group_perform(year, month, group.group_member, 'in') }}</td>
+									<tr>
+									<tr>
+										<!-- 月比率 -->
+										<td data-th="月各部門/組別達成" class="text-right" :style="checkaim(month_group_perform(year, month, group.group_member, 'complete') ,month_group_perform(year, month, group.group_member, 'aim'))">{{ month_group_perform_rate(year, month, group.group_member, 'complete') }}</td>
+										<td data-th="月各部門/組別外單" class="text-right">{{ month_group_perform_rate(year, month, group.group_member, 'out') }}</td>
+										<td data-th="月各部門/組別內單" class="text-right">{{ month_group_perform_rate(year, month, group.group_member, 'in') }}</td>
+									</tr>
+								</table>
+							</td>
+							<td class="text-right">{{ month_group_perform(year, month, group.group_member, 'bonus') }}</td>
+							<td></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />
+<script src="__PUBLIC__/js/dk-tw-citySelector/dk-tw-citySelector.js"></script>
+
+<script language="javascript" type="text/javascript">
+	$(".Wdate").each(function(){
+		$(this).datepicker({
+			firstDay : 0,
+			defaultDate : "-7d"
+		});
+		$(this).datepicker( "option", "dateFormat",'yy-mm-dd');
+		if(typeof($(this).attr("datev")) != 'undefine'){
+			$(this).datepicker('setDate',$(this).attr("datev"));
+		}
+	});
+
+	// 取得網址參數
+	var searchlist = location.search.substring(1).split('&');
+	var searchDict = {};
+	for(var i=0; i < searchlist.length; i++){
+		item = searchlist[i].split('=');
+		searchDict[item[0]] = item[1];
+	}
+	// console.log(searchDict);
+
+    vuedata = {
+        year:null,
+        month:null,
+        type:null,
+        performance:[],
+        groups:[],
+        groups_selected:[ {'group_member':[]} ],
+        user:[],
+        user_selected:[],
+    };
+    var perform = new Vue({
+        el: '#perform', 
+        data: vuedata,
+        computed: {
+        	group :function(){
+        		return this.groups_selected[0];
+        	},
+        	user_selected_id_array :function(){
+        		id_array = [];
+        		for (var i = 0; i < this.user_selected.length; i++) {
+        			id_array.push(this.user_selected[i]['id']);
+        		}
+        		return id_array;
+        	},
+        },
+        methods: {
+        	search: function(renew_all=false){
+        		if(this.year && this.month){
+        			renew_vue(this.year, this.month, this.type, renew_all);
+        		}else{
+        			Vue.toasted.show('請選擇年/月', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+        		}
+        	},
+        	save_user: function(item){
+        	},
+        	openpage: function(id, type){
+        		var url = '';
+        		switch (type) {
+					case 'contrcact':
+						url = '/index.php/Alllist/view.html?id=';
+						break;
+
+					case 'event':
+						url = '/index.php/Fig/view.html?id=';
+						break;
+
+					default:
+						return;
+				}
+				window.open(url+id, '_blank');
+
+        	},
+        	user_item: function(user_id, method){
+        		items = [];
+        		if(this.performance[this.year]){
+        			items = this.performance[this.year][this.month][user_id][method]['items'];
+        		}
+						// return items;
+						items2 = JSON.parse(JSON.stringify(items));
+						items2 = items2.sort((a, b)=>{
+							if ( a.date < b.date ){
+								return -1;
+							}
+							if ( a.date > b.date ){
+								return 1;
+							}
+							return 0;
+						});
+        		return items2;
+        	},
+        	month_user_perform: function(year, month, user_id, anay, method=''){
+        		count = 0;
+        		if(this.performance[year]){
+        			user_data = this.performance[year][month][user_id];
+        			if(anay=='aim'){
+        				count = user_data['aim'];
+        			}else if(method == 'sum'){
+        				count = user_data['account'][anay] + user_data['event'][anay];
+        			}else{
+        				count = user_data[method][anay];
+        			}
+        		}
+        		return addCommas(count);
+        	},
+        	month_user_perform_rate: function(year, month, user_id, anay, method=''){
+        		aim = removeCommas(this.month_user_perform(year, month, user_id, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.month_user_perform(year, month, user_id, anay, 'sum'));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	month_group_perform: function(year, month, group_member, anay){
+        		count = 0;
+        		if(this.performance[year]){
+	        		user_data = this.performance[year][month];
+	    			for(var u = 0; u < group_member.length; u++){
+	    				user_id = group_member[u];
+	    				if(user_data[user_id] && this.user_selected_id_array.includes(user_id)){
+	    					if(anay=='aim'){
+	    						count += user_data[user_id][anay]; // 目標
+	    					}else{
+	    						count += user_data[user_id]['account'][anay] + user_data[user_id]['event'][anay]; // 其他
+	    					}
+	    				}
+	    			}
+	    		}
+        		return addCommas(count);
+        	},
+        	month_group_perform_rate: function(year, month, group_member, anay){
+        		aim = removeCommas(this.month_group_perform(year, month, group_member, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.month_group_perform(year, month, group_member, anay));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	month_perform_rate: function(year, month, anay){
+        		aim = removeCommas(this.month_perform(year, month, 'aim'));
+        		if(aim !=0 && aim != null){
+	        		anay = removeCommas(this.month_perform(year, month, anay));
+	        		rate = (100.00 * anay / aim).toFixed(2)+'%';
+	        	}else{
+	        		rate = '0.00%';
+	        	}
+        		return rate;
+        	},
+        	checkaim: function(num, aim){
+        		num = removeCommas(num);
+        		aim = removeCommas(aim);
+            	var rgb = (num>=aim) ? 'color: rgb(0,150,0)' : 'color: rgb(225,0,0)';
+                return rgb;
+            },
+        }
+    });
+
+    // 初始化資料
+	var year = searchDict['year'] ? searchDict['year'] : new Date().getFullYear();
+	var month = searchDict['month'] ? searchDict['month'] : 1;
+	var type = searchDict['type'] ? searchDict['type'] : 'depart';
+	var group_id = searchDict['group_id'] ? searchDict['group_id'] : '0';
+	var perform_data = null;
+	var vuedata = {};
+
+	function renew_vue(year, month, type, renew=true){
+		$.ajax({
+			method:'get',
+			dataType:'json',
+			url:"{:U('Performance/get_perform_data')}?year="+year+"&month="+month+"&type="+type+"&group_id="+group_id,
+			async:false,
+			success:function(res){
+				// console.log(res);
+				perform.year = year;
+				perform.month = month;
+		        perform.type = type;
+		        perform.performance = res['performance'];
+
+		        if(renew){
+		        	perform.groups = res['groups'];
+		        	perform.groups_selected = res['groups'];
+
+					perform.user = res['users'];
+					perform.user_selected = res['users'];
+			    }
+			    Vue.toasted.show('資料已更新', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			}
+		});
+	}
+	renew_vue(year, month, type);
+
+	// 數字每千位加入逗號
+	function addCommas(nStr){
+	    nStr += '';
+	    x = nStr.split('.');
+	    x1 = x[0];
+	    x2 = x.length > 1 ? '.' + x[1] : '';
+	    var rgx = /(\d+)(\d{3})/;
+	    while (rgx.test(x1)) {
+	        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	    }
+	    return x1 + x2;
+	}
+
+	// 數字取消逗號
+	function removeCommas(nStr){
+		var rgx = /,/;
+		while (rgx.test(nStr)) {
+	    	nStr = nStr.replace(',', '');
+	    }
+	    return parseInt(nStr);
+	}
+</script>
+
+</body>
+</html>

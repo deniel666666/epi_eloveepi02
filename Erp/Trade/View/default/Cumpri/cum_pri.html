@@ -1,0 +1,31 @@
+<include file="Public:header2" />
+<div class="container mw1920 p-4">
+    <form method="post" action="">
+        <div style="overflow-x:auto;">
+            <table class=" edit_table table" style="min-width: 1000px;">
+                <thead>
+                    <tr>
+                        <th width="15%">名稱</th>
+                        <th width="25%">色碼(於訪談紀錄區分不同腳色的對話)</th>
+                        <th width="60%">說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <foreach name="crm_cum_pri" key="key" item="vo">
+                        <tr>
+                            <td width="15%"><input value="{$vo.name}" name="id_{$vo.id}[name]"></td>
+                            <td width="25%">#<input value="{$vo.color}" name="id_{$vo.id}[color]"></td>
+                            <td width="60%">{$vo.note}</td>
+                        </tr>
+                    </foreach>
+                </tbody>
+            </table>
+            <div class="vRight mt-2">
+                <input id="complete" class="btn sendbtn" type="submit" value="修改完成">
+            </div>
+        </div>
+        
+      
+    </form>
+</div>
+<include file="Public:footer" />

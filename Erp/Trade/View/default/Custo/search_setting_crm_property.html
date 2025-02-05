@@ -1,0 +1,44 @@
+<!-- 特性 -->
+<div class="search_setting">
+    <div v-for="(property, property_index) in crm_property" class="search_bar" v-if="property.special==1">
+        <span class="smallText" v-text="property.title+'：'">標題</span>
+        <!-- 輸入設定 -->
+        <input class="text" v-if="['text', 'number', 'date'].indexOf(property.type)!=-1" :type="property.type"
+            v-model="property.ans">
+        <textarea class="text" v-if="['textarea'].indexOf(property.type)!=-1" v-model="property.ans"></textarea>
+        <div class="form-check-all content-box" v-if="['radio'].indexOf(property.type)!=-1">
+            <div class="form-check form-check-inline">
+                <input class="text w_auto" type="radio" v-model="property.ans" :id="'field_id_'+property.id+'_00'">
+                <label class="form-check-label" :for="'field_id_'+property.id+'_00'">無</label>
+            </div>
+            <div class="form-check form-check-inline" v-for="(option, option_index) in property.options">
+                <input class="text w_auto" type="radio" v-model="property.ans"
+                    :id="'field_id_'+property.id+'_'+option_index" :value="option">
+                <label class="form-check-label" :for="'field_id_'+property.id+'_'+option_index"
+                    v-text="option">選項</label>
+            </div>
+        </div>
+        <div class="form-check-all content-box" v-if="['checkbox'].indexOf(property.type)!=-1">
+            <div class="form-check form-check-inline">
+                <input class="text w_auto" type="checkbox" v-model="property.ans" :id="'field_id_'+property.id+'_00'">
+                <label class="form-check-label" :for="'field_id_'+property.id+'_00'">無</label>
+            </div>
+            <div class="form-check form-check-inline" v-for="(option, option_index) in property.options">
+                <input class="text w_auto" type="checkbox" v-model="property.ans"
+                    :id="'field_id_'+property.id+'_'+option_index" :value="option">
+                <label class="form-check-label" :for="'field_id_'+property.id+'_'+option_index"
+                    v-text="option">選項</label>
+            </div>
+        </div>
+        <select class="text" v-if="['select'].indexOf(property.type)!=-1" :id="'field_id_'+property.id"
+            v-model="property.ans">
+            <option value="">請選擇</option>
+            <option v-for="(option, option_index) in property.options" :value="option" v-text="option">
+                選項</option>
+        </select>
+        <div class="p-0 content-box" v-if="['file'].indexOf(property.type)!=-1">
+            <input class="text file" type="text" :name="'field_id_'+property.id" v-model="property.ans.file_name">
+        </div>
+    </div>
+    <div><input type="hidden" name="fields_data" value=""></div>
+</div>

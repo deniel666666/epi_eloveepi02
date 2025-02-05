@@ -1,0 +1,114 @@
+
+<include file="Public:header2" />
+
+  <!-- Start document_template -->
+  <section class="main document">
+    <!-- 共用路徑 -->
+    <include file="Km:public_myfile_btn" />
+
+    <div class="below">
+      <!-- 共用階層列表 -->
+      <include file="Km:leftlist" />
+      <!-- END 共用階層列表 -->
+
+      <div class="right">
+        <div class="document_edit">
+          <div class="document-mode">
+            <form action="{:U('Km/index', ['type'=>$fileCode])}" method="get" class="mb-1">
+              <div class="d-flex flex-wrap">
+                <label for="">搜尋文章：</label>
+                <div class="search_bar" style="width:250px">
+                  <input class="text" type="text" name="title" value="{$_GET['title']}" placeholder="請輸入文章/階層標題或內容"
+                         style="width: 250px;">
+                  <input class="submit submit_button" type="submit" value="">
+                </div>
+              </div>
+            </form>
+
+            <include file="Km:public_file_location_btn"/>
+          </div>
+          <table class="document_list table full_history-table">
+            <thead>
+              <tr>
+                <th class="" style="width: 25%; max-width:300px">位置</th>
+                <th class="document_head">標題</th>
+                <th class="document_time">公告日期</th>
+                <th class="document_pub">發佈者</th>
+              </tr>
+            </thead>
+            <tbody>
+              <foreach name="file" item="vo">
+                <tr id="del{$vo.id}">
+                  <td>{$vo.location}</td>
+                  <td>
+                    <a class="read_url" href="{:U('Km/read', ['type'=>$fileCode])}?id={$vo.id}">
+                      {$vo['title']}
+                    </a>
+                  </td>
+                  <td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+                  <td>{$vo.name}</td>
+                </tr>
+              </foreach>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 換頁按鈕 -->
+        <div class="page">
+          {$show}
+        </div>
+
+        <script>
+          // 離開頁面時是否檢確認離開
+          var check_renew = false;
+
+          $( document ).ready(function() {
+            // 點擊上方文章目錄、共用文件
+            $('a.Km_auto_no').on('click', function(e){
+              localStorage.setItem('Km_auto', 'no');
+            })
+
+            // 使用搜尋
+            $('input.submit_button').on('click', function(e){
+              var title = $('input[name="title"]').val();
+              url = "{:U('Km/search', ['type'=>$fileCode])}?title="+title;
+              history.pushState({}, "", url);
+              $.ajax({
+                method:'get',
+                dataType:'text',
+                url:url,
+                success:function(res){
+                  ajax_change_right(res) //定義在Km/js.html
+                }
+              });
+              e.preventDefault();
+            })
+
+            // 點擊搜尋結果的文章 || 分頁連結
+                $('a.read_url, .page a').on('click', function(e){
+                  url = $(e.currentTarget).attr('href');
+                  history.pushState({}, "", url);
+                  $.ajax({
+                    method:'get',
+                    dataType:'text',
+                    url:url,
+                    success:function(res){
+                      ajax_change_right(res) //定義在Km/js.html
+                    }
+                  });
+                  e.preventDefault();
+                })
+
+                //修改路徑
+            $('#mainPath').html(`
+              <span>></span><a class="Km_auto_no" href="{:U('Km/index', ['type'=>$fileCode])}">文章目錄</a>
+            `)
+            $('#secondPath').html(``)
+            $('#thirdPath').html(``)
+          });
+        </script>
+        <include file="Km:js" />
+      </div right_end>
+
+    </div>
+  </section>

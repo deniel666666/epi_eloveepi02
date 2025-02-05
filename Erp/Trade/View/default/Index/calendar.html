@@ -1,0 +1,164 @@
+<!-- 月曆 -->
+<div id="calendar" class="col-12 calendar_box">
+	<div class="calendar_area">
+		<div class="top">
+			<div class="left_col">
+				<div class="title_bar d-none d-md-block">行事曆管理-<span>{$_SESSION['userName']}</span></div>
+				<p>民國{$cyear}年（西元{$time|date="Y",###}年）</p>
+				<div class="mm-select">
+					<div class="month_select" year="{$time|date='Y',###}" month="{$time|date='m',###}" action="-1">
+						<i class="fas fa-chevron-left"></i>
+					</div>
+					<h4>{$time|date="m月",###}</h4>
+					<div class="month_select" year="{$time|date='Y',###}" month="{$time|date='m',###}" action="+1">
+						<i class="fas fa-chevron-right"></i>
+					</div>
+					<!-- <ul>
+						<li class="delay"><a href="#">預約{$system_parameter["客戶"]}</a></li>
+						<li class="normal"><a>輸入活動</a></li>
+					</ul> -->
+				</div>
+			</div>
+		</div>
+		<table>
+			<tr>
+				<th>週日</th>
+				<th>週一</th>
+				<th>週二</th>
+				<th>週三</th>
+				<th>週四</th>
+				<th>週五</th>
+				<th>週六</th>
+			</tr>
+			<volist name="day" id="vm" key="km">
+				<if condition="($km-1)%7 eq 0">
+					<tr>
+				</if>
+				<if condition="$date eq $vm['key']">
+					<td class="today" style="height:30px;">
+				<else />
+					<td>
+				</if>
+				<!--<a class="{$vm['class']}" style="height:30px;">-->
+				<if condition="$vm['class'] eq 'not_this_month'">
+					<a class="{$vm['class']}" style="height:30px;display:none">
+				<else />
+					<a class="{$vm['class']} date_select" month="{$time|date='Y-m',###}" date="{$vm['day']}" action="click" style="height:100%;">
+				</if>
+					<div class="mm"><div class="mm-date">{$vm['day']}</div>
+						<div class="date-list">
+							<if condition="$vm[delay] neq 0">
+								<div class="dvmain">
+									<span class="delay_mark">&#40;{$vm[delay]}&#41;</span>
+									<span class="tooltip delay-name">{$vm[tip]['delay']}</span>
+								</div>
+							</if>
+							<if condition="$vm[nor] neq 0">
+								<div class="dvmain">
+									<span class="nor_mark">&#40;{$vm[nor]}&#41;</span>
+									<span class="tooltip">
+										<if condition="mb_strlen($vm[tip]['nor']) gt 12">
+											{$vm[tip]['nor']|mb_substr=0,12}.....
+										<else />
+											<span>{$vm[tip]['nor']}</span>
+										</if>
+									</span>
+								</div>
+							</if>
+						</div>
+					</div>
+				</a>
+				</td>
+				<if condition="($km-1)%7 eq 6">
+					</tr>
+				</if>
+			</volist>
+		</table>
+	</div>
+</div>
+
+<!-- 當日明細區塊 -->
+<if condition="$my_access['crm_red']==1">
+	<div id="date_info" class="col-xl-6 co-12">
+		<div class="date_info_area">
+			<div class="to_do_box change" id="form-d-none-ipad">
+				<h3 class="casetitle">當日明細</h3>
+				<div class="to_do_title">
+					<p>民國{$cyear}年（西元{$time|date="Y",###}年）</p>
+					<div class="now_time">{$time|date="m月",###}</div>
+					<div class="now_time">
+						<div class="date_change" month="{$time|date='m',###}" date="{$time|date='Y-m-d',###}" action="-1"><i class="fas fa-chevron-left" aria-hidden="true"></i></div>
+						{$time|date="d日",###}
+						<div class="date_change" month="{$time|date='m',###}" date="{$time|date='Y-m-d',###}" action="+1"><i class="fas fa-chevron-right" aria-hidden="true"></i></div>
+					</div>
+				</div>
+				
+				<div class="list_group">
+					<div id="show_list">
+						<if condition="in_array(75, $use_function_top)">
+							<div class="reserve">
+								<h4 class="sub-title main_blue">預約{$system_parameter["客戶"]}列表</h4>
+								<ul>
+									<volist name="todlis1" id="vo">
+										<li>
+											<if condition="$vo['class'] eq 'delay_things'">
+												<a href="{$vo['href']}" target="_blank">{$vo['content']}</a>
+											</if>
+										</li>
+									</volist>
+								</ul>
+							</div>
+						</if>
+						<div class="event-input">
+							<h4 class="sub-title">輸入活動列表</h4>
+							<div class="event-content">
+								<volist name="todlis3" id="vo">
+									<if condition="$vo['class'] eq 'nor_things'">
+										<div class="stuff all" style="width:100%;" allcontent="{$vo[content]}">
+											<span>{$vo[content]}</span>
+											<a title="編輯" class="edit_btn" href="#modify{$i}" role="button"
+											   aria-expanded="false" aria-controls="modify{$i}"  data-toggle="collapse">修改</a>
+											<a title="刪除" class="trash_btn" mid="{$vo[id]}"><i class="far fa-trash-alt"></i></a>
+											<div class="modify-content collapse" id="modify{$i}">
+												<form action="{:u('Index/aj_addthing')}" method="post">
+													<div class="input-do-item">
+														<input type="hidden" name="id" value="{$vo[id]}" />
+														<input type="hidden" name="eid" value="0"/>
+														<input type="datetime-local" class="date" name="time" 
+															   value="{$vo[time]|date='Y-m-d',###}T{$vo[time]|date='H:i',###}"/>
+														<input class="things_set" type="text" name="content" value="{$vo[mcontent]}">
+														<input type="hidden" name="frequency" value="1" />
+														<input type="submit" class="enter_btn" value="更新" />
+													</div>
+												</form>
+											</div>
+										</div>
+									</if>
+								</volist>
+							</div>
+						</div>
+						<!-- End  -->
+					</div>
+
+					<h3 class="casetitle">輸入活動</h3>
+					<form action="{:u('Index/aj_addthing')}" method="post">
+						<div class="input-do-item">
+							<input type="hidden" name="id" value="0" class="hidd_id" />
+							<input type="hidden" name="eid" value="0" class="hidd_eid" />
+							<!--input class="time_set" name="time" type = "text"-->
+							<input type="datetime-local" class="date" name="time" value="{$date}T{$time|date=m,###}:00"/>
+							<input class="things_set" type="text" name="content" placeholder="活動(可自行輸入時間以便紀錄)">
+							<!--<input type="radio" name="frequency" value = "1" checked />單次
+													<input type="radio" name="frequency" value = "2" />每天
+													<input type="radio" name="frequency" value = "3" />每星期
+													<input type="radio" name="frequency" value = "4" />每月
+													<input type="radio" name="frequency" value = "5" />每年<br>-->
+							<input type="hidden" name="frequency" value="1" />
+							<input type="submit" class="enter_btn" value="新增" />
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</if>

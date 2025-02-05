@@ -1,0 +1,828 @@
+<include file="Public:header2" />
+<head>
+  <style>
+    #table_schedule_mobile table thead tr th{
+      position: sticky;
+      z-index: 2;
+      top: 127px;
+    }
+  </style>
+</head>
+
+<section id="calendar">
+  <section id="right" class="main">
+    <div class="right">
+      <div class="container mw1920 p-0">
+        <button class="mt-3 btn btn-primary w-100" @click="open_arrange_work_modal">我要排班</button>
+
+        <div class="calendar_box p-0">
+          <div class="top">
+            <div class="left_col pb-0">
+              <p class="color-main-color">民國<span v-text="year - 1911"></span>年（西元<span v-text="year"></span>年）</p>
+              <div class="mm-select">
+                <div class="month_select" @click="add_month(-1)">
+                  <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                </div>
+                <h4><span v-text="month"></span>月</h4>
+                <div class="month_select" @click="add_month(1)">
+                  <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="schedule_calendar mb-2">
+          <div class="week_div week_head">
+            <div class="day"><div class="holiday">週日</div></div>
+            <div class="day">週一</div>
+            <div class="day">週二</div>
+            <div class="day">週三</div>
+            <div class="day">週四</div>
+            <div class="day">週五</div>
+            <div class="day"><span class="holiday">週六</span></div>
+          </div>
+          <div class="week_div">
+            <template v-for="(day,day_i) in month_days">
+              <div :class="['day cursor_pointer position-relative', 
+                      (day_i%7==0 || day_i%7==6) ? 'holiday' : '',
+                      check_date(day, '') ? 'today' : '',
+                      check_date(day, selected_day) ? 'selected_day' : '',
+                    ]"
+                  @click="select_day(day)">
+                <div class="w-100 position-absolute mt-sm-1 mt-0">
+                  <div style="word-break: keep-all;">
+                    <span class="mr-sm-2 mr-0" v-text="day"></span>
+                    <template v-if="count_num(works_group['day_'+day])">
+                      <span class="work_mark" v-text="count_num(works_group['day_'+day])"></span>
+                    </template>
+                  </div>
+                  <template v-if="works_group['day_'+day]">
+                    <template v-for="(work, work_idx) in works_group['day_'+day].slice(0, 3)">
+                      <template v-if="work_idx<2 || (work_idx==2 && works_group['day_'+day].length==3)">
+                        <div class="work_name">
+                          <span v-if="work.in_examine==1"><i class="fas far fa-calculator"></i></span>
+                          <span v-if="work.in_charge==1"><i class="fas fa-hard-hat"></i></span>
+                          <span v-if="work.staff==1"><i class="fas fa-wrench"></i></span>
+                          <a :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+work.schedule_date_primary">
+                            <span v-text="work.name"></span>
+                          </a>
+                        </div>
+                      </template>
+                      <template v-else-if="work_idx==2 && works_group['day_'+day].length>3">
+                        <div class="work_name">
+                          <a>
+                            還有<span v-text="works_group['day_'+day].length-2"></span>個
+                          </a>
+                        </div>
+                      </template>
+                    </template>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+        <div>
+          <section class="d-sm-block d-none">
+            <div class="d-flex flex-wrap align-items-center justify-content-between">
+              <div class="d-flex flex-wrap">
+                <div class="eip_btn_block p-1 mr-3 mb-2 prevent-select">
+                  <span class="cursor_pointer text-white pl-2 pr-2 mr-2 prevent-select"
+                        @click="change_day(24*60*60*1000*-1)">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                  </span>
+                  <input id="day_selecter" type="date" class="mr-2" v-model="day_selecter" @change="day_selecter_change">
+                  <span class="cursor_pointer text-white pl-2 pr-2 ml-2 prevent-select" 
+                        @click="change_day(24*60*60*1000)">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                  </span>
+                </div>
+                <div class="eip_btn_block text-white pt-1 pb-1 pl-2 pr-2 mb-2 prevent-select">
+                  • 共 <span v-text="show_work_list.length"></span> 件
+                </div>
+              </div>
+              <button class="btn eip-btn-white mb-2" @click="show_month_all">查看本月全部</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <!-- 電腦版工作列表 -->
+              <table id="table_schedule" class="table edit_table mb-2" style="border-collapse: collapse; border-spacing:0; min-width: 900px;">
+                <thead>
+                  <tr class="bg-gray-light">
+                    <th class="color-main-color bg-gray-light" style="min-width: 150px;">日期</th>
+                    <th class="color-main-color bg-gray-light" style="min-width: 200px;">名稱</th>
+                    <th class="color-main-color bg-gray-light" style="min-width: 300px;">地點</th>
+                    <th class="color-main-color bg-gray-light" style="min-width: 100px;">審核者(<i class="fas far fa-calculator"></i>)</th>
+                    <th class="color-main-color bg-gray-light" style="min-width: 100px;">當日管理者(<i class="fas fa-hard-hat"></i>)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-for="(schedule,schedule_index) in show_work_list">
+                    <tr :class="['border-left border-right', schedule.works.length==0 ? 'border-bottom' : '']">
+                      <td :rowspan="schedule.works.length+1" style="vertical-align: baseline">
+                        <span class="color-sub-color">│</span>
+                        <span v-text="schedule.date"></span>
+                        (<span v-text="show_week_day(schedule.date)"></span>)
+                      </td>
+                      <td>
+                        <a class="text-dark"
+                          :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+schedule.schedule_date_primary">
+                          <b v-text="schedule.name"></b>
+                        </a>
+                        <span v-if="schedule.in_examine==1"><i class="fas far fa-calculator"></i></span>
+                        <span v-if="schedule.in_charge==1"><i class="fas fa-hard-hat"></i></span>
+                        <span v-if="schedule.staff==1"><i class="fas fa-wrench"></i></span>
+                      </td>
+                      <td>
+                        <template v-if="schedule.location">
+                          <a :href="'https://www.google.com/maps/search/'+schedule.location" target="_blank">
+                            <i class="fas far fa-map-marker-alt" aria-hidden="true"></i>
+                            <span v-text="schedule.location"></span>
+                          </a>
+                        </template>
+                      </td>
+                      <td><span v-text="schedule.user_name"></span></td>
+                      <td><span v-text="schedule.user_in_charge_name"></span></td>
+                    </tr>
+                    <template v-for="work in sort_works(schedule.works)">
+                      <tr class="border-left border-right border-bottom">
+                        <td colspan="2">
+                          <div class="pt-2 pb-2">
+                            <span class="d-inline-block">
+                              <span class="color-sub-color">●</span>
+                              <span class="mr-1" v-text="work.worktime_s_format.substr(11,5)"></span>
+                              <a href="###" 
+                                @click="do_my_roll_call(work.schedule_date_user_primary, 'roll_call_come')">
+                                <button :class="['btn pt-0 pb-0', work.roll_call_come?'btn-disabled':'eip-btn']">
+                                  <template v-if="work.roll_call_come">
+                                    <span v-text="work.roll_call_come_format.substr(11,5)"></span>
+                                    已打卡
+                                  </template>
+                                  <template v-else>上班打卡</template>
+                                </button>
+                              </a>
+                            </span>
+                            <span class="color-sub-color">——●</span>
+                            <span class="d-inline-block">
+                              <span class="mr-1" v-text="work.worktime_e_format.substr(11,5)"></span>
+                              <a href="###" 
+                                @click="do_my_roll_call(work.schedule_date_user_primary, 'roll_call_leave')">
+                                <button :class="['btn pt-0 pb-0', (work.roll_call_leave?'btn-disabled':'eip-btn')]">
+                                  <template v-if="work.roll_call_leave">
+                                    <span v-text="work.roll_call_leave_format.substr(11,5)"></span>
+                                    已打卡
+                                  </template>
+                                  <template v-else>下班打卡</template>
+                                </button>
+                              </a>
+                            </span>
+                          </div>
+                        </td>
+                        <td colspan="2"></td>
+                      </tr>
+                    </template>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="d-sm-none d-block" id="table_schedule_mobile">
+    <!-- 手機版工作列表 -->
+    <section class="main">
+      <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+        <div class="eip_btn_block text-white pt-1 pb-1 pl-2 pr-2 mb-2 prevent-select">
+          • 共 <span v-text="show_work_list.length"></span> 件
+        </div>
+        <button class="btn eip-btn-white mb-2" @click="show_month_all">查看本月全部</button>
+      </div>
+    </section>
+    <div class="eip_btn_block-gray d-flex align-items-center justify-content-around mb-2 p-2">
+      <span class="cursor_pointer pl-2 pr-2 mr-2 prevent-select"
+            @click="change_day(24*60*60*1000*-1)">
+        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+      </span>
+      <input id="day_selecter" type="date" class="mr-2" v-model="day_selecter" @change="day_selecter_change">
+      <span class="cursor_pointer pl-2 pr-2 ml-2 prevent-select" 
+            @click="change_day(24*60*60*1000)">
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+      </span>
+    </div>
+    <section class="main">
+      <table class="w-100">
+        <template v-for="(schedule,schedule_index) in show_work_list">
+          <template v-if="schedule_index==0 || schedule.date!=show_work_list[schedule_index-1].date">
+            <thead>
+              <template v-if="schedule_index!=0">
+                <tr class="bg-white"><td><div class="mt-4"></div></td></tr>
+              </template>
+              <tr class="bg-white">
+                <th class="bg-white">
+                  <div class="eip-btn pl-2 pr-2 pt-1 pb-1">
+                    <span class="text-white">│</span>
+                    <span class="text-white" v-text="schedule.date"></span>
+                    (<span v-text="show_week_day(schedule.date)"></span>)
+                  </div>
+                  <div class=" mb-2"></div>
+                </th>
+              </tr>
+            </thead>
+          </template>
+          <tbody>
+            <td>
+              <div class="border pt-3 mb-2">
+                <div class="pl-3 pr-3">
+                  <div class="mb-2">
+                    <a class="text-dark"
+                      :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+schedule.schedule_date_primary">
+                      <b v-text="schedule.name"></b>
+                    </a>
+                    <span v-if="schedule.in_examine==1"><i class="fas far fa-calculator"></i></span>
+                    <span v-if="schedule.in_charge==1"><i class="fas fa-hard-hat"></i></span>
+                    <span v-if="schedule.staff==1"><i class="fas fa-wrench"></i></span>
+                  </div>
+                  <template v-if="schedule.location">
+                    <div class="mb-2" style="font-size: 0.8rem;">
+                      <a :href="'https://www.google.com/maps/search/'+schedule.location" target="_blank">
+                        <i class="fas far fa-map-marker-alt" aria-hidden="true"></i>
+                        <span v-text="schedule.location"></span>
+                      </a>
+                    </div>
+                  </template>
+                </div>
+                <template v-for="(work, work_idx) in sort_works(schedule.works)">
+                  <div class="mb-1 d-flex justify-content-center" style="font-size: 1.5rem;">
+                      <span class="color-sub-color mr-3">●</span>
+                      <span class="mr-1" v-text="work.worktime_s_format.substr(11,5)"></span>
+                      <span class="color-sub-color mr-3">——●</span>
+                      <span class="mr-1" v-text="work.worktime_e_format.substr(11,5)"></span>
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <button :class="['w-100 rounded-0 btn p-2', work.roll_call_come?'btn-disabled':'eip-btn']"
+                            @click="do_my_roll_call(work.schedule_date_user_primary, 'roll_call_come')">
+                      <template v-if="work.roll_call_come">
+                        <span v-text="work.roll_call_come_format.substr(11,5)"></span>
+                        已打卡
+                      </template>
+                      <template v-else>上班打卡</template>
+                    </button>
+                    <button :class="['w-100 rounded-0 btn p-2', (work.roll_call_leave?'btn-disabled':'eip-btn')]"
+                            @click="do_my_roll_call(work.schedule_date_user_primary, 'roll_call_leave')">
+                      <template v-if="work.roll_call_leave">
+                        <span v-text="work.roll_call_leave_format.substr(11,5)"></span>
+                        已打卡
+                      </template>
+                      <template v-else>下班打卡</template>
+                    </button>
+                  </div>
+                </template>
+              </div>
+            </td>
+          </tbody>
+        </template>
+      </table>
+    </section>
+  </section>
+</section>
+
+<a id="arrange_work_modal_btn" data-toggle="modal" data-target="#arrange_work_modal"></a>
+<div class="modal fade" id="arrange_work_modal" tabindex="-1" role="dialog" aria-labelledby="arrange_work_modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="arrange_work_modalTitle">安排上班時間</h5>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          請設定上班的日期：<br>
+          <input type="date" v-model="select_time_model.date" @change="get_user_skill">
+          ~
+          <input type="date" v-model="select_time_model.date_e">
+          <div class="form-group">
+            選擇星期：
+            <span class="d-inline-block text-danger" style="font-style:italic;">全不選視為全選</span><br />
+            <template v-for="item in weekdays">
+              <input type="checkbox" :id="'copy_week_id_'+ item.value" :value="item.value"
+                     v-model="select_time_model.checked_days">
+              <label :for="'copy_week_id_'+ item.value"
+                     style="padding-right: 20px;">{{item.text}}</label>
+            </template>
+          </div>
+        </div>
+        <div class="mb-2">
+          請選擇上班時間：<input type="time" v-model="select_time_model.worktime_s" @change="change_worktime_e"> ~
+          <input type="time" v-model="select_time_model.worktime_e">
+        </div>
+        <div class="mb-2">
+          請選擇使用技能：
+          <select v-model="select_time_model.user_skill">
+            <option value="">請選擇</option>
+            <option value="0">無</option>
+            <option v-for="skill in user_skills" :value="skill.user_skill_id" v-text="skill.user_skill_name"></option>
+          </select>
+          <span class="d-inline-block text-danger" style="font-style:italic;">跨月排班請留意是否皆有所選技能</span><br />
+        </div>
+        <div>
+          請選擇上班地點：
+          <input v-model="search_params.searchtext" @keydown.enter="search_schedules" placeholder="名稱/地點" class="w100 mr-2" style="max-width: 200px;">
+          <button class="btn btn-primary" @click="search_schedules">搜尋</button>
+          <div class="edit_form" style="max-height: 70vh;">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 580px; width: auto;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr">
+                  <th style="width: 80px">操作</th>
+                  <th style="min-width: 200px;">名稱</th>
+                  <th style="min-width: 300px;">地點</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(schedule,schedule_index) in schedules">
+                  <td>
+                    <button class="btn sendbtn" @click="select_schedule(schedule.id, schedule.name)">選擇</button>
+                  </td>
+                  <td><span v-text="schedule.name"></span></td>
+                  <td><span v-text="schedule.location"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  const my_user_id = '{$adminId}';
+  const current_date = new Date();
+  
+  const calendar_data = {
+    year: current_date.getFullYear(),
+    month: current_date.getMonth()+1,
+    selected_day: current_date.getDate(),
+
+    day_selecter: formatTime(current_date),
+
+    user_id: my_user_id,
+    serch_params:{
+    },
+    works_in_examine: [],
+    works_in_charge: [],
+    works_staff: [],
+  };
+  const calendarVM = new Vue({
+    el: '#calendar',
+    data: calendar_data,
+    async created(){
+      $('#body_block').show();
+      await this.init_data();
+      setTimeout(()=>{this.scroll_to_works();}, 100);
+      $('#body_block').hide();
+    },
+    computed: {
+      month_days: function(){
+        const days = [];
+        day_first = new Date(this.year, this.month-1, 1);
+        day_prefix = day_first.getDay();
+        for (let i = 0; i < day_prefix; i++) {
+          days.push('');
+        }
+        var day_last = new Date(this.year, this.month, 0);
+        date_last = day_last.getDate();
+        for (let i = 1; i <= date_last; i++) {
+          days.push(i);
+        }
+        suffix = 6 - day_last.getDay();
+        for (let i = 1; i <= suffix; i++) {
+          days.push('');
+        }
+        return days;
+      },
+      works: function(){ /*把人為主體的工作合併成*/
+        const works_temp = {};
+        for (let i = 0; i < this.works_in_examine.length; i++) { /*每個審核者的工作*/
+          let item = this.works_in_examine[i];
+          let key = 'id_' + item.schedule_date_primary;
+          if(typeof(works_temp[key])=='undefined'){
+            works_temp[key] = item;
+            works_temp[key].works = [];
+          }
+          works_temp[key].in_examine = 1; /*標記為審核者*/
+          works_temp[key].in_charge = 0; /*標記為非當日負責人*/
+          works_temp[key].staff = 0;  /*預設標記為不需工作*/
+        }
+        for (let i = 0; i < this.works_in_charge.length; i++) { /*每個當日負責人的工作*/
+          let item = this.works_in_charge[i];
+          let key = 'id_' + item.schedule_date_primary;
+          if(typeof(works_temp[key])=='undefined'){
+            works_temp[key] = item;
+            works_temp[key].in_examine = 0; /*標記為非審核者*/
+            works_temp[key].works = [];
+          }
+          works_temp[key].in_charge = 1; /*標記為當日負責人*/
+          works_temp[key].staff = 0;  /*預設標記為不需工作*/
+        }
+        for (let i = 0; i < this.works_staff.length; i++) { /*每個當日需工作的工作*/
+          let item = this.works_staff[i];
+          let key = 'id_' + item.schedule_date_primary;
+          if(typeof(works_temp[key])=='undefined'){
+            works_temp[key] = item;
+            works_temp[key].in_examine = 0; /*標記為非審核者*/
+            works_temp[key].in_charge = 0; /*標記為非當日負責人*/
+            works_temp[key].works = [];
+          }
+          works_temp[key].staff = 1; /*標記為需工作*/
+          works_temp[key].works.push(item);
+        }
+        return Object.values(works_temp);
+      },
+      works_group: function(){ /*把工作依日期整理好*/
+        const works_temp = {};
+        for (let i = 0; i < this.works.length; i++) {
+          let item = this.works[i];
+          let key = 'day_' + Number(item.date.substr(8,2));
+          if(typeof(works_temp[key])=='undefined'){
+            works_temp[key] = [];
+          }
+          works_temp[key].push(item);
+        }
+        return works_temp;
+      },
+      show_work_list: function(){
+        if(this.selected_day && this.selected_day!=-1){
+          var target_works = this.works_group['day_' + this.selected_day]
+          return target_works ? target_works : [];
+        }else{
+          return this.works.sort((a, b)=>{
+            if ( a.date < b.date ){
+              return -1;
+            }
+            if ( a.date > b.date ){
+              return 1;
+            }
+            return 0;
+          });
+        }
+      },
+    },
+    methods: {
+      sort_works(works){
+        return works.sort((a, b)=>{
+          if ( a.worktime_s < b.worktime_s ){
+            return -1;
+          }
+          if ( a.worktime_s > b.worktime_s ){
+            return 1;
+          }
+          return 0;
+        });
+      },
+      async init_data(){
+        await this.get_works_in_examine();
+        await this.get_works_in_charge();
+        await this.get_works_staff();
+      },
+      open_arrange_work_modal(){
+        arrange_work_modalVM.init_date();
+        $('#arrange_work_modal_btn').click();
+      },
+      do_my_roll_call: async function(schedule_date_user_primary, column){
+        $('#body_block').show();
+        var longitude = ''; // 經度
+        var latitude = ''; // 緯度
+        var accuracy = ''; // 誤差值(公尺)  
+        if (navigator.geolocation){
+          try {
+            Vue.toasted.show('請求定位中...', { duration: 1500, className: ["toasted-primary", 'bg-success'] });
+            position = await new Promise(function(resolve, reject) {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+              });
+            });
+            var { latitude, longitude, accuracy } = position.coords
+          } catch (error) {
+            // Vue.toasted.show(error.message, { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          }
+        }else { 
+          // alert('您的裝置或瀏覽器不支援定位功能');
+        }
+
+        post_data = {
+          latitude: latitude,
+          longitude: longitude,
+          data: {
+            schedule_date_user_primary: schedule_date_user_primary,
+          },
+        };
+        post_data.data[column] = '';
+        res = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: post_data,
+          url: "{:u('ScheduleDetail/do_my_roll_call')}",
+        });
+        if(res.status==1){
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          await this.init_data();
+        }else{
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+        }
+        $('#body_block').hide();
+      },
+
+      add_month: async function(add_num){
+        calendarVM.works_in_examine = [];
+        calendarVM.works_in_charge = [];
+        calendarVM.works_staff = [];
+        target_month = this.month-1 + add_num;
+        const date = new Date(this.year, target_month, 1);
+        calendarVM.year = date.getFullYear();
+        calendarVM.month = date.getMonth() + 1;
+        calendarVM.selected_day = -1;
+        calendarVM.day_selecter = '';
+        $('#body_block').show();
+        await this.init_data();
+        $('#body_block').hide();
+      },
+      get_works_in_examine: async function(){
+        const data = JSON.parse(JSON.stringify(this.serch_params));
+        data.user_id = this.user_id;
+        try {
+          res = await this.get_schedule_date_users(data);
+          res = res.list;
+        } catch (error) {
+          res = [];
+        }
+        this.works_in_examine = res;
+      },
+      get_works_in_charge: async function(){
+        const data = JSON.parse(JSON.stringify(this.serch_params));
+        data.user_in_charge = this.user_id;
+        try {
+          res = await this.get_schedule_date_users(data);
+          res = res.list;
+        } catch (error) {
+          res = [];
+        }
+        this.works_in_charge = res;
+      },
+      get_works_staff: async function(){
+        const data = JSON.parse(JSON.stringify(this.serch_params));
+        data.schedule_date_user_user_id = this.user_id;
+        try {
+          res = await this.get_schedule_date_users(data, true);
+          res = res.list;
+        } catch (error) {
+          res = [];
+        }
+        this.works_staff = res;
+      },
+      get_schedule_date_users: function(data={}, with_schedule_date_user=false){
+        const day_last = new Date(this.year, this.month, 0);
+        data.date_s = this.year + '-' + padZero(this.month) + '-01';
+        data.date_e = this.year + '-' + padZero(this.month) + '-' + padZero(day_last.getDate());
+        post_url = with_schedule_date_user ? "{:u('ScheduleDetail/get_schedule_date_users')}" : "{:u('ScheduleDetail/get_schedule_dates')}";
+        return $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: post_url,
+        });
+      },
+      select_day: function(day){
+        if(day){
+          this.selected_day = day;
+          day_selected = new Date(this.year, this.month-1, day);
+          this.day_selecter = formatTime(day_selected);
+        }else{
+          this.selected_day = -1;
+          this.day_selecter = '';
+        }
+        this.scroll_to_works();
+      },
+      scroll_to_works(){
+        if($('#table_schedule').offset().top){
+          $('html, body').animate({scrollTop: $('#table_schedule').offset().top}, 500);
+        }else{
+          $('html, body').animate({scrollTop: $('#table_schedule_mobile').offset().top - 40}, 500);
+        }
+      },
+      check_date: function(day, target=''){
+        self = this;
+        day = new Date(self.year, self.month-1, day);
+        if(target==-1){
+          return false;
+        }else if(target){
+          day_check = new Date(self.year, self.month-1, target);
+        }else{
+          day_check = new Date(current_date.getFullYear(), current_date.getMonth(), current_date.getDate());
+        }
+        return day.getTime() === day_check.getTime();
+      },
+      day_selecter_change: async function(){
+        if(!this.day_selecter){
+          this.selected_day = -1; return;
+        }
+        const day_selecters = this.day_selecter.split('-');
+        const year = Number(day_selecters[0]);
+        const month = Number(day_selecters[1]);
+        const renew_works = this.year!=year || this.month!=month;
+        if(renew_works){
+          this.works_in_charge = [];
+          this.works_staff = [];
+        }
+        this.year = year;
+        this.month = month;
+        this.selected_day = Number(day_selecters[2]);
+        if(renew_works){
+          $('#body_block').show();
+          await this.init_data();
+          $('#body_block').hide();
+        }
+      },
+      change_day(microseconds){
+        if(!this.day_selecter){
+          this.day_selecter = this.year + '-' + ('0' + this.month).slice(-2) + '-01'; 
+        }else{
+          aa = new Date(this.day_selecter);
+          bb = new Date(aa.getTime() + microseconds);
+          this.day_selecter = formatTime(bb); 
+        }
+        this.day_selecter_change(); return;
+      },
+      show_month_all: function(){
+        this.selected_day = -1;
+        this.day_selecter = '';
+      },
+      count_num: function(item){
+        return Array.isArray(item) ? item.length : 0;
+      },
+
+      show_week_day:function(date){
+        aa = new Date(date);
+        return ['日','一','二','三','四','五','六'][aa.getDay()];
+      },
+    },
+  });
+
+  function formatTime(date){
+    return date.getFullYear()+'-'+padZero(date.getMonth()+1)+'-'+padZero(date.getDate())
+  }
+  function padZero(num) {
+    return num < 10 ? '0' + num : num;
+  }
+</script>
+<script>
+  arrange_work_modal_data = {
+    search_params: {
+      searchtext: '',
+    },
+    schedules: [],
+
+    user_skill_year: '', /*紀錄搜尋薪資的年(同月薪資免重新取得工種選項)*/
+    user_skill_month: '', /*紀錄搜尋薪資的月份(同月薪資免重新取得工種選項)*/
+    user_skills:[],
+
+    weekdays: [
+      { value: 0, text: '日' },
+      { value: 1, text: '一' },
+      { value: 2, text: '二' },
+      { value: 3, text: '三' },
+      { value: 4, text: '四' },
+      { value: 5, text: '五' },
+      { value: 6, text: '六' },
+    ],
+    select_time_model:{
+      schedule_id: '',
+      date: '',
+      date_e: '',
+      worktime_s:'',
+      worktime_e:'',
+      user_skill:'',
+      checked_days: [],
+    },
+  };
+  const arrange_work_modalVM = new Vue({
+    el: '#arrange_work_modal',
+    data: arrange_work_modal_data,
+    created(){
+      this.get_schedules();
+    },
+    methods:{
+      init_date(){
+        if(calendarVM.selected_day!=-1){
+          selected_date = calendarVM.year + '-';
+          selected_date += calendarVM.month.toString().padStart(2, "0") + '-';
+          selected_date += calendarVM.selected_day.toString().padStart(2, "0");
+          this.select_time_model.date = selected_date;
+          this.select_time_model.date_e = selected_date;
+          this.get_user_skill();
+        }
+      },
+      async get_user_skill(){
+        renew = false;
+        if(this.select_time_model.date){
+          temp = new Date(this.select_time_model.date)
+          if(this.user_skill_year != temp.getFullYear() || this.user_skill_month != temp.getMonth()+1){
+            this.user_skill_year = temp.getFullYear();
+            this.user_skill_month = temp.getMonth()+1;
+            renew = true
+          }
+        }
+        if(renew){
+          $('#body_block').show();
+          resp = await $.ajax({
+            type: 'POST',
+            dataType:'json',
+            data: {
+              date: this.select_time_model.date,
+            },
+            url: "{:u('ScheduleDetail/get_my_skill')}",          
+          });
+          this.user_skills = resp.salary_record.salary_records_skill;
+          $('#body_block').hide();
+        }
+      },
+      change_worktime_e(){
+        if(this.select_time_model.worktime_s){
+          temp = new Date('2023-01-01 '+this.select_time_model.worktime_s);
+          temp_time = temp.getTime();
+          temp_time += 2*60*60*1000; /*加兩小時*/
+          temp = new Date(temp_time);
+          this.select_time_model.worktime_e = temp.getHours().toString().padStart(2, '0') + ':' + temp.getMinutes().toString().padStart(2, '0');
+        }
+      },
+
+      search_schedules(){
+        $('#body_block').show();
+        this.get_schedules();
+        $('#body_block').hide();
+      },
+      async get_schedules(){
+        this.schedules = [];
+        data = JSON.parse(JSON.stringify(this.search_params));
+        resp = await $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('ScheduleDetail/get_my_schedules')}",          
+        });
+        this.schedules = resp.list;
+      },
+
+      async select_schedule(schedule_id, schedule_name){
+        this.select_time_model.schedule_id = schedule_id;
+        if(!this.select_time_model.date && !this.select_time_model.date_e){
+          Vue.toasted.show('請選擇日期', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        if(!this.select_time_model.worktime_s){
+          Vue.toasted.show('請選擇上班時間', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        if(!this.select_time_model.worktime_e){
+          Vue.toasted.show('請選擇下班時間', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        if(this.select_time_model.worktime_s > this.select_time_model.worktime_e){
+          Vue.toasted.show('上班時間不可大於下班時間', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        if(!this.select_time_model.user_skill){
+          Vue.toasted.show('請選擇使用技能', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        if(!this.select_time_model.schedule_id){
+          Vue.toasted.show('請選擇上班地點', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+          return;
+        }
+        $('#body_block').show();
+        resp = await $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: JSON.parse(JSON.stringify(this.select_time_model)),
+          url: "{:u('ScheduleDetail/set_my_schedule')}",          
+        });
+        bg_class = resp.status ? 'bg-success' : 'bg-danger';
+        Vue.toasted.show(resp.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+        if(resp.status){
+          var date_obj = new Date(this.select_time_model.date);
+          if(date_obj.getFullYear()==calendarVM.year && (date_obj.getMonth()+1)==calendarVM.month){
+            await calendarVM.init_data();
+          }
+        }
+        $('#body_block').hide();
+      },
+    },
+  });
+</script>

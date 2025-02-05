@@ -1,0 +1,37 @@
+<include file="Public:header2" /><br>
+<a href="{:u($CONTROLLER_NAME.'/index')}"><input type="button" value="{$system_parameter['合約']}類別設定" /></a><br><br>
+<form action="{:u($CONTROLLER_NAME.'/sn_action')}" method="post">
+	<div>
+		<table style="width:30%">
+			<tr class="gray">
+				<td>
+					<input type="checkbox" class="click_all">
+					sn編號
+				</td>
+				<td>名稱</td>
+			</tr>
+			<foreach name="crm_cum_cat" item="vo">
+				<tr>
+					<td>
+						<input type="checkbox" class="groups" name="sn_num[]" value="{$vo.sn_num}">
+						{$vo.sn_num}
+					</td>
+					<td>{$vo.name}</td>
+				</tr>
+			</foreach>
+		</table>
+	</div>
+	<input type="submit" name="action" value="還原">
+</form>
+<include file="Public:footer" />
+<script>
+	$(".click_all").click(function(){
+		if($(this).prop('checked'))
+		{
+			$('.groups').prop('checked',true);
+		}else
+		{
+			$('.groups').prop('checked',false);
+		}
+	});
+</script>

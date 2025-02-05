@@ -1,0 +1,726 @@
+<include file="Public:header2" />
+  <head>
+    <style type="text/css">
+      /* td, th{
+        text-align: center;
+        width: inherit;
+      }
+      ol.headerOl li{
+        margin-bottom: 0.75rem
+      }
+      label{
+        margin-bottom: 0px;
+      } */
+      .cooperate_staff tr:hover{
+        background: white;
+      }
+      .cooperate_staff tr th:hover{
+        background: #eeeeee;
+      }
+      
+
+      .changeorder_btn{
+        color: #37b1e0;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <section class="main" id="crm_index">
+    <!---->
+    <div id="right">
+      <form name="search" id="searchForm" action="{:u('Custo/crmtrace',$_GET)}" method="get" class="searchForm">
+        <input type="hidden" name="view" value="crmtrace" />
+        <input type="hidden" name="teamid" value="{$_GET['teamid']}" />
+        
+        <div class="w100 d-flex align-items-start">
+          <div class="w100 d-flex flex-wrap">
+            <ol class="headerOl rightR">
+              <include file="Custo:search_setting_default" />
+
+              <li>
+                <div class="search_bar">
+                  <span class="custo-search-name">訪談時間：</span>
+                  <input name="chat_startdate" type="text" class="Wdate" value="" datev="" size="11"
+                    autocomplete="off" />
+                  ~
+                  <input name="chat_enddate" type="text" class="Wdate" value="" datev="" size="11"
+                    autocomplete="off" />
+                </div>
+              </li>
+              <li>
+                <span class="custo-search-name">訪談品質：</span>
+                <select name="chat_qulid">
+                  <option value="">請選擇</option>
+                  <volist name="crm_chatqulity" id="chatqulity">
+                    <option value="{$chatqulity.id}">{$chatqulity.name}</option>
+                  </volist>
+                </select>
+              </li>
+              <li>
+                <div class="search_bar">
+                  <input type="text" name="chats_content" value="" placeholder="訪談內容" class="text" style="width: 150px;">
+                </div>
+              </li>
+            </ol>
+            <div class="accordion" id="accordion_search">
+              <div id="collapseOne" class="collapse collapse" aria-labelledby="headingOne" data-parent="#accordion_search">
+                <ol class="headerOl rightR">
+                  <include file="Custo:search_setting" />
+                </ol>
+                <include file="Custo:search_setting_crm_property" />
+              </div>
+            </div>
+            <div class="search_bar">
+              <input type="submit" class="text text-center" readonly
+                  style="width: 80px; cursor: pointer; padding: 0px" type="submit" value="搜尋  ">
+              <input type="submit" value="" class="submit">
+            </div>
+            <div class="search_bar">
+              <a href="{:u('Custo/index')}?teamid={$_GET['teamid']}">
+                <input type="text" class="text text-center" readonly
+                  style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+              </a>
+            </div>
+          </div>
+          <button class="btn btn-link d-inline-block p-0" type="button" style="width: 100px;" 
+              data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              進階搜尋
+          </button>
+        </div>
+      </form>
+    
+      <div class="content-table">
+        <div class="navi1">
+          <div class="menu-sub-btn">
+            <ol>
+              <li class="subbtn mr-2">
+                <a class='' href="{:u('Custo/index',$_GET)}" @click="go_index($event)">{$system_parameter['客戶']}/分組列表</a>
+              </li>
+              <li>
+                <a :class="{'current':-1==typeid}" href="{:u('Custo/crmtrace')}?typeid=-1"
+                  @click="change_typeid(-1, $event)">
+                  總{$system_parameter['客戶']}數:<span class="blue" v-text="total"></span>
+                </a>
+              </li>
+              <li v-for="(v_type,v_index) in crmtype" v-if="v_type.id <= 3">
+                <a :class="{'current':v_type.id==typeid}" :href="'{:u('Custo/crmtrace')}?typeid='+v_type.id"
+                  @click="change_typeid(v_type.id, $event)">
+                  <span v-text="v_type.name"></span>
+                  <span class="blue" v-if="v_type.count!=null" v-text="':'+v_type.count"></span>
+                </a>
+              </li>
+            </ol>
+          </div>
+
+          <crm_index_pages 
+            :change_page="change_page"
+            :current_page="current_page" 
+            :total_pages="pagwAllA.totalPages"
+          ><crm_index_pages/>
+        </div>
+        
+        <form id="edit_form">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1600px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width:2%" class="text-center" valign="middle">
+                    <input type="checkbox" class="seleall" @click="select_all_crm_list($event)" />
+                  </th>
+                  <th style="width:6%">
+                    {$system_parameter['簡稱']}</th>
+                  <th style="width:3%" class="changeorder_btn">
+                    <a class='' href="javascript:change_order('crm_crm.levelid')">
+                      {$system_parameter['等級']}
+                    </a>
+                  </th>
+                  <th style="width:6%">{$crm_cum_pri[0]['name']}</th>
+                  <th style="width:14%">{$system_parameter['官方網站']}</th>
+
+                  <th style="width:10%">聯繫人</th>
+                  <th style="width:6%">
+                    <a class='' href="javascript:change_order('last_chat.last_qulid')">
+                      訪談品質
+                    </a>
+                  </th>
+                  <th style="width:20%">最新訪談內容</th>
+                  <th style="width:10%" class="changeorder_btn">
+                    <a class='' href="javascript:change_order('crm_chats.dateline')">
+                      訪談日期
+                    </a>
+                  </th>
+                  <th style="width:10%">預約時間</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(crm, crm_index) in crmlist" :id="crm.id" :class="[{'color1':crm_index%2==0}]">
+                  <td attr="核選" style="width:2%" class="text-center" valign="middle">
+                    <input type="checkbox" class="sele" :value="crm.id" name="sele" v-model="crmlist_selected"
+                      @click="select_all_check($event)" />
+                  </td>
+                  <td attr="{$system_parameter['簡稱']}" :class="'crm_type'+crm.typeid " style="width:6% ">
+                    <if condition="in_array(75, $use_function_top)">
+                      <a :href="'{:u('Custo/view_re')}?id='+crm.id+'&teamid={$_GET['teamid']}'" target="_blank">
+                    <else />
+                      <a :href="'{:u('Custo/addcrm')}?id='+crm.id+'&teamid={$_GET['teamid']}'" target="_blank">
+                    </if>
+                      <span v-text="crm.show_name"> </span>
+                    </a>
+                  </td>
+                  <td attr="{$system_parameter['等級']}"  v-text="crm.level_name" style="width:3%">
+                  </td>
+                  <td attr="{$crm_cum_pri[0]['name']}"  style="width:6%">
+                    <span v-if="eip_user_all[crm.wid]"
+                        v-text="eip_user_all[crm.wid]['name']">業務</span>
+                  </td>
+                  <td attr="{$system_parameter['官方網站']}"  style="width:14%" v-text="crm.url1"></td>
+
+                  <td attr="聯繫人" style="width:10%">
+                    <span v-text="crm.last_chats.contacter.name"></span>
+                  </td>
+                  <td v-text="crm.last_chats.qulid_name" style="width:6%"></td>
+                  <td attr="最新訪談內容" style="word-wrap:break-word;width:20%">
+                    <div v-if="crm.last_chats.content" v-html="crm.last_chats.content.replaceAll('\n','<br>')"></div>
+                  </td>
+                  <td attr="訪談日期" style="width:10%">
+                    <span v-if="crm.last_chats.dateline" v-text="crm.last_chats.dateline_format"></span>
+                    <br><span v-text="['面談', '電訪'][crm.last_chats.chattype]"></span>
+                  </td>
+                  <td attr="預約時間" style="width:10%">
+                    <div v-if="crm.last_chats.appmdate && crm.last_chats.appmdate!='0'" >
+                      <span v-text="crm.last_chats.appmdate_format"></span>
+                      <br><span v-text="['面談', '致電'][crm.last_chats.chattype2]"></span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+
+          <if condition="$access['custo_edi'] eq '1'">
+            <div class="send">
+              <if condition="$access['custo_edi'] eq '1'">
+                <div class="vRight" style="right:1%">
+                  選中項：
+                  <select name="typeid">
+                    <option value="-1">{$system_parameter['類別']}</option>
+                    <option v-for="type in crmtype" :value="type.id" v-text="type.name" v-if="type.id<=3">類別</option>
+                    <option v-if="typeid=='6'" value="7">刪除</option>
+                  </select>
+                  <select name="levelid">
+                    <option value="-1">{$system_parameter['等級']}</option>
+                    <option v-for="level in levels" :value="level.id" v-text="level.name">等級</option>
+                  </select>
+                  <select v-for="vo in crm_cum_pri" :name="vo.ename" v-if="vo.ename=='wid'">
+                    <option value="" v-text="vo.name"></option>
+                    <option v-for="user in eip_user" v-if="user.id" :value="user.id" v-text="user.name">員工
+                    </option>
+                  </select>
+
+                  <input type="submit" name="update" value="確定修改" class="sendbtn btn" @click="edit_crm($event)" />
+                </div>
+              </if>
+              <crm_index_pages 
+                :change_page="change_page"
+                :current_page="current_page" 
+                :total_pages="pagwAllA.totalPages"
+              ><crm_index_pages/>
+            </div>
+          </if>
+        </form>
+      </div>
+      <br/>
+    </div>
+  <!--right end-->
+  </section>
+
+  <include file="Public:footer" />
+
+  <include file="Custo:search_setting_js" />
+
+  <!--縮排-->
+  <script src="__PUBLIC__/js/jquery.readmore.js"></script>
+  <script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('#searchForm').on('submit', function(e){
+        e.preventDefault();
+        crm_indexVM.current_page = 1;
+        crm_indexVM.go_search();
+      });
+    });
+
+    var order_asc_desc = 'desc';
+    function change_order(column){
+      $('#change_order_input').val(column+':'+order_asc_desc);
+      crm_indexVM.current_page = 1;
+      crm_indexVM.go_search();
+
+      if(order_asc_desc=='asc'){
+        order_asc_desc = 'desc';
+      }else{
+        order_asc_desc = 'asc';
+      }
+    }
+
+    var crm_indexVM = new Vue({
+      el: '#crm_index',
+      data: {
+        crmlist_selected: [],
+
+        /*客戶列表*/
+          count_list: [],
+          crm_cum_pri: [],
+          crmlist: [],
+          crmtype: [],
+          eip_user: [],
+          eip_user_all: [],
+          industr: [],
+          industr2: [],
+          industr2_search: [],
+          industr_all: [],
+          levels: [],
+          linit: 0,
+          pagwAllA: {
+            totalPages: 1,
+            listRows: 0,
+          },
+          current_page: 1,
+          team_id: "",
+          team_name: "",
+          total: 0,
+          typeid: "-1",
+          typespan: "",
+          country: "",
+          district: "",
+          scv: "",
+
+        /*特性*/
+          crm_property: [],
+      },
+      updated: function () {
+        this.$nextTick(function () {
+          // Code that will run only after the
+          // entire view has been re-rendered
+          init_event();
+        })
+      },
+      methods: {
+        get_crm_property: function(){
+          self = this;
+          return $.ajax({
+                  method:'get',
+                  dataType:'json',
+                  url:"{:U('Crmproperty/get_feilds_with_defult_ans')}",
+                  success:function(res){
+                    self.crm_property = res;
+                  },
+              });
+        },
+        /*送出請求*/
+        arrange_crm_property_data(){
+          self = this;
+                    // console.log(self.crm_property);
+                    post_data = {};
+                    for (var i = 0; i < self.crm_property.length; i++) {
+                        post_data['field_id_'+self.crm_property[i].id] = self.crm_property[i].ans;
+                    }
+                    post_data = JSON.stringify(post_data);
+                    // console.log(post_data);
+                    $('input[name="fields_data"]').val(post_data);
+        },
+        go_search: function(){ /*搜尋*/
+          self = this;
+                self.crmlist = [];
+                self.arrange_crm_property_data();
+                Vue.toasted.show("搜尋中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+
+                /*整理POST資料*/
+                postData = {};
+                form = new FormData($("#searchForm")[0]);
+                for (var group of form.entries()) {
+             postData[group[0]] = group[1];
+          }
+          postData['p'] = self.current_page;
+          postData['typeid'] = self.typeid;
+          // console.log(postData);
+
+          /*發送請求 取得資料*/
+          $.ajax({
+            method: "POST",
+            dataType:'json',
+            url: "{:u('Custo/ajax_search_crmtrace')}", /*搜尋客戶*/
+            data: postData,
+            success: function(res){
+              Vue.toasted.show("搜尋完成", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              // console.log(res);
+              self.count_list = res.count_list;
+              self.crm_cum_pri = res.crm_cum_pri;
+              self.crmlist = res.crmlist;
+              self.crmtype = res.crmtype;
+              self.eip_user = res.eip_user;
+              self.eip_user_all = res.eip_user_all;
+              self.industr = res.industr;
+              self.industr2 = res.industr2;
+              self.industr2_search = res.industr2_search;
+              self.industr_all = res.industr_all;
+              self.levels = res.levels;
+              self.linit = res.linit;
+              self.pagwAllA = res.pagwAllA;
+              self.team_id = res.team_id;
+              self.team_name = res.team_name;
+              self.total = res.total;
+              self.typeid = res.typeid;
+              self.typespan = res.typespan;
+              self.country = res.country;
+              self.district = res.district;
+              self.scv = res.scv;
+            },
+            error: function(res){
+              Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            },
+          });
+        },
+
+        /*更換搜尋客戶類別*/
+        change_typeid: function(typeid, $event){
+          self = this;
+          $event.preventDefault();
+          self.current_page = 1;
+          self.typeid = typeid;
+          self.go_search();
+        },
+        /*更換搜尋客戶頁數*/
+        change_page: function(page){
+          self = this;
+          if(page > 0 && page <= self.pagwAllA.totalPages){
+            self.current_page = page;
+          }
+          self.go_search();
+        },
+          
+        /*列表操作*/
+          select_all_crm_list: function($event){
+                      self = this;
+                      self.crmlist_selected = [];
+
+                      var select_all = $($event.currentTarget);
+                      if(select_all.prop('checked')==true){
+                          for (var i = 0; i < self.crmlist.length; i++) {
+                              self.crmlist_selected.push(self.crmlist[i].id);
+                          }
+                      }
+                  },
+                  select_all_check: function($event){
+                      self = this;
+                      var check_select_all = true;
+                      for (var i = 0; i < self.crmlist.length; i++) {
+                          if(self.crmlist_selected.indexOf(self.crmlist[i].id) == -1){
+                              check_select_all = false;
+                              break;
+                          }
+                      }
+                      
+                      /*修改權選的勾選狀態*/
+                      var select_all = $($event.currentTarget).parent().parent().parent().find('.seleall');
+                      select_all.prop('checked', check_select_all);
+                  },
+                  /*批次修改客戶*/
+          edit_crm: function($event){
+            self = this;
+            $event.preventDefault();
+            /*整理POST資料*/
+                  postData = {};
+                  form = new FormData($("#edit_form")[0]);
+                  for (var group of form.entries()) {
+               postData[group[0]] = group[1];
+            }
+
+            var sele = [];
+            var multi = $('input[name="sele"]:checked');
+            for (var i = 0; i < multi.length; i++) {
+              sele.push($(multi[i]).val())
+            }
+            if(sele.length==0){
+              Vue.toasted.show("請選擇修改對象", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+              return;
+            }
+            postData['sele'] = sele;
+            // console.log(postData);return;
+            $.ajax({
+              method: "POST",
+              dataType:'json',
+              url: "{:u('Custo/patchupdate')}",
+              data: postData,
+              success: function(res){
+                // console.log(res);
+                              if(res.status==1){
+                                  bg_class = "bg-success";
+                              }else{
+                                  bg_class = "bg-danger";
+                              }
+
+                              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                              if(res.status==1){ 
+                                self.go_search(); /*更新crm_list*/
+                                self.crmlist_selected = [];
+                                $('.seleall').prop('checked', false);
+                              }
+              },
+              error: function(res){
+                Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+              },
+            });
+          },
+
+        /*客戶列表*/
+        go_index: function($event){
+          self = this;
+          $event.preventDefault();
+
+          /*整理POST資料*/
+                postData = {};
+                form = new FormData($("#searchForm")[0]);
+                for (var group of form.entries()) {
+             postData[group[0]] = group[1];
+          }
+          postData['p'] = 1;
+          postData['typeid'] = self.typeid;
+          delete postData.fields_data;
+          // console.log(postData);return;
+
+          url = "{:u('Custo/index')}?" + $.param( postData );
+          // console.log(url);return;
+
+          location.href = url;
+        },
+      },
+    });
+    crm_indexVM.get_crm_property().done(function(){
+      if("{$_GET['typeid']}"){
+        self.typeid = "{$_GET['typeid']}";
+      }
+      crm_indexVM.go_search();
+    });
+  </script>
+  <script language="javascript" type="text/javascript">
+    $(".short").readmore({
+      substr_len: 20,
+      more_link: '<a class="more" >...</a>'
+    });
+    
+    // 點擊匯出EXCEL
+    $(".export_btn").click(function(){
+      var sele = $("input[name='sele']:checked").map(function(){return $(this).val();}).get();
+      if(sele.length==0){
+        if(!confirm("確定依搜尋結果匯出excel？\n會拆一個檔案1萬筆，分批下載")){
+          return;
+        }
+      }
+
+      Vue.toasted.show('開始下載檔案，請勿重複點擊', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      $('#body_block').css('display','block');
+
+      if(sele.length==0){ // 根據搜尋結果產生
+        p = Number("{$pagwAllA->totalPages}");
+        perPage = Number("{$pagwAllA->listRows}");
+        files = Math.ceil(p*perPage/10000);
+
+        time = 200*perPage*files;
+        for (var i = 1; i <= files; i++) {
+          go_down_load(i, 500+time*(i-1) ) ;
+        }
+        setTimeout(function(){ 
+          // Vue.toasted.show('下載檔案結束', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          $('#body_block').css('display','none');
+        }, 500+time*(i));
+
+      }else{ // 依勾選產生
+        location.href="{:u('Custo/index_excel')}?ids="+JSON.stringify(sele);
+        setTimeout(function(){ 
+          $('#body_block').css('display','none');
+        }, sele.length*50);
+      }
+    })
+    function go_down_load(page, time){
+      setTimeout(function(){ 
+        // console.log("{:u('Custo/index_excel',$_GET)}?p="+page);
+        location.href="{:u('Custo/index_excel',$_GET)}?p="+page;
+      }, time);
+    }
+
+    // 點擊匯出EXCEL(匯入格式)
+    $(".export_btn_import").click(function(){
+      var sele = $("input[name='sele']:checked").map(function(){return $(this).val();}).get();
+      if(sele.length==0){
+        if(!confirm("確定依搜尋結果匯出excel？\n會拆一個檔案1萬筆，分批下載")){
+          return;
+        }
+      }
+
+      Vue.toasted.show('開始下載檔案，請勿重複點擊', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      $('#body_block').css('display','block');
+
+      if(sele.length==0){ // 根據搜尋結果產生
+        p = Number("{$pagwAllA->totalPages}");
+        perPage = Number("{$pagwAllA->listRows}");
+        files = Math.ceil(p*perPage/10000);
+
+        time = 200*perPage*files;
+        for (var i = 1; i <= files; i++) {
+          go_down_load_import(i, 500+time*(i-1) ) ;
+        }
+        setTimeout(function(){ 
+          // Vue.toasted.show("下載檔案結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          $('#body_block').css('display','none');
+        }, 500+time*(i));
+
+      }else{ // 依勾選產生
+        location.href="{:u('Custo/index_excel')}?ids="+JSON.stringify(sele);
+        setTimeout(function(){ 
+          $('#body_block').css('display','none');
+        }, sele.length*50);
+      }
+    });
+    function go_down_load_import(page, time){
+      setTimeout(function(){ 
+        // console.log("{:u('Custo/index_excel',$_GET)}?p="+page);
+        location.href="{:u('Custo/index_excel_import',$_GET)}?p="+page;
+      }, time);
+    }
+
+    // 點擊列印信封
+    function print_envelope(size="h_b") {
+      var sele = $("input[name='sele']:checked").map(function(){return $(this).val();}).get();
+      if(sele.length==0){
+        if(!confirm("確定依搜尋結果產生信封？\n會拆一個檔案1千筆，分批產生")){
+          return;
+        }
+      }
+
+      Vue.toasted.show("開始產生檔案，請勿重複點擊", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      $('#body_block').css('display','block');
+
+      api_url = "{:u('Custo/print_envelope',$_GET)}?size=" + size;
+
+      if(sele.length==0){ // 根據搜尋結果產生
+        p = Number("{$pagwAllA->totalPages}");
+        perPage = Number("{$pagwAllA->listRows}");
+        files = Math.ceil(p*perPage/1000);
+
+        time = 200*perPage*files;
+        for (var i = 1; i <= files; i++) {
+            aj_url = api_url + "&p=" + i
+            go_print_envelope(i,aj_url, 500+time*(i-1));
+        }
+        setTimeout(function(){ 
+          // Vue.toasted.show("下載檔案結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          $('#body_block').css('display','none');
+        }, 500+time*(i));
+
+      }else{ // 依勾選產生
+        aj_url = api_url + "&ids=" + JSON.stringify(sele);
+        go_print_envelope('',aj_url, 50);
+        setTimeout(function(){ 
+          $('#body_block').css('display','none');
+        }, sele.length*50);
+      }
+    }
+    function go_print_envelope(page, aj_url, time){
+      // location.href="{:u('Custo/print_envelope',$_GET)}?p="+page;
+      setTimeout(function(){ 
+        window.open(aj_url, "print"+page, "width=500");
+      }, time);
+    }
+
+    function init_event(){
+      $(".industr1_select").off();
+      $(".industr1_select_up").off();
+      $(".industr1").off();
+      $(".input_content").off();
+
+      $(".industr1_select").change(function(){
+        $.ajax({
+          method:'post',
+          data:{
+            industr1:$(this).val(),
+          },
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            $(".industr2_select").html(res);
+          }
+        });
+      });
+      $(".industr1_select_up").change(function(){
+        $.ajax({
+          method:'post',
+          data:{industr1:$(this).val()},
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            $(".industr2_select_up").html(res);
+          }
+        });
+      });
+      $(".industr1").change(function(){
+        num = $(this).attr('index');
+        
+        $.ajax({
+          method:'post',
+          data:{industr1:$(this).val(),myid:$(this).attr('myid')},
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            console.log($(".industr2_"+num));
+            $(".industr2_"+num).html(res);
+          }
+        });
+      });
+
+      $(".input_content").on("change", function(){
+        var myin=$(this);
+        ajax_edit({
+          dbname:$(this).attr("dbname"), 
+          id:$(this).attr("myid"), 
+          column:$(this).attr("column"), 
+          value:myin.val(),
+          teamid:"''",
+        });
+      });
+    };
+
+    function ajax_edit(data){
+      $.ajax({
+        method:'post',
+        data:data,
+        dataType:'json',
+        url:"{:U('Custo/ajax_save_one_value')}",
+        success:function(res){
+          if(res.status == 0){
+            Vue.toasted.show("res.info", { duration: 1500, className: ["toasted-primary", "bg-danger"] });	
+          }
+          else{
+            Vue.toasted.show('修改了文字:'+ data.value, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+
+            if(data.column=='industr'){ /*如果改的是產業大項，也修改次項成空白*/
+              data.column = 'industr2';
+              data.value = '';
+              ajax_edit(data);
+            }
+          }
+        }
+      });
+    }
+
+    $(".Wdate").each(function(){
+      $(this).datepicker({
+        firstDay : 0,
+        defaultDate : "-7d"
+      });
+      $(this).datepicker( "option", "dateFormat",'yy-mm-dd');
+      $(this).datepicker('setDate',$(this).attr("datev"));
+    });
+  </script>

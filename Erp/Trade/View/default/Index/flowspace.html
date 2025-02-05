@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/earlyaccess/cwtexfangsong.css"> -->
+    <style>
+      /* ::-webkit-scrollbar {display:none} */
+      body{
+        font-family: 'cwTeXFangSong', serif;
+      }
+      button{
+        margin: 0px 10px;
+        padding: 0;
+        border: 0px solid transparent;  
+        outline: none;
+        font-family: 'cwTeXFangSong', serif;
+        cursor: pointer; 
+        transition: all 0.2s ease-in-out;
+      }
+      button:hover{
+        background-color: #69b4ff;
+      }
+      .flow_space{
+        position: relative;
+        min-width: 800px;
+        box-shadow:3px 3px 12px 4px rgba(20%,20%,40%,0.1);
+        padding: 20px 0px 0px;
+
+      }
+      .description{
+        position: absolute;
+        right: 5px;
+        color:  #396fd7;
+        font-size: 12px;
+        top: 8px;
+        cursor: pointer; 
+      }
+      .flow,.space{
+        background-color: #396fd7;
+        width: 120px;
+        height: 30px;
+        border-radius: 3px;
+        color: #ffffff;
+        font-size: 14px;
+      }
+      .flow::before{
+        content: '流量警告 : ';
+        letter-spacing: 1px;　   
+      }
+      .space::before{
+        content: '空間警告 : ';
+      }
+      .flow::after,.space::after{
+        content: '個';
+        font-size: small;
+      }
+      table{
+        min-width: 800px;
+        margin-top:10px; 
+        border-top:1px #dbdbdb solid; 
+        /* border-collapse: collapse; */
+        border-spacing: 0;
+        width: 100%;
+      }
+      .all{
+        position: relative;
+        overflow: hidden;
+        overflow-y: scroll;
+        height: 350px;
+      }
+      .all::-webkit-scrollbar {
+        display: none;
+      }
+      .all_flow{
+        transition: all 0.3s ease-in-out;
+      }
+      .comdataflow,.comdataspace{
+        width: 100%;
+        background-color: #ffffff;
+        margin-top:0px; 
+        border-top:0px #dbdbdb solid;
+      }
+      .comdataspace{
+        position: absolute;
+        transform: translateX(100%);
+        z-index: 3;
+        top: 85px;
+      }
+      td{
+        padding: 10px;
+        border-right: 1px #dbdbdb solid; 
+        border-bottom: 1px #dbdbdb solid; 
+      }
+      .cominf thead tr:nth-child(1) td{
+        padding: 5px 10px; 
+        border-right: 0px #dbdbdb solid; 
+        border-bottom: 1px #dbdbdb solid; 
+      }
+      .cominf thead tr:nth-child(2) td{
+        font-weight: bolder;
+        border-bottom:2px #595959 solid; 
+      }
+      .table_title,.table_warning{
+        font-size: 14px;
+        color: #333333;
+      }
+      .table_title::before{
+        content: '更新時間 : ';
+      }
+      .table_warning{
+        text-align: right;
+      }
+      .table_warning::before{
+        content: '警告門檻 : ';
+      }
+      .datas{
+        text-align: right;
+        
+      }
+      .active{
+        background-color: #69b4ff;
+        cursor: inherit;
+        transform: scale(0.9);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="flow_space">
+      <button class="flow active"></button>
+      <button class="space"></button>
+      <a class="description" href="http://{$_SERVER['HTTP_HOST']}/index.php/Km/read/type/PL.html?id=436" target="_blank">文件說明</a>
+      <div class="all">
+        <table class="cominf">
+          <thead>
+            <tr>
+              <td class="table_title" colspan="3"></td>
+              <td class="table_warning" colspan="1"></td>
+            </tr>
+            <tr>
+              <td style="width:30%">主機</td>
+              <td style="width:30%">域名</td>
+              <td style="width:10% ;text-align: right">比例</td>
+              <td style="width:30% ;text-align: right">目前/上限<small>(G)</small></td>
+            </tr>
+          </thead>
+          <tbody class="comdataflow">
+          </tbody>
+          <tbody class="comdataspace" style="display:none;">
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </body>
+  <script>
+    function roundX(val, precision) {
+      return Math.round(Math.round(val * Math.pow(10, (precision || 0) + 1)) / 10) / Math.pow(10, (precision || 0));
+    }
+    
+    function init_flow(number){
+      $(".datas").hover(function(){
+        $(this).css("background-color","#c5c5c5");
+        },function(){
+        $(this).css("background-color","#ffffff");
+      });
+      $(".flow").off();
+      $(".flow").click(function(){
+        $(this).addClass("active");
+        $(".space").removeClass("active");
+        let text = number ? number*100+"%" : '%';
+        $(".table_warning").html(text);
+        $(".all_flow").css("transform","translateX(0%)");
+        setTimeout(()=>{
+          $(".comdataspace").css("display","none");
+        }, 350);
+      });
+    }
+    init_flow(0);
+    var a = {
+      sheetID : '1vGSVa6d2tsFn8Ase82zE8ci2pVyDpX1wMIvMMbPA4M0',
+      sheetTag : 'flow',
+      row: 1,
+      col: 1,
+      endRow : "x",
+      endCol : 8
+    };
+    $.get('https://script.google.com/macros/s/AKfycbzHfPK7jBLyjN-CEWEs_b2sRr8G4lvcgTcqiklipRqgxQXGUlMj/exec', a, function(data){
+      var d = data.split(',');
+      // console.log(d)
+      var arr = []; 
+      var endRow= d.length/a.endCol;
+      for(var i=0; i<(endRow); i++){
+        arr[i] = d.splice(0, (a.endCol-a.col+1)); 
+      };
+      var flow = arr.length;
+      $(".flow").html(flow);
+      $(".table_title").html(arr[0][0]);
+      $(".table_warning").html(arr[0][6]*100+"%");
+      for(var i=0;i<flow; i++){
+        var datas = "\
+        <tr class='datas all_flow' >\
+          <td style='width:30%'><a href=\"http://{$_SERVER['HTTP_HOST']}/index.php/Sercom/view.html?id="+arr[i][7]+"\" target=\"_blank\">"+arr[i][1]+"</a></td>"+"\
+          <td style='width:30%'><a href=\"http://{$_SERVER['HTTP_HOST']}/index.php/Server/index.html?name="+arr[i][2]+"\" target=\"_blank\">"+arr[i][2]+"</a></td>"+"\
+          <td style='width:10%'>"+roundX(arr[i][3]*100,2)+"%</td>"+"\
+          <td style='width:30%'>"+arr[i][4]+"/"+arr[i][5]+"</td>\
+        </tr>"
+        $(".comdataflow").append(datas);
+      }
+      // console.log(arr)
+
+      init_flow(arr[0][6]);
+    });
+
+    function init_space(number){
+      $(".datas").hover(function(){
+        $(this).css("background-color","#c5c5c5");
+        },function(){
+        $(this).css("background-color","#ffffff");
+      });
+      $(".space").off();
+      $(".space").click(function(){
+        $(this).addClass("active");
+        $(".flow").removeClass("active");
+        let text = number ? number*100+"%" : '%';
+        $(".table_warning").html(text);
+        $(".comdataspace").css("display","inherit");
+        setTimeout(()=>{
+          $(".all_flow").css("transform","translateX(-100%)");
+        }, 10);
+      })
+    }
+    init_space(0);
+    var b = {
+      sheetID : '1vGSVa6d2tsFn8Ase82zE8ci2pVyDpX1wMIvMMbPA4M0',
+      sheetTag : 'space',
+      row: 1,
+      col: 1,
+      endRow : "x",
+      endCol : 8
+    };
+    $.get('https://script.google.com/macros/s/AKfycbzHfPK7jBLyjN-CEWEs_b2sRr8G4lvcgTcqiklipRqgxQXGUlMj/exec', b, function(data){
+      var d = data.split(',');
+      var arr = []; 
+      var endRow= d.length/a.endCol;
+      for(var i=0; i<(endRow); i++){
+        arr[i] = d.splice(0, (a.endCol-a.col+1)); 
+      };
+      var space = arr.length;
+      $(".space").html(space);
+      $(".table_title").html(arr[0][0]);
+      for(var i=0;i<space; i++){
+        var datas = "\
+        <tr class='datas all_flow'>\
+          <td style='width:30%'><a href=\"http://{$_SERVER['HTTP_HOST']}/index.php/Sercom/view.html?id="+arr[i][7]+"\" target=\"_blank\">"+arr[i][1]+"</a></td>"+"\
+          <td style='width:30%'><a href=\"http://{$_SERVER['HTTP_HOST']}/index.php/Server/index.html?name="+arr[i][2]+"\" target=\"_blank\">"+arr[i][2]+"</a></td>"+"\
+          <td style='width:10%'>"+roundX(arr[i][3]*100,2)+"%</td>"+"\
+          <td style='width:30%'>"+arr[i][4]+"/"+arr[i][5]+"</td>\
+        </tr>"
+        $(".comdataspace").append(datas);
+      }
+      // console.log(arr)
+      init_space(arr[0][6]);
+    });
+  </script>
+</html>

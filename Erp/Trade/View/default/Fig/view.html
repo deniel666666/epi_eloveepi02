@@ -1,0 +1,767 @@
+<include file="Public:header2" />
+
+<!-- 工作流程：引入資源 -->
+<include file="Fig:work_flow_include" />
+
+<head>
+  <style>
+    #tab5 p{
+      margin: 0;
+    }
+    #tab5 blockquote{
+        margin: 0 1.5rem 0rem;
+    }
+
+    .tab_content{
+      max-height: 70vh;
+      overflow-x: hidden;
+    }
+
+    .eve_detail input[type="text"]{
+      max-width: calc(100% - 120px);
+        width: 100%;
+    }
+  </style>
+<head>
+<!-- End header -->
+
+<section class="document main">
+  <div id="right">
+    <include file="Fig:top_menu" />
+    <div class="content-table">
+      <div class="eventsContainer">
+        
+        <!-- ////////////////////////// events_Content ////////////////////////// -->
+        <div class="cardContainer eve_detail">
+          <div class="cardContainer-title">
+            <div class="cardContainer-top">
+              <h3 class="casesubtitle mr-2 mb-2">詳細事件內容</h3>
+            </div> 
+          </div>
+          <div class="container-fluid contract-item pl-0 pr-0">
+            <div class="row w-100 m-0">
+              <div class="col-lg-4 col-md-6 col-12">
+                <label>事件名稱：</label>
+                <if condition="$can_edit_content">
+                  <input type="text" value="{$newbier.title}" onchange="update_fig({title: $(this).val()})">
+                <else />
+                  <a class="color-copy copy" data-clipboard-text="{$newbier['title']}">{$newbier['title']}</a>
+                </if>
+              </div>
+              <div class="col-lg-4 col-md-6 col-12">
+                <label>事件號：</label>
+                <a class="color-copy copy" data-clipboard-text="{$newbier['evesno']}">{$newbier['evesno']}</a>
+              </div>
+              <div class="col-lg-4 col-md-6 col-12">
+                <label>{$system_parameter["公司名稱"]}：</label>
+                <if condition="in_array(75, $use_function_top)">
+                  <a href="{:u('Custo/view_re')}?id={$newbier.cum_id}" target="_blank">
+                <else />
+                  <a href="{:u('Custo/addcrm')}?id={$newbier.cum_id}" target="_blank">
+                </if>
+                  {$newbier.show_name}
+                </a>
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-12">
+              <label>{$system_parameter['合約']}：</label>
+              <if condition="$can_edit_content">
+                <select id="send_caseid" onchange="send_caseid()">
+                  <option value="">免{$system_parameter['合約']}</option>
+                  <foreach name="crm_contract" key="num" item="vo">
+                    <option value="{$vo['id']}" {$vo['id']|compare_return=$newbier['caseid'],'selected'}>
+                      {$vo['sn']}
+                    </option>
+                  </foreach>
+                </select>
+                <a class="color-copy copy" data-clipboard-text="{$newbier['case_name']}">複製</a>
+              <else />
+                <a class="color-copy copy" data-clipboard-text="{$newbier['case_name']}">{$newbier['case_name']}</a>
+              </if>
+              <if condition="$newbier['caseid']!=0">
+                <a href="{:u('Alllist/view')}?id={$newbier.caseid}" target="_blank">
+                  查看
+                </a>
+                (稅前：{$newbier.case_total|number_format_sys=$control_money_input}元)
+              </if>
+            </div>
+            <div class="col-lg-4 col-md-6 col-12">
+              <label>狀態：</label>
+              <if condition="$newbier['result'] eq '9'">
+                歸擋
+              <elseif condition="$newbier['result'] eq '10'"/>
+                垃圾桶
+              <else/>
+                {$eve_role_flow[$newbier[result]][name]}
+              </if>
+            </div>
+            <div class="col-lg-4 col-md-6 col-12">
+              <label>進度：</label>
+              <span class="mr-3">{$newbier.process_rate}</span>
+              <if condition="$can_edit_content">
+                目前階段:
+                <input id="send_step_flow" type="number" min="1" onchange="send_step_flow()"
+                       max="{$newbier['step_num']-1}" value="{$newbier['step_flow']}">
+              </if>
+            </div>
+            <div class="col-lg-4 col-md-6 col-12">
+              <label>等級：</label>
+              {$newbier.level}
+            </div>
+            <div class="col-lg-4 col-md-6 col-12">
+              <label>負責{$crm_cum_pri[1]['name']}：</label>
+              {$eip_user_all[$crm_crm[wid]][name]}
+            </div>
+            <div class="col-lg-4 col-md-6 col-12">
+              <label>發送者：</label>
+              {$eip_user_all[$newbier[eid]][name]}
+            </div>
+            <if condition="$newbier['file_url'] neq ''">
+              <div class="col-lg-4 col-md-6 col-12">
+                <label>檔案：</label>
+                {$newbier.file_url}
+              </div>
+            </if>
+            <div class="col-12">
+              <label>內容：</label>
+              <textarea id="descriptions" name="content" cols="100" rows="8">
+                {$newbier.content}
+              </textarea>
+              <if condition="$can_edit_content">
+                <input type="button" class="btn addbtn mt-2" value="確定送出" onclick="send()" />
+              </if>
+            </div>
+          </div>
+        </div>
+        <div class="cardContainer">
+          <h3 class="casesubtitle">進行狀況</h3>
+          <div class="content_menu" style="width:100%;">
+            <!-- 選項區 -->
+            <ul class="tabs">
+              <if condition="$newbier['myflow'] eq true">
+                <li><a href="#tab1">執行</a></li>
+              </if>
+              <li><a href="#tab2">排程</a></li>
+              <li><a href="#tab3">案件歷程</a></li>
+              <li><a href="#tab4">一般對話</a></li>
+              <!--<if condition="$newbier[eve_tid] eq 0 && $newbier['eid'] eq $_SESSION[eid]">
+              </if>-->
+              <li><a href="#tab5">往返單記錄</a></li>
+            </ul>
+            <div class="tab_container">
+              <!---------------------------- 執行頁簽內容 ------------------------------------------>
+              <div id="tab1" class="tab_content">
+                <!------------ 分配者的執行----------------------->
+                <if condition="$can_edit_content && $newbier['result'] neq '-1'">
+                  <if condition="$current_step['step_id'] neq '0'">
+                    <button class="btn btn-link" type="button" 
+                            data-toggle="collapse" aria-expanded="true" 
+                            data-target="#accordion_schedule_one" aria-controls="accordion_schedule_one">
+                      安排工作排程
+                    </button>
+                  </if>
+                  <div class="accordion" id="accordion_schedule">
+                    <div id="accordion_schedule_one" data-parent="#accordion_schedule" class="{$current_step['step_id']|compare_return='0', '', 'collapse'}" >
+                      <form id="form" action="{:U('Fig/do_start')}" method="post"
+                            style="border-bottom:1px solid #ccc;padding-bottom:15px">
+                        <div class="schedule"></div>
+                        <input type="hidden" name="orders" value="{$current_step['orders']}" />
+                        <input type="hidden" name="distribute_orders" value="{$distribute_orders}" />
+                        <input type="hidden" name="step_id" value="{$current_step['step_id']}" />
+                        <input type="hidden" name="eve_id" value="{$current_step['eve_id']}" />
+                        <a href="###" class="addbtn btn ml-2" onclick="sendCheck()">設定排程</a>
+                      </form>
+                    </div>
+                  </div>
+                </if>
+
+                <!-- 判斷是否是執行中-->
+                <if condition="$newbier['myflow'] eq true && $newbier['result'] neq 6">
+                  <switch name="newbier['nowflow']">
+                    <case value="0">
+                    </case>
+                    <case value="1">
+                      <!------------ 核可者的執行----------------------->
+                      <fieldset class="filelist">
+                        <legend>核可狀態</legend>
+                        <table class="interview-table table">
+                          <tr>
+                            <th class="name">上次執行</th>
+                            <td>
+                              <ul>
+                                <foreach name="note1" key="key" item="vo">
+                                  <if
+                                    condition="$vo['orders'] eq $newbier['step_flow'] | $vo['orders'] eq ($newbier['step_flow']+1)">
+                                    <li class="tr_bar" value="{$vo['step_id']}">
+                                      {$vo['create_time']|date="Y/m/d H:i",###}
+                                      {$vo['user_name']}
+                                      {$vo['value']}
+                                      {$vo['message']}
+                                    </li>
+                                  </if>
+                                </foreach>
+                              </ul>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="name">核可通過</th>
+                            <td>
+                              <form action="{:U('Fig/do_passflow')}" method="post">
+                                <input type="hidden" name="orders" value="{$current_step['orders']}" />
+                                <input type="hidden" name="step_id" value="{$newbier['nowflow']}" />
+                                <input type="hidden" name="eve_id" value="{$newbier['id']}" />
+                                <ul>
+                                  <li>
+                                    <input id="approve0" type="radio" name="check" value="0"
+                                      checked />
+                                    <label for="approve0">核可放行</label>
+                                  </li>
+                                  <li>
+                                    <input id="approve1" type="radio" name="check" value="1" />
+                                    <label for="approve1">參照說明再送一次</label>
+                                  </li>
+                                  <li>
+                                    <input id="approve3" type="radio" name="check" value="3" />
+                                    <label for="approve3">安排會議討論後再行定案</label>
+                                  </li>
+                                  <li>
+                                    <input id="approve2" type="radio" name="check" value="2" />
+                                    <label for="approve2">本案不用再送了不管如何修改就是不會通過</label>
+                                  </li>
+                                  <li style="vertical-align:middle">
+                                    <div>行文說明:</div>
+                                    <textarea name="message" style="width:100%;resize: none;"
+                                      placeholder="說明原因..."></textarea>
+                                  </li>
+                                  <li>
+                                    <input type="submit" class="submit_btn btn addbtn mt-2" value="儲存" />
+                                  </li>
+                                </ul>
+                              </form>
+                            </td>
+                          </tr>
+                        </table>
+                      </fieldset>
+                    </case>
+                    <case value="3">
+                      <!------------ 執行者的執行----------------------->
+                      <fieldset class="filelist">
+                        <legend>實際執行</legend>
+                        <table class="interview-table table">
+                          <tr>
+                            <th class="name">
+                              <div class="mb-2">上傳 案件歷程</div>
+                              <a href="{:U('Schedule/eve_step_create')}?eve_step_id={$current_step[id]}" target="_blank">
+                                <button class="btn btn-warning">查看日程組</button>
+                              </a>
+                            </th>
+                            <td>
+                              <foreach name="note1" key="key" item="vo">
+                                <div class="tr_bar d-flex" value="{$vo['step_id']}">
+                                  <if condition="$vo['orders'] egt $newbier['step_flow']">
+                                    <div class="mr-2" style="min-width: 250px;">
+                                      {$vo['create_time']|date="Y/m/d H:i",###}
+                                      {$vo['user_name']}
+                                      {$vo['value']}
+                                      {$vo['file']}
+                                    </div>
+                                    <div>{$vo['message']|str_replace="\\n",'<br>',###}</div>
+                                  </if>
+                                </div>
+                              </foreach>
+                              <form action="{:U('Fig/do_work')}" method="post"
+                                enctype="multipart/form-data">
+                                <input type="hidden" name="orders" value="{$current_step['orders']}" />
+                                <input type="hidden" name="eve_id" value="{$newbier['id']}" />
+                                <input type="hidden" name="step_id" value="{$newbier['nowflow']}" />
+                                <input type="hidden" name="value" value="上傳" />
+                                <textarea name="message" class="w100" style="height:100px;resize: none;"
+                                  placeholder="簡單說明..."></textarea>
+                                <label class="name">附件:</label>
+
+                                <input type="file" name="file" />
+                                <input type="submit" class="submit_btn addbtn btn" value="儲存"/>
+                              </form>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="name">
+                              執行項目：{$current_step['content']}
+                            </th>
+                            <td>
+                              <form action="{:U('Fig/do_next')}" method="post"
+                                enctype="multipart/form-data">
+                                <input type="hidden" name="eve_id" value="{$newbier['id']}" />
+                                <input type="hidden" name="orders" value="{$current_step['orders']}" />
+                                <input type="hidden" name="step_id" value="{$newbier['nowflow']}" />
+                                <if condition="$current_step['end_time'] == ''">
+                                  <input type="hidden" class="btn addbtn" name="value" value="完成" />
+                                  <input type="submit" class="submit_btn btn addbtn" value="完成待驗" />
+                                <elseif condition="$current_step['end_time'] lt time()" />
+                                  <input type="hidden" class="btn btn-danger" name="value" value="延遲完成" />
+                                  <input type="submit" class="submit_btn btn btn-danger" value="延遲完成" />
+                                <else />
+                                  <input type="hidden" class="btn addbtn" name="value" value="完成" />
+                                  <input type="submit" class="submit_btn btn addbtn" value="完成待驗" />
+                                </if>
+                                <if condition="$current_step['count']!=0">
+                                  <input type="button" class="btn sendbtn" value="查看"
+                                    onclick="myFunction({$_GET['id']},{$_SESSION['eid']},0)" />
+                                </if>
+                              </form>
+
+                            </td>
+                          </tr>
+                        </table>
+                      </fieldset>
+                    </case>
+                    <case value="5">
+                      <!------------ 驗收者的執行----------------------->
+                      <fieldset class="filelist">
+                        <legend>驗收狀況</legend>
+                        <table class="interview-table table">
+                          <tr>
+                            <th class="name">上傳 案件歷程</th>
+                            <td>
+                              <foreach name="note1" key="key" item="vo">
+                                <div class="tr_bar d-flex" value="{$vo['step_id']}">
+                                  <if condition="$vo['orders'] egt $last_execute['orders']">
+                                    <div class="mr-2" style="min-width: 250px;">
+                                      {$vo['create_time']|date="Y/m/d H:i",###}
+                                      {$vo['user_name']}
+                                      {$vo['value']}
+                                      {$vo['file']}
+                                    </div>
+                                    <div>{$vo['message']|str_replace="\\n",'<br>',###}</div>
+                                  </if>
+                                </div>
+                              </foreach>
+                              <form action="{:U('Fig/do_work')}" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="orders" value="{$current_step['orders']}" />
+                                <input type="hidden" name="eve_id" value="{$newbier['id']}" />
+                                <input type="hidden" name="step_id" value="{$newbier['nowflow']}" />
+                                <input type="hidden" name="value" value="上傳" />
+                                <textarea name="message" class="w100 mb-2" style="height:100px;resize: none;"
+                                  placeholder="簡單說明..."></textarea>
+                                <br>
+                                附件:
+                                <input type="file" name="file" />
+                                <input type="submit" class="submit_btn addbtn btn" value="儲存" />
+                              </form>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="name">
+                              驗收項目：{$last_execute['content']}</br>
+                            </th>
+                            <td>
+                              <form action="{:U('Fig/do_check')}" method="post">
+                                <input type="hidden" name="id" value="{$vo['id']}" />
+                                <input type="hidden" name="eve_id" value="{$newbier['id']}" />
+                                <input type="submit" class="submit_btn btn addbtn" name="check_result" value="完成確認" />
+                                <input type="button" class="btn btn-warning" value="驗收未過"
+                                  onclick="myFunction({$_GET['id']},{$_SESSION['eid']},-1,{$last_execute['orders']})">
+                              </form>
+                            </td>
+                          </tr>
+                        </table>
+                      </fieldset>
+                    </case>
+                  </switch>
+                </if>
+              </div>
+
+              <!---------------------------- 排程頁簽內容 ------------------------------------------>
+              <div id="tab2" class="tab_content">
+                <div class="edit_form">
+                  <table class="sch_table  edit_table" style="min-width: 1000px;">
+                    <thead>
+                      <tr>
+                        <th style="width: 120px;">狀態</th>
+                        <th style="width: 120px;">操作</th>
+                        <th style="width: 80px;">功能</th>
+                        <th style="width: 80px;">部門</th>
+                        <th style="width: 80px;">人員</th>
+                        <th style="width: 200px;">案件歷程</th>
+                        <th style="width: 80px;" class="text-right">績效(稅前)</th>
+                        <th style="width: 80px;" class="text-right">預估工時</th>
+                        <th style="width: 80px" class="text-right">實際工時</th>
+                        <th>走期</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="eve_steps" key="sckey" item="sc">
+                        <tr class="tr_bar" value='{$sc[step_id]}' style="{$newbier['step_flow']|compare_return=$sc['orders'],'background:#cecece'}">
+                          <td>{$sc.step_status}</td>
+                          <td>
+                            <if condition="$sc['step_id']==3">
+                              <a href="{:U('Schedule/eve_step_create')}?eve_step_id={$sc[id]}" target="_blank">
+                                <button class="btn btn-warning">查看日程組</button>
+                              </a>
+                            </if>
+                          </td>
+                          <td>{$eve_role_steps[$sc[step_id]]['name']}</td>
+                          <td>{$eip_apart[$eip_user_event[$sc[user_id]]['apartmentid']]['name']}</td>
+                          <td>{$sc.user_name}</td>
+                          <td>{$sc.content}</td>
+                          <td class="eve_price text-right">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">${$sc[price]}</if>
+                          </td>
+                          <td class="eve_estimated_time text-right">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">{$sc[estimated_time]}天</if>
+                          </td>
+                          <td class="eve_exact_time text-right">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">{$sc[exact_time]}天</if>
+                          </td>
+                          <td>
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">
+                              <if condition="$sc['start_time'] lt $sc['end_time']">
+                                <if condition="$sc['start_time'] gt 0">
+                                  {$sc['start_time']|date='Y-m-d H:i:s',###}
+                                  ~
+                                  {$sc['end_time']|date='Y-m-d H:i:s',###}
+                                </if>
+                              <else />
+                                不排定時間
+                              </if>
+                            </if>
+                          </td>
+                        </tr>
+                      </foreach>
+                      <tr class="tr_bar">
+                        <td colspan="6" class="text-right">加總：</td>
+                        <td class="text-right">$<span id="sum_eve_price"></span></td>
+                        <td class="text-right"><span id="sum_eve_estimated_time"></span>天</td>
+                        <td class="text-right"><span id="sum_eve_exact_time"></span>天</td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!---------------------------- 案件歷程核頁簽內容 ------------------------------------------>
+              <div id="tab3" class="tab_content">
+                <div class="edit_form">
+                  <table class="edit_table" style="min-width: 1000px;">
+                    <thead>
+                      <tr>
+                        <th style="width:150px">發佈日期</th>
+                        <th style="width:80px">人員</th>
+                        <th style="width:160px">發佈狀況</th>
+                        <th >案件歷程</th>
+                        <th >附件下載</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="note1" key="key" item="vo">
+                        <tr class="tr_bar" value="{$vo['step_id']}">
+                          <td>{$vo['create_time']|date="Y/m/d H:i",###}</td>
+                          <td>{$vo['user_name']}</td>
+                          <td>{$vo['value']}</td>
+                          <td>{$vo['message']|str_replace="\\n",'<br>',###}</td>
+                          <td>{$vo['file']}</td>
+                        </tr>
+                      </foreach>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!---------------------------- 一般對話頁簽內容 ------------------------------------------>
+              <div id="tab4" class="tab_content">
+                <form method="post" action="{:u('Fig/do_addchats')}" id="search_add" class="chooseCo searchform" enctype="multipart/form-data">
+                  <div class="container-fluid contract-item pl-0 pr-0">
+                    <div class="row w-100 m-0">
+                      <div class="col-12">
+                        <label>人員：</label>
+                        <select name="lxrid" id="mens">
+                          <option value="">全部</option>
+                          <foreach name="eip_user_event" key="key" item="vo">
+                            <if condition="$vo[name] neq '' && $vo[id] neq 0">
+                              <option value="{$vo['id']}">{$vo['name']}</option>
+                            </if>
+                          </foreach>
+                        </select>
+                      </div>
+                      <div class="col-12">
+                        <label>有話想說：</label>
+                        <textarea id="comment_text" rows="5" cols="20" name="content" style="width:100%"
+                        placeholder="說些甚麼呢?"></textarea>
+                      </div>
+                      <div class="col-12">
+                        <label>附件:</label>
+                        <input type="file" name="file" />(多個檔案請自行壓縮後上傳)
+                      </div>
+                      <div class="col-12">
+                        <input type="submit" class="addbtn add btn mt-1 mb-1" value="送出留言" />
+                        <input type="hidden" name="eve_id" value="{$_GET['id']}" />
+                      </div>
+                    </div>
+                  </div>
+                </form>
+                <div class="edit_form">
+                  <table class="myFormTheme edit_table" style="min-width: 1000px;">
+                    <thead>
+                      <tr>
+                        <th style="width: 15%;">建立日期</th>
+                        <th style="width: 6%;">發送者</th>
+                        <th style="width: 6%;">接收者</th>
+                        <th style="width: 45%;">內容</th>
+                        <th>附件</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="eve_chats" key="key" item="vo">
+                        <tr>
+                          <td style="width: 15%;">{$vo[appmdate]|date='Y-m-d H:i',###}</td>
+                          <td style="width: 6%;">{$eip_user_all[$vo['eid']][name]}</td>
+                          <td style="width: 6%;">{$eip_user_all[$vo['lxrid']][name]}</td>
+                          <td style="width: 45%;" class="short" style="text-align:left;">{$vo[content]}</td>
+                          <td>{$vo[upfile]}</td>
+                        </tr>
+                      </foreach>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!---------------------------- 往返單記錄頁簽內容 ------------------------------------------>
+              <div id="tab5" class="tab_content">
+                <div class="edit_form">
+                  <table class=" edit_table" style="min-width: 1200px;">
+                    <thead>
+                      <tr>
+                        <th style="width: 50px" class="text-center">代號</th>
+                        <th style="width: 160px;">發布時間</th>
+                        <th style="width: 160px;">預定交件時間</th>
+                        <th style="width: 80px;">預估時間</th>
+                        <th style="width: 80px;">實際工時</th>
+                        <th style="width: 80px;">績效(稅前)</th>
+                        <th style="width: 100px;">往返單類型</th>
+                        <th style="width: 80px;">執行者</th>
+                        <th>內文說明</th>
+                        <th style="width: 150px;">附件下載</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <foreach name="wrongjob" key="key" item="vo">
+                        <tr>
+                          <td class="text-center">
+                            <if condition="$can_edit_content && $newbier['result'] neq '-1'">
+                              <a href="javascript:myFunction('','',{$vo['id']})">{$key+1}</a>
+                            <else />
+                              {$key+1}
+                            </if>
+                          </td>
+                          <td>{$wrongjob[$key]['create_time']}</td>
+                          <td>{$wrongjob[$key]['dateline']}</td>
+                          <td>{$wrongjob[$key]['estimated_time']}天</td>
+                          <td>{$wrongjob[$key]['exact_time']}天</td>
+                          <td>${$wrongjob[$key]['money']}</td>
+                          <td>{$wrongjob[$key]['eve_tname']}</td>
+                          <td>{$wrongjob[$key]['user_name']}</td>
+                          <td>{$wrongjob[$key]['content']}</td>
+                          <td>{$wrongjob[$key]['file_name']}</td>
+                        </tr>
+                      </foreach>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!---------------------------- 甘特圖顯示區 ------------------------------------------>
+          <div class="content_menu" style="width:100%">
+            <ul class="labs">
+              <li><a href="#lab0"><h3 class="casesubtitle mt-4 mb-2">甘特圖</h3></a></li>
+            </ul>
+            <if condition="$newbier.result neq 0">
+              <div id="lab0" class="cardContainer">
+                
+                <!-- 流程圖 -->
+                <div id="workFlow">
+                  <!-- 工作流程：顯示畫面 -->
+                  <include file="Fig:work_flow" />
+                </div>
+
+              </div>
+            </if>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End document_list -->
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+    var check_user = true; /*是否檢查未指派人員*/
+</script>
+<include file="Events:role_judge" />
+
+<!-- 工作流程：js -->
+<include file="Fig:work_flow_js" />
+<script type="text/javascript">
+  function init_setting(){
+    workFlowVM.editable = false;	/*不允許編輯*/
+    workFlowVM.to_current_day = false /*轉軸轉至當前日期*/
+    workFlowVM.search.eve_id = '{$newbier.id}';
+    workFlowVM.search.all = true;	/*顯示完成和未完成的流程*/
+    workFlowVM.search.show_examine_step = 1;	/*顯示驗收者工作*/
+    workFlowVM.search.show_time_type = -1;	/*顯示排定+無時間的*/
+  }
+</script>
+
+<!-- <script src="__PUBLIC__/js/bootstrap.min.js"></script> -->
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script>
+  var editor;
+  KindEditor.ready(function(K) {
+    editor = K.create('#descriptions, #comment_text', {
+      afterBlur: function() {
+        this.sync();
+      },
+      langType: 'zh_TW',
+      items: [
+        'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
+        'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+        'superscript', 'quickformat', 'selectall', '|', 'fullscreen', '/', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+        'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
+        'table', 'hr', 'emoticons', 'pagebreak',
+        'anchor', 'link', 'unlink', '|', 'about'
+      ],
+      width: '100%',
+      height: '300px',
+      resizeType: 0
+    });
+    if("{$can_edit_content}"!=1){
+      editor.readonly(true);
+    }
+  });
+
+  function myFunction(eve_id, user_id, job_id=0, order=0){
+    //alert(user_id);
+    var myWindow = window.open("Wrongjob.html?eve_id="+eve_id+"&user_id="+user_id+"&job_id="+job_id+"&order="+order, "myWindow", "width=800,height=900");
+  }
+
+  function reload(){
+    location.reload();
+  }
+
+  async function send_step_flow(){
+    var step_flow = $('#send_step_flow').val();
+    if(step_flow<1 || step_flow>=Number("{$newbier['step_num']}")){
+      Vue.toasted.show("階段僅可設為1~{$newbier['step_num']-1}", { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+      return;
+    }
+    $('#body_block').show();
+    await update_fig({step_flow: step_flow});
+    reload();
+    setTimeout(()=>{
+      $('#body_block').hide();
+    }, 1000);
+  }
+  async function send_caseid(){
+    var caseid = $('#send_caseid').val();
+    var case_name = $('#send_caseid option:selected').html().trim();
+    $('#body_block').show();
+    await update_fig({
+      caseid: caseid, 
+      case_name: case_name,
+    });
+    reload();
+    setTimeout(()=>{
+      $('#body_block').hide();
+    }, 1000);
+  }
+  function send(){
+    var inter = $('#descriptions').val();
+    update_fig({content: inter});
+  }
+  function update_fig(data){
+    //alert(inter);
+    return $.ajax({
+      method:'post',
+      data:{
+        id:"{$_GET['id']}",
+        data:data,
+      },
+      dataType:'json',
+      url:"{:U('Fig/aj_up_content')}",
+      success:function(res){
+        if(res.status==1){
+          bg_class = "bg-success";
+        }else{
+          bg_class = "bg-danger";
+        }
+        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+      }
+    });
+  }
+
+  $(function() {
+    $( ".content_menu" ).tabs();
+    var color = ["#1f497d", "#c0504d", "#9bbb59", "#8064a2", "#4bacc6", "#ffaa00", "#ff77ff"];
+
+    $(".tr_bar").each(function(){
+      $(this).css("color",color[$(this).attr("value")]);
+    });
+
+    //顯示流程
+    var can_edit_content = "{$can_edit_content}";
+    var current_result = "{$newbier['result']}";
+    if( can_edit_content == '1' && current_result != '-1'){
+      $.ajax({
+        type:'POST',
+        dataType:'text',
+        url:"{:u('Fig/aj_schedule')}",
+        data:{
+          eve_id:"{$newbier.id}",
+        },
+        success:function(res){
+          $(".schedule").html(res);
+        },
+        error:function(request, error){
+          console.log(arguments);
+          alert(" Can't do because: " + error);
+        }
+      });
+    }
+  });
+
+  $('.submit_btn').on('click', function(e){
+    $('#body_block').show();
+    // e.preventDefault();
+  });
+
+  $('#search_add').on('submit', function(e){
+    $('#body_block').show();
+    // e.preventDefault();
+  });
+</script>
+<script>
+  function sum_eve_column(){
+    let targets = ['eve_price', 'eve_estimated_time', 'eve_exact_time'];
+    for (var i = 0; i < targets.length; i++) {
+      let elements = $('.'+targets[i]);
+      let total = 0;
+      for (var x = 0; x < elements.length; x++) {
+        let text = $(elements[x]).html();
+        text = text.replaceAll('$', '').replaceAll('天', '');
+        text = Number(text);
+        if(text){ total += text; }
+      }
+      let sum_selector = '#sum_' + targets[i];
+      $(sum_selector).html(total);
+    }
+  }
+  $(document).ready(function(){
+    sum_eve_column();
+  })
+</script>

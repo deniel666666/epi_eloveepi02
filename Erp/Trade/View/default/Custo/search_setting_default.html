@@ -1,0 +1,18 @@
+
+				<li>
+					<div class="search_bar">
+						<input id="searchname" type="text" class="text" name="searchname" value="{$_GET['searchname']}" 
+							   placeholder="{$system_parameter['公司名稱']}/{$system_parameter['公司MAIL']}/{$system_parameter['統編']}/{$system_parameter['負責人電話']}{$system_parameter['負責人']|compare_return='','/'.$system_parameter['負責人'].$system_parameter['名稱'],'',false}" 
+							   style="width: 320px;"/>
+						<input class="submit" id="searchBtn" type="submit" value="" />
+					</div>
+				</li>
+				<li>
+					<div class="search_bar mb-0">
+						<select name="status_supplier" value="{$_GET['status_supplier']}">
+							<option value="">廠商類型</option>
+							<option value="1" {$_GET['status_supplier']|compare_return=1,"selected"}>客戶</option>
+							<option value="2" {$_GET['status_supplier']|compare_return=2,"selected"}>供應商</option>
+						</select>
+					</div>
+				</li>

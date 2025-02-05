@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>{$eip_company_custom['name']} 本期出貨明細</title>
+		
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	    <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+
+		<!-- Vue -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+		<script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+    	<script>Vue.use(Toasted);</script>
+
+    	<style type="text/css">
+    		body {
+			    display: block;
+			    margin: 8px;
+			}
+    	</style>
+	</head>
+	<body>
+		<div class="record">
+			<if condition=" $contract[cate] eq 1">
+				<table width="802" border="0" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td height="36" align="center" >排名記錄</td>
+					</tr>
+				</table>
+				<table width="802" border="0" align="center" cellpadding="2" cellspacing="1" style="border: 1px solid #555555;width:100%;">
+					<tr>
+						<td width="10%" align="center" bgcolor="#e9e9e9">{$system_parameter["公司名稱"]}&nbsp;</td>
+						<td align="center">{$contract.ename}</td>
+					</tr>
+				</table>
+				<br>
+				<div class="gone">
+					<table class="seo_table" width="802" align="center" cellpadding="2" cellspacing="1" style="border: 1px solid #555555;width:100%;">
+						<tr>
+							<th height="35" colspan="4" align="center" bgcolor="#e9e9e9">關鍵字組</th>
+						</tr>
+						<tr>
+							<td width="182" height="25" align="center" bgcolor="#e9e9e9">關鍵字</td>
+							<td width="227" align="center" bgcolor="#e9e9e9">搜索引擎</td>
+							<td width="263" align="center" bgcolor="#e9e9e9">計費範圍</td>
+							<td width="123" align="center" bgcolor="#e9e9e9">單價/月</td>
+						</tr>
+						<foreach name="seolist" key="num" item="seo">
+							<tr>
+								<td height="16" align="center" bgcolor="#F9F9F9">{$seo.key_name}</td>
+								<td align="center" bgcolor="#F9F9F9">{$seo.engine}</td>
+								<td width="263" align="center" bgcolor="#F9F9F9">
+									
+									<switch name="seo[starts]">
+										<case value="1">1~10</case>
+										<case value="12">1~20</case>
+										<case value="2">1~30</case>
+										<case value="3">1~3</case>
+										<case value="4">1~5</case>
+										<case value="5">4~10</case>
+										<case value="6">6~10</case>
+										<default />default
+									</switch>
+								</td>
+								<td width="123" align="center" bgcolor="#F9F9F9">{$seo.price|number_format=2}</td>
+							</tr>
+						</foreach>
+					</table>
+				</div>
+
+				<foreach name="seolist_adjust" key="crm_seo_key_index" item="crm_seo_key_itms">
+					<table border="0" align="center" cellpadding="2" cellspacing="1" class="seo_table table_border " style="border: 1px solid #555555;width:100%;">
+						<tr>
+							<th height="35" colspan="{$fieldNum+2}" align="center" bgcolor="#e9e9e9">詳細排名資料{$crm_seo_key_index + 1}</th>
+						</tr>
+						<tr>
+							<td width="100" align="center" bgcolor="#e9e9e9">日期</td>
+							<foreach name="crm_seo_key_itms" key="num" item="filedrow">
+								<td width="50" align="center" bgcolor="#e9e9e9">{$filedrow['key_name']}</td>
+							</foreach>
+
+							<if condition="$crm_seo_key_index+1 eq count($seolist_adjust)">
+								<td align="center" bgcolor="#e9e9e9">計費個數</td>
+							</if>
+						</tr>
+						<tr class="go">
+							<td align="center" bgcolor="#F9F9F9">排名網址</td>
+							<foreach name="crm_seo_key_itms" key="num" item="urlrow">
+								<td align="center" bgcolor="#F9F9F9" title="{$urlrow['url1']}">
+									<div class="w50" style="overflow:auto;width:70px">{$urlrow['url1']}</div>
+								</td>
+							</foreach>
+
+							<if condition="$crm_seo_key_index+1 eq count($seolist_adjust)">
+								<td align="center" bgcolor="#F9F9F9"></td>
+							</if>
+						</tr>
+						<tr>
+							<td align="center" bgcolor="#F9F9F9">搜索入口</td>
+							<foreach name="crm_seo_key_itms" key="num" item="egsrow">
+								<td align="center" bgcolor="#F9F9F9">{$engines[$egsrow['engine']]}</td>
+							</foreach>
+
+							<if condition="$crm_seo_key_index+1 eq count($seolist_adjust)">
+								<td align="center" bgcolor="#F9F9F9"></td>
+							</if>
+						</tr>
+						<foreach name="month" key="num" item="item">
+							<tr>
+								<td align="center" bgcolor="#F9F9F9">{$item}</td>
+								<foreach name="crm_seo_key_itms" key="key" item="vo">
+									<td align="center" bgcolor="#F9F9F9">
+										<input type="text" value="{$box[$vo['id']][$item]}" style="border:0;width:50px;text-align:center"
+										class="input_content"  key_id="{$vo.id}" mydate="{$item}"
+										/>
+									</td>
+								</foreach>
+
+								<if condition="$crm_seo_key_index+1 eq count($seolist_adjust)">
+									<td align="center" bgcolor="#F9F9F9">{$jfday[$item]}</td>
+								</if>
+							</tr>
+						</foreach>
+
+						<if condition="$crm_seo_key_index+1 eq count($seolist_adjust)">
+							<tr>
+								<td align="center" bgcolor="#F9F9F9">計費天數</td>
+								<foreach name="crm_seo_key_itms" key="k" item="v">
+									<td align="center" bgcolor="#F9F9F9"></td>
+								</foreach>
+								<td align="center" bgcolor="#F9F9F9">{$jfcount|end}</td>
+								<!-- <td align="center" bgcolor="#F9F9F9"></td> -->
+							</tr>
+						</if>
+					</table>
+				</foreach>
+
+				<table width="802" border="0" align="center" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="center"><input type="button" name="button" onclick="javascript:window.print();" value="列印" /></td>
+					</tr>
+				</table>
+				<else />
+				<form action="{'Getmoney/monthmoney'|t_U:$contract.id}" method="post">
+					<!--其他項目-->
+					<table width="802" align="center" cellpadding="2" cellspacing="1" style="border: 1px solid #555555;width:100%;">
+						<tr>
+							<th height="35" colspan="8" align="center" bgcolor="#e9e9e9">基本資料</th>
+						</tr>
+						<tr>
+							<td width="10%" align="center" bgcolor="#e9e9e9">客戶名稱&nbsp;</td>
+							<td align="center" >{$contract.ename}</td>
+						</tr>
+					</table>
+					<table  border="0" align="center" cellpadding="0" cellspacing="1" style="border: 1px solid #555555;width:100%;">
+						<foreach name="slist" key="num" item="list">
+							<if condition=" $list[cflag] neq 1">
+								<tr>
+									<td width="9%" height="8" align="center" bgcolor="#e9e9e9"><if condition=" $list.examine eq 1"><font color="red">己出貨</font></if></td>
+									<td align="center" bgcolor="#F9F9F9">{$list.qh}</td>
+									<td width="71" align="center" bgcolor="#e9e9e9">&nbsp;</td>
+									<td width="150" align="center" bgcolor="#F9F9F9">{$list.name}</td>
+									<td width="9%" align="center" bgcolor="#e9e9e9">&nbsp;</td>
+									<td width="124" align="center" bgcolor="#F9F9F9">{$list.money|number_format=2}</td>
+									<td colspan="2" align="center" bgcolor="#e9e9e9">&nbsp;</td>
+								</tr>
+							</if>
+						</foreach>
+					</table>
+					<!--其他的項目-->
+				</form>
+			</if>
+		</div>
+	</body>
+</html>
+
+<script language="javascript" type="text/javascript">
+	$(document).ready(function(){
+		$("td").on("change",".input_content",function(){
+			var myin=$(this);
+			$.ajax({
+				method:'post',
+				dataType:'json',
+				url:"{:U('Getmoney/aj_chseo')}",
+				data:{key_id:myin.attr("key_id"),mydate:myin.attr("mydate"),data:myin.val()},
+				success:function(res){
+					if(res.status==1){
+	                    bg_class = "bg-success";
+	                }else{
+	                    bg_class = "bg-danger";
+	                }
+	                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+				}
+			});
+		});
+	});
+</script>

@@ -1,0 +1,85 @@
+
+			<div class="page">
+				{$show}
+			</div>
+			
+			<div class="seo_box edit_form">
+				<table  class="seo_table table edit_table w-100" cellpadding="0" cellspacing="0">
+					<thead>
+						<tr>
+							<th>序號</th>
+							<th>客戶名</th>
+							<th>搜索引擎</th>
+							<th>網址</th>
+							<th>字組</th>
+							<th>分類</th>
+							<foreach name="ddate" item="list" key="key">
+								<th>{$key}</th>
+							</foreach>
+						</tr>
+					</thead>
+					<tbody>
+						<volist name="data" id="list" key="k">
+							<if condition="$k%2 eq 1"> <tr class="color1"><else /><tr></if>
+								<td>{$k}</td>
+								<td>{$list[name]|mb_substr=0,5,'utf-8'}<br/><input type="text" child="{$list.id}" dbname="crm_seo_key" row="cnamememo" myid="{$list.id}" field="cnamememo" class="memo input_content" size="10" value="{$list.cnamememo}"/></td>
+								<td>{$list.engine}<br/><input type="text" dbname="crm_seo_key" row="enginememo" myid="{$list.id}" child="{$list.id}" field="enginememo"  class="memo input_content" size="10" value="{$list.enginememo}" /></td>
+								<td>
+								<a class="copy" data-clipboard-text="{$list.url1}">{$list.url1}</a> <br/><input type="text" dbname="crm_seo_key" row="url1memo" myid="{$list.id}" child="{$list.id}" field="url1memo"  class="memo input_content" size="10" value="{$list.url1memo}" /></td>
+								<td>{$list.key_name}<br/><input type="text" dbname="crm_seo_key" row="key_namememo" myid="{$list.id}" child="{$list.id}" field="key_namememo"  class="memo input_content" size="10" value="{$list.key_namememo}" /></td>
+								<td>
+									<select dbname="crm_seo_key" row="gcsele" myid="{$list.id}" class="input_content">
+										<foreach name="gcs" item="d" key="key">
+											<if condition="$key eq $list['gcsele']">
+												<option value="{$key}" selected>{$d}</option>
+												<else />
+												<option value="{$key}">{$d}</option>
+											</if>
+										</foreach>
+									</select>
+								</td>
+								<foreach name="ddate" item="d">
+									<if condition="$list['rank'][$d] eq ''">
+										<td>-</td>
+										<elseif condition="$list['rank'][$d] eq '1001'" />
+										<td>n</td>
+										<else />
+										<td>{$list['rank'][$d]}</td>
+									</if>
+								</foreach> 
+								
+							</tr>
+						</volist>
+					</tbody>
+				</table>
+			</div>
+			<!-- </div> -->
+			<!--right end-->
+			
+			<div class="page">
+				{$show}
+			</div>
+			
+			<!--content end-->
+			<script>
+			//修改資料
+			
+			$("tr").on("change",".input_content",function(){
+				var myin=$(this);
+				$.ajax({
+					method:'post',
+					dataType:'json',
+					url:"{:U('Seo/aj_chcontent')}",
+					data:{dbname:myin.attr("dbname"),row:myin.attr("row"),id:myin.attr("myid"),data:myin.val()},
+					success:function(res){
+						if(res.status==1){
+		                    bg_class = "bg-success";
+		                }else{
+		                    bg_class = "bg-danger";
+		                }
+		                Vue.toasted.show(res.info+':'+myin.val(), { duration: 1500, className: ["toasted-primary", bg_class] });
+					}
+					
+				});
+			});
+			</script>

@@ -1,0 +1,341 @@
+<include file="Public:header2" />
+
+		<section class="main ">
+			<div id="right">
+				<form name="search" id="searchform" action="{:u($CONTROLLER_NAME.'/index',$_GET)}" method="get" class="searchForm">
+					<div class="w100 d-flex align-items-start">
+						<div class="w100 d-flex flex-wrap">
+							<ol class="headerOl rightR">
+								<include file="Custo:search_setting_default" />
+								<include file="Alllist:search_setting_default" />
+							</ol>
+							<div class="accordion" id="accordion_search">
+								<div id="collapseOne" class="collapse collapse" aria-labelledby="headingOne" data-parent="#accordion_search">
+									<ol class="headerOl rightR">
+										<include file="Custo:search_setting" />
+									</ol>
+								</div>
+							</div>
+							<div class="search_bar">
+								<input type="submit" class="text text-center" readonly
+										style="width: 80px; cursor: pointer; padding: 0px" type="submit" value="搜尋  ">
+								<input type="submit" value="" class="submit">
+							</div>
+							<div class="search_bar">
+								<a href="{:u($CONTROLLER_NAME.'/index')}">
+									<input type="text" class="text text-center" readonly
+										style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+								</a>
+							</div>
+						</div>
+						<button class="btn btn-link d-inline-block p-0" type="button" style="width: 100px;" 
+								data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+								進階搜尋
+						</button>
+					</div>
+				</form>
+				<div class="content-table">
+					<div class="navi1">
+						<div class="menu-sub-btn">
+							<ol>
+								<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?cate=&p=1" class="{$_GET['cate']|compare_return='', 'current'}">全部</a></li>
+								<foreach name="crm_cum_cat" item="vo">
+									<if condition="$_GET['cate'] eq $vo['id']">
+										<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?cate={$vo.id}&p=1" class="current">{$vo.name}</a></li>
+									<else />
+										<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?cate={$vo.id}&p=1">{$vo.name}</a></li>
+									</if>
+								</foreach>
+							</ol>
+						</div>
+						<ol class="mb-2 mb-md-0">
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag2=1&flag3=-1&p=1" class="{$flag2_flag3|compare_return='1_-1', 'current'}">全部</a>
+							</li>
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag2=1&flag3=0&p=1" class="{$flag2_flag3|compare_return='1_0', 'current'}">{$收款}中</a>
+							</li>
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag2=1&flag3=1&p=1" class="{$flag2_flag3|compare_return='1_1', 'current'}">款{$收罄}</a>
+							</li>
+							<li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag2=2&flag3=-1&p=1" class="{$flag2_flag3|compare_return='2_-1', 'current'}">結案區</a>
+							</li>
+							<if condition="$access[strtolower($AlllistController).'_hid'] eq '1'">
+								<li>
+									<a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag2=3&flag3=-1&p=1" class="{$flag2_flag3|compare_return='3_-1', 'current'}">垃圾桶</a>
+								</li>
+							</if>
+							<!-- <li><a href="{:u($CONTROLLER_NAME.'/index',$_GET)}?flag=1"><strong>未結案</strong></a></li> -->
+							<li class="ml-2"><a href="{:u($CONTROLLER_NAME.'/excel',$_GET)}">匯出Excel</a></li>
+						</ol>
+					</div>
+					<div class="page justify-content-end">
+						{$show}
+					</div>
+					<form action="{:u('Alllist/patchupdate')}" method="post">
+						<div class="edit_form">
+							<table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1800px;">
+								<thead class="edit_table_thead">
+									<tr class="edit_table tr">
+										<th style="width: 20px;" class="text-center" valign="middle">
+											<input type="checkbox" class="seleall" name="all" id="all" />
+										</th>
+										<th style="width: 50px;" class="text-right" valign="middle">序號</th>
+										<th style="width: 100px;" class="text-left">
+											<a href="{:u($CONTROLLER_NAME.'/index')}?order=name">{$system_parameter["客戶"]}{$system_parameter["簡稱"]}</a>
+										</th>
+										<th style="width: 150px;" class="text-left">{$system_parameter['合約']}號</th>
+										<th style="width: 180px;" class="text-left">主題</th>
+										<th style="width: 100px;" class="text-right">{$system_parameter['合約']}金額</th>
+										<th style="width: 100px" class="text-right">{$system_parameter['合約']}訂金</th>
+
+										<if condition="in_array(71, $use_function_top)">
+											<th style="width: 100px;" class="text-right">{$已收}金額</th>
+											<th style="width: 100px;" class="text-right">{$收款}率</th>
+
+											<th style="width: 100px" class="text-right">剩餘預收款</th>
+
+											<th style="width: 100px;" class="text-right">未{$出貨}金額</th>
+											<th style="width: 100px;" class="text-right">已{$出貨}金額</th>
+											<th style="width: 100px;" class="text-right">{$出貨}率</th>
+
+											<th style="width: 225px;" class="text-center">款項明細</th>
+
+											<th style="width: 100px;" class="text-right">{$超收}</th>
+											<th style="width: 100px;" class="text-right">總損益</th>
+										</if>
+										<th style="width: 75px;" class="text-center">{$收款}狀態</th>
+										<th style="width: 100px;" class="text-center">{$system_parameter['合約']}狀態</th>
+										<th style="width: 110px;" class="text-left">結案日期</th>
+									</tr>
+								</thead>
+								<tbody>
+									<volist name="list_search" key="num" id="list">
+										<tr id="{$list.id}" class="cre_tr cate_{$list.flag}_color">
+											<td class="text-center">
+												<input type="checkbox" class="sele" value="{$list[id]}" name="flags[]" />
+											</td>
+											<td class="text-right">{$num}</td>
+											<td>
+												<if condition="in_array(75, $use_function_top)">
+													<a class="cate_{$list.flag}_color" href="{:u('Custo/view_re')}?id={$list['cid']}" target="_blank">
+												<else />
+													<a class="cate_{$list.flag}_color" href="{:u('Custo/addcrm')}?id={$list['cid']}" target="_blank">
+												</if>
+													{$list['show_name']}
+												</a>
+											</td>
+											<td>
+												<a class="cate_{$list.flag}_color" href="{:u($AlllistController.'/view')}?id={$list[id]}" target="_blank">
+													{$list.sn}
+												</a>
+												<if condition="$control_sign_in eq '1'">
+													(<a href="/customer.php/Contract/sign_in/id/{:md5($list['sn'].'_'.$list['id'])}" target="_blank">簽名</a>)
+												</if>
+											</td>
+											<td>{$list['topic']}</td>
+											<td class="text-right">{$list.allmoney|number_format_sys=$control_money_input}</td>
+											<td class="text-right">{$list.money|number_format_sys=$control_money_input} </td>
+
+											<if condition="in_array(71, $use_function_top)">
+												<!---------------已收金額------------------>
+												<td class="text-right">{$list['money_count']['real_get_paid']|number_format_sys=$control_money_input}</td>
+												<td class="text-right">
+													<if condition="(int)$list['allmoney']">
+														{$list['money_count']['real_get_paid']/$list['allmoney']*100|number_format=1}%
+													</if>
+												</td>
+
+												<!---------------剩餘預收款------------------>
+												<td class="text-right">{$list['money_count']['allmoney_prepaid']|number_format_sys=$control_money_input}</td>
+										
+												<!---------------未出貨期金------------------>
+												<td class="text-right">{$list['money_count']['shipments_un']|number_format_sys=$control_money_input}</td>
+												<td class="text-right">{$list['money_count']['shipments']|number_format_sys=$control_money_input}</td>
+												<td class="text-right">
+													<if condition="(int)$list['allmoney']">
+														{$list['money_count']['shipments']/$list['allmoney']*100|number_format=1}%
+													</if>
+												</td>
+						
+												<td class="text-center">
+													<a href="{:u($CONTROLLER_NAME.'/receivedetail','cate='.$_GET['cate'])}?id={$list['id']}" target="_blank">款項明細</a>
+													<if condition="$access[strtolower($GetmoneyController).'_red'] eq '1'">
+														<if condition="($list['money'] neq 0 || $list['flag'] neq 0) && $list['flag2']==1 && $list['flag3']!=1">
+															<a href="{:u($GetmoneyController.'/records')}?id={$list['id']}" target="_blank" class="btn addbtn ml-2">
+																申請
+															</a>
+														</if>
+													</if>
+													<if condition="$access[strtolower($GetmoneyController).'_new'] eq '1'">
+														<if condition="($list['cate'] eq 1) && $list['flag2']==1 && $list['flag3']!=1">
+															<a href="{:u($GetmoneyController.'/create_money_seo')}?caseid={$list['id']}&qh={$current_qh}" target="_blank" class="btn addbtn ml-2">
+																前月請款
+															</a>
+														</if>
+													</if>
+												</td>
+
+												<!---------------超收------------------>
+												<td class="text-right">
+													<if condition="$list['real_get'] gt $list['allmoney']">
+														{$list['real_get'] - $list['allmoney']|number_format_sys=$control_money_input}
+														<else />
+														0
+													</if>
+												</td>
+												<td class="text-right">{$list['money_count']['tips']|number_format_sys=$control_money_input}</td>
+											</if>
+											<td class="text-center">
+												<if condition="$list.flag3 neq 1">
+													<if condition="$access[strtolower($AlllistController).'_edi'] eq '1'">
+														<input type="button" class="btn addbtn button_content" value="{$收款}中" 
+															   dbname="crm_contract" row="flag3" myid="{$list.id}" myval="1" />
+													<else />
+														{$收款}中
+													</if>
+												<else />
+													<!--款收罄-->
+													<input type="button" class="btn button_content" style="background-color: gray;color: white;" value="款{$收罄}"
+														   dbname="crm_contract" row="flag3" myid="{$list.id}" myval="0" />
+												</if>
+											</td>
+											<td class="text-center">
+												<if condition="$list.flag eq 1 ">
+													已簽約
+													<elseif condition="$list.flag eq 2" />
+													問題案
+												</if>
+											</td>
+											<td>{$list['endtime_format']}</td>
+										</tr>
+									</volist>
+									<tr class="table_total">
+										<td colspan="5">分頁總計</td>
+										<td class="text-right">{$all_search.allmoney|number_format_sys=$control_money_input}</td>
+										<td class="text-right">{$all_search.money|number_format_sys=$control_money_input} </td>
+
+										<if condition="in_array(71, $use_function_top)">
+											<td class="text-right">{$all_search.real_get_paid|number_format_sys=$control_money_input} </td>
+											<td></td>
+											<td class="text-right">{$all_search.allmoney_prepaid|number_format_sys=$control_money_input} </td>
+											<td class="text-right">{$all_search.shipments_un|number_format_sys=$control_money_input} </td>
+											<td class="text-right">{$all_search.shipments|number_format_sys=$control_money_input} </td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</if>
+										<td class="text-right">{$all_search.tips|number_format_sys=$control_money_input} </td>
+										<td colspan="3"></td>
+									</tr>
+									<tr class="table_total">
+										<td colspan="18" class="p-0"><hr class="m-0"></td>
+									</tr>
+									<tr class="table_total">
+										<td colspan="5">搜尋總計</td>
+										<td class="text-right">{$all.allmoney|number_format_sys=$control_money_input}</td>
+										<td class="text-right">{$all.money|number_format_sys=$control_money_input} </td>
+										
+										<if condition="in_array(71, $use_function_top)">
+											<td class="text-right">{$all.real_get_paid|number_format_sys=$control_money_input} </td>
+											<td></td>
+											<td class="text-right">{$all.allmoney_prepaid|number_format_sys=$control_money_input} </td>
+											<td class="text-right">{$all.shipments_un|number_format_sys=$control_money_input} </td>
+											<td class="text-right">{$all.shipments|number_format_sys=$control_money_input} </td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td class="text-right">{$all.tips|number_format_sys=$control_money_input} </td>
+										</if>
+										<td colspan="3"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<if condition="$access[strtolower($AlllistController).'_edi'] eq '1'">
+							<select id="flag" class="flag" name="flag">
+								<option value="">{$system_parameter['合約']}狀態</option>
+								<foreach name="crm_cum_flag" item="op">
+									<if condition="$op['id'] != -1">
+										<option value="{$op['id']}">{$op['name']}</option>
+									</if>
+								</foreach>
+							</select>
+							<select id="flag3" class="flag" name="flag3">
+								<option value="">{$收款}狀態</option>
+								<option value="0">{$收款}中</option>
+								<option value="1">款{$收罄}</option>
+							</select>
+							<select id="flag2" class="flag" name="flag2">
+								<option value="">{$system_parameter['合約']}位置</option>
+								<if condition="$_GET['flag2'] neq '1'">
+									<option value="{$crm_cum_flag2[0]['id']}">{$crm_cum_flag2[0]['name']}</option>
+								</if>
+								<if condition="$_GET['flag2'] neq '2'">
+									<option value="{$crm_cum_flag2[1]['id']}">{$crm_cum_flag2[1]['name']}</option>
+								</if>
+								<if condition="$access[strtolower($AlllistController).'_hid'] eq '1' && $_GET['flag2'] neq '3'">
+									<option value="{$crm_cum_flag2[2]['id']}">{$crm_cum_flag2[2]['name']}</option>
+								</if>
+								<if condition="$access[strtolower($AlllistController).'_del'] eq '1' && $_GET['flag2'] eq '3'">
+									<option value="10">刪除</option>
+								</if>
+							</select>
+							<input type="submit" name="update" value="確定修改" class="btn sendbtn" />
+						</if>
+					</form>
+					<div class="page">
+						{$show}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<include file="Public:footer" />
+
+		<include file="Custo:search_setting_js" />
+
+		<script language="javascript" type="text/javascript">
+			$("#wrapper").css("width","100%");
+			
+			$(".Wdate").each(function(){
+				$(this).datepicker();
+				$(this).datepicker( "option", "dateFormat",'yy-mm-dd');
+				$(this).datepicker('setDate',$(this).attr("datev"));
+
+			});
+
+			//按下資料 存進資料庫
+			$("tr").on("click",".button_content",function(){
+				var myin=$(this);
+				var msg_text = '';
+
+				myid = myin.attr("myid");
+				if(myin.attr("myval") == 0){
+					msg_text = '{$收款}中';
+					$(this).parents("td").html("<input type='button' class='btn addbtn button_content' value='{$收款}中' dbname='crm_contract' row='flag3' myid='"+myid+"' myval='1' />");
+				}
+				if(myin.attr("myval") == 1){
+					msg_text = '款{$收罄}';
+					$(this).parents("td").html("<input type='button' class='btn button_content' style='background-color: gray; color: white;' value='款{$收罄}' dbname='crm_contract' row='flag3' myid='"+myid+"' myval='0' />");
+				}
+				$.ajax({
+					method:'post',
+					data:{
+						dbname:myin.attr("dbname"),
+						row:myin.attr("row"),
+						id:myid,
+						data:myin.attr("myval")
+					},
+					dataType:'json',
+					url:"{:U($AlllistController.'/aj_chcontent')}",
+					success:function(res){
+						if(res.status==1){
+								bg_class = "bg-success";
+						}else{
+								bg_class = "bg-danger";
+						}
+						Vue.toasted.show(res.info+':'+msg_text, { duration: 1500, className: ["toasted-primary", bg_class] });
+					}
+				});
+			});
+			</script>
+	</body>
+</html>

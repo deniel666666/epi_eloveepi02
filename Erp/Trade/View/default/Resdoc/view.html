@@ -1,0 +1,42 @@
+<include file="Public:header2" />
+
+<!-- .wrapAll -->
+<section class="main d-table mb-4">
+	<!---->
+	<div id="right"  class="container">
+		<br>
+		<div style="font-size:30pt;">標題：{$resources_document[title]}</div>
+		<br>
+		{$resources_document['content']}
+		<div style="float:right;font-size:20pt;">
+			-{$resources_document['name']} {$resources_document['date']|date="Y/m/d",###}
+		</div>
+
+	</div><!-- .wrapAll end-->
+</section>
+<include file="Public:footer" />
+
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+<script>
+	var editor;
+	KindEditor.ready(function(K) {
+		editor = K.create('#descriptions', {
+			afterBlur: function(){this.sync();},
+			langType : 'zh_TW',
+			items:[
+			'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
+			'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+			'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+			'superscript', 'quickformat', 'selectall', '|', 'fullscreen', '/', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+			'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
+			'table', 'hr', 'emoticons', 'pagebreak',
+			'anchor', 'link', 'unlink', '|', 'about'],
+			width:'100%',
+			height:'300px',
+			resizeType:0
+		});
+	});
+</script>
+

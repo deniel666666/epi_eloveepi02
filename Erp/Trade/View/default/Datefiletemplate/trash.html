@@ -1,0 +1,103 @@
+<include file="Public:header2" />
+
+	<!-- Start document_template -->
+	<section class="main document">
+		<div class="below">
+			<!-- 共用階層列表 -->
+			<include file="Datefiletemplate:leftlist" />
+			<!-- END 共用階層列表 -->
+
+			<div class="right">
+				<div class="document_edit">
+					<div class="document-mode">
+						<form action="{:u($daoModel.'/trash')}" method="get">
+							<div class="d-flex flex-wrap">
+								<label for="">搜尋文章：</label>
+								<div class="search_bar">
+									<input class="text" type="text" name="title" value="{$_GET['title']}" placeholder="請輸入文章/階層標題">
+									<input class="submit submit_button" type="submit" value="">
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<!-- //////////////////////////// 搜尋頁 ////////////////////////// -->
+					<form action="{:u($daoModel.'/file_action')}" method="post">
+						<table class="document_list table">
+							<tr>
+								<th style="width: 20px;">
+									<input type="checkbox" class="click_all" />
+								</th>
+								<th class="" style="width: 15%; max-width:300px">位置</th>
+								<th class="document_head">主標題</th>
+								<th class="document_time">公告日期</th>
+								<th class="document_pub">發佈者</th>
+							</tr>
+							<foreach name="file" item="vo">
+								<tr id="del{$vo.id}">
+									<td>
+										<input class="click" type="checkbox" name="fid[]" value="{$vo.id}" />
+									</td>
+									<td>{$vo.location}</td>
+									<td>
+										<a href="{:u($daoModel.'/trash_read')}?id={$vo.id}">
+											{$vo['title']}
+										</a>
+									</td>
+									<td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+									<td>{$vo.name}</td>
+									<!--
+									<td>
+										<input type="button" class="action" fid="{$vo.id}" action="recovery" value="復原" />
+										<if condition="$vo['creater'] eq $_SESSION['userName']">
+											<input type="button" class="action" fid="{$vo.id}" action="delete" value="刪除" />
+										</if>
+									</td>
+									-->
+								</tr>
+							</foreach>
+						</table>
+						<select name="action">
+							<option>請選擇</option>
+							<option value="recovery">還原</option>
+							<if condition="$acc[$right_del] eq '1'">
+								<option value="delete">刪除</option>
+							</if>
+						</select>
+						<input type="submit" class="btn addbtn"  value="送出" />
+					</form>
+				</div>
+
+				<!-- 換頁按鈕 -->
+				<div class="page">
+					{$show}
+				</div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+	</section>
+	<!-- End document_list -->
+
+<include file="Public:footer" />
+
+</body>
+</html>
+<script>
+	$(".click_all").click(function(){
+		if($('.click_all').prop('checked') == true){
+			$(".click").prop('checked',true);
+		}
+		else{
+			$(".click").prop('checked',false);
+		}
+	});
+
+	//修改路徑
+    if($('.breadcrumbs_add').length>0){
+    	$('.breadcrumbs_add a').html('垃圾桶');
+    }else{
+    	$('.breadcrumbs').append(`
+    		<li class="breadcrumbs_add"><a class="Km_auto_no pathBtn" href="{:u($daoModel.'/trash')}">垃圾桶</a></li>
+    	`);
+    }					    
+</script>

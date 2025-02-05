@@ -1,0 +1,294 @@
+<include file="Public:header2" />
+  <head>
+    <style type="text/css">
+      label{
+        margin-bottom: 0px;
+      }
+      .cooperate_staff tr:hover{
+        background: white;
+      }
+      .cooperate_staff tr th:hover{
+        background: #eeeeee;
+      }
+    </style>
+  </head>
+
+  <section class="main" id="crm_index">
+    <!---->
+    <div id="right">
+      <form id="searchForm" name="search" class="searchForm">
+        <input type="hidden" name="teamid" value="{$_GET['teamid']}" />
+
+        <div class="w100 d-flex align-items-start">
+          <div class="w100 d-flex flex-wrap">
+            <ol class="headerOl rightR">
+              <include file="Custo:search_setting_default" />
+            </ol>
+            <div class="accordion" id="accordion_search">
+              <div id="collapseOne" class="collapse collapse" aria-labelledby="headingOne" data-parent="#accordion_search">
+                <ol class="headerOl rightR">
+                  <include file="Custo:search_setting" />
+                </ol>
+                <include file="Custo:search_setting_crm_property" />
+              </div>
+            </div>
+            <div class="search_bar">
+              <input type="submit" class="text text-center" readonly
+                  style="width: 80px; cursor: pointer; padding: 0px" type="submit" value="搜尋  ">
+              <input type="submit" value="" class="submit">
+            </div>
+            <div class="search_bar">
+              <a href="{:u('Custo/index')}?teamid={$_GET['teamid']}">
+                <input type="text" class="text text-center" readonly
+                  style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+              </a>
+            </div>
+          </div>
+          <button class="btn btn-link d-inline-block p-0" type="button" style="width: 100px;" 
+              data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              進階搜尋
+          </button>
+        </div>
+      </form>
+
+      <div class="content-table">
+        <div class="navi1">
+          <div class="menu-sub-btn">
+            <span style="color:red">
+              ※{$system_parameter["客戶"]}{$system_parameter["類別"]}為潛在、成交才能新增{$system_parameter['合約']}
+            </span>
+          </div>
+          <crm_index_pages 
+            :change_page="change_page"
+            :current_page="current_page" 
+            :total_pages="pagwAllA.totalPages"
+          ><crm_index_pages/>
+        </div>
+        <form id="edit_form">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1600px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 50px;" class="text-right" valign=" middle">序號</th>
+                  <th style="width: 100px;" class="text-left">{$system_parameter['簡稱']}</th>
+                  <th style="width: 150px;" class="text-right">總金額</th>
+                  <th style="width: 150px;" class="text-right">總訂金</th>
+                  <if condition="$system_parameter['協同人員']">
+                    <foreach name="crm_cum_pri" item="vo">
+                      <th style="width: 75px;" class="text-left">{$vo['name']}</th>
+                    </foreach>
+                  </if>
+                  <th style="width: 75px;" class="text-right">{$system_parameter['合約']}數</th>
+                  <th style="width: 250px;" class="text-left">{$system_parameter['客戶']}{$system_parameter['公司備註']}</th>
+                  <if condition="$access[$alllist_controller.'_new'] eq '1'">
+                    <th style="width: 50px;" class="text-center">操作</th>
+                  </if>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(crm, crm_index) in crmlist" :id="crm.id" :class="[{'color1':crm_index%2==0}]">
+                  <td class="text-right"
+                    v-text="crm_index+1 + (current_page-1)*pagwAllA.listRows"></td>
+                  <td :class="'crm_type'+crm.typeid">
+                    <a :href="'{:u('Custo/view_re')}?id='+crm.id+'&teamid={$_GET['teamid']}'" target="_blank">
+                      <span v-text="crm.show_name"></span>
+                    </a>
+                  </td>
+                  <td class="text-right"><span v-text="Number(crm.allmoney).toLocaleString('en-US')"></span></td>
+                  <td class="text-right"><span v-text="Number(crm.money).toLocaleString('en-US')"></span></td>
+                  <if condition="$system_parameter['協同人員']">
+                    <td><span v-if="eip_user_all[crm.wid]" v-text="eip_user_all[crm.wid]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.did]" v-text="eip_user_all[crm.did]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.sid]" v-text="eip_user_all[crm.sid]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.hid1]" v-text="eip_user_all[crm.hid1]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.hid2]" v-text="eip_user_all[crm.hid2]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.hid3]" v-text="eip_user_all[crm.hid3]['name']"></span></td>
+                  </if>
+                  <td class="text-right"><span v-if="crm.count" v-text="Number(crm.count).toLocaleString('en-US')"></span></td>
+                  <td class="text-left">
+                    <textarea rows="1" cols="30" class="input_content" row="note" readonly v-model="crm.mom"></textarea>
+                  </td>
+                  <if condition="$access[$alllist_controller.'_new'] eq '1'">
+                    <td class="text-center">
+                      <a :href="'{:u($alllist_controller.'/add')}?id='+crm.id+'&belongs_to={$_GET['belongs_to']??0}&pay_to={$_GET['pay_to']??0}'">
+                        <input type="button" value="新增" class="btn addbtn" />
+                      </a>
+                    </td>
+                  </if>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="send">
+            <div class="page mt-2">
+              <crm_index_pages 
+                :change_page="change_page"
+                :current_page="current_page" 
+                :total_pages="pagwAllA.totalPages"
+              ><crm_index_pages/>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <include file="Public:footer" />
+  <include file="Custo:search_setting_js" />
+
+  <!--縮排-->
+  <script src="__PUBLIC__/js/jquery.readmore.js"></script>
+
+  <script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('#searchForm').on('submit', function(e){
+        e.preventDefault();
+        crm_indexVM.current_page = 1;
+        crm_indexVM.go_search();
+      });
+    });
+
+    var crm_indexVM = new Vue({
+      el: '#crm_index',
+      data: {
+        crmlist_selected: [],
+
+        /*客戶列表*/
+          crm_cum_pri: [],
+          crmlist: [],
+          crmtype: [],
+          eip_user_all: [],
+          industr: [],
+          industr2_search: [],
+
+          levels: [],
+          linit: 0,
+          pagwAllA: {
+            totalPages: 1,
+            listRows: 0,
+          },
+          current_page: 1,
+          team_id: "",
+          team_name: "",
+          total: 0,
+          typespan: "",
+          scv: "",
+
+        /*特性*/
+          crm_property: [],
+      },
+      updated: function () {
+        this.$nextTick(function () {
+          // Code that will run only after the
+          // entire view has been re-rendered
+          init_event()
+        })
+      },
+      methods: {
+        get_crm_property: function(){
+          self = this;
+          return $.ajax({
+            method:'get',
+            dataType:'json',
+            url:"{:U('Crmproperty/get_feilds_with_defult_ans')}",
+            success:function(res){
+              self.crm_property = res;
+            },
+          });
+        },
+        /*送出請求*/
+        arrange_crm_property_data(){
+          self = this;
+          // console.log(self.crm_property);
+          post_data = {};
+          for (var i = 0; i < self.crm_property.length; i++) {
+            post_data['field_id_'+self.crm_property[i].id] = self.crm_property[i].ans;
+          }
+          post_data = JSON.stringify(post_data);
+          // console.log(post_data);
+          $('input[name="fields_data"]').val(post_data);
+        },
+        go_search: function(){ /*搜尋*/
+          self = this;
+          self.crmlist = [];
+          self.arrange_crm_property_data();
+          Vue.toasted.show("搜尋中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+
+          /*整理POST資料*/
+          postData = {};
+          form = new FormData($("#searchForm")[0]);
+          for (var group of form.entries()) {
+            postData[group[0]] = group[1];
+          }
+          postData['p'] = self.current_page;
+          // console.log(postData);
+
+          /*發送請求 取得資料*/
+          $.ajax({
+            method: "POST",
+            dataType:'json',
+            url: "{:u($CONTROLLER_NAME.'/ajax_search_customer')}", /*搜尋客戶*/
+            data: postData,
+            success: function(res){
+              Vue.toasted.show("搜尋完成", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              // console.log(res);
+              self.crm_cum_pri = res.crm_cum_pri;
+              self.crmlist = res.crmlist;
+              self.crmtype = res.crmtype;
+              self.eip_user_all = res.eip_user_all;
+              self.industr = res.industr;
+              self.industr2_search = res.industr2_search;
+
+              self.levels = res.levels;
+              self.linit = res.linit;
+              self.pagwAllA = res.pagwAllA;
+              self.team_id = res.team_id;
+              self.team_name = res.team_name;
+              self.total = res.total;
+              self.typespan = res.typespan;
+            },
+            error: function(res){
+              Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            },
+          });
+        },
+
+        /*更換搜尋客戶頁數*/
+        change_page: function(page){
+          self = this;
+          if(page > 0 && page <= self.pagwAllA.totalPages){
+            self.current_page = page;
+          }
+          self.go_search();
+        },
+      },
+    });
+    crm_indexVM.get_crm_property().done(function(){
+      crm_indexVM.go_search();
+    });
+  </script>
+  <script language="javascript" type="text/javascript">
+    $(".short").readmore({
+      substr_len: 20,
+      more_link: '<a class="more" >...</a>'
+    });
+
+    function init_event(){
+      $(".industr1_select").off();
+      $(".industr1_select").change(function(){
+        $.ajax({
+          method:'post',
+          data:{
+            industr1:$(this).val(),
+          },
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            $(".industr2_select").html(res);
+          }
+        });
+      });
+    };
+  </script>
+  <include file="Custo:print_js" />

@@ -1,0 +1,49 @@
+
+				<li>
+					<div class="search_bar">
+						<span class="custo-search-name d-block d-md-inline">建立日期區間:</span>
+						<input id="cdate_start" type="date" class="text" name="cdate_start" value="{$_GET['cdate_start']??''}"  autocomplete="off"/>
+						~
+						<input id="cdate_end" type="date" class="text" name="cdate_end" value="{$_GET['cdate_end']??''}" autocomplete="off"/>
+					</div>
+				</li>
+				<li>
+					<div class="search_bar">
+						<span class="custo-search-name d-block d-md-inline">簽約日期區間:</span>
+						<input id="sign_date_start" type="date" class="text" name="sign_date_start" value="{$_GET['sign_date_start']??''}"  autocomplete="off"/>
+						~
+						<input id="sign_date_end" type="date" class="text" name="sign_date_end" value="{$_GET['sign_date_end']??''}" autocomplete="off"/>
+					</div>
+				</li>
+				<li>
+					<div class="search_bar">
+						<label for=""></label>
+						<input class="text" type="text" name="contract_text" value="{$_GET['contract_text']??''}" 
+							   placeholder="{$system_parameter['合約']}編號、{$system_parameter['合約']}備註" style="width: 200px;"/>
+						<input class="submit" type="submit" value="" />
+					</div>
+
+					<input type="hidden" name="p" value="1">
+				</li>
+				
+				<script type="text/javascript">
+					$(function(){
+						$(".industr1_select").change(function(){
+							$.ajax({
+								method:'post',
+								data:{
+									industr1:$(this).val(),
+								},
+								dataType:'text',
+								url:"{:U('Industr/industr_select')}",
+								success:function(res){
+									$(".industr2_select").html(res);
+								}
+							});
+						});
+
+						$('select[name="cdate"]').change(function(){
+							$('#searchform').submit();
+						});
+					});
+				</script>

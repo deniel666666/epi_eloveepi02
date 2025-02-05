@@ -1,0 +1,60 @@
+<!DOCTYPE>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>{$page_title} - {$page_model}</title>
+
+    <if condition="$manifest">
+      <!-- PWA 加入桌面-->
+      <link rel="manifest" href="/Public/manifest.json">
+      <meta name="theme-color" content="#d2ecfa"/>
+      <link rel="apple-touch-icon" href="/Public/manifest/favicon.ico.png">
+    </if>
+    
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0">
+    <link href="__PUBLIC__/css/reset.css" rel="stylesheet" type="text/css" />
+    <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+      <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+     
+    <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+    <link rel="stylesheet" type="text/css" href="__PUBLIC__/dnCalendar/css/dncalendar-skin.min.css">
+    <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+    <link href="__PUBLIC__/css/use-phone.css" rel="stylesheet" type="text/css" />
+    <link href="__PUBLIC__/css/use2021.css?20240919-1" rel="stylesheet" type="text/css" />	
+    <link href="__PUBLIC__/css/body_block.css?123" rel="stylesheet" type="text/css" />
+    
+    <!--提示視窗css -->
+    <link rel="Shortcut Icon" type="image/x-icon" href="__PUBLIC__/images/icon.png" />
+
+    <!-- Fontawesome kit(ICON) -->
+    <script src="__PUBLIC__/js/fontawesome.js" crossorigin="anonymous"></script>
+
+    <!-- Vue -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.6/vue.min.js"></script>
+    <script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+    <script>
+      Vue.use(Toasted);
+    </script>
+
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!--跳出訊息-->
+
+    <!-- 時間處理 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js"></script>
+
+    <style type="text/css">
+        .chat_record_wid{color: #{$crm_cum_pri[0]['color']};}
+        .chat_record_did{color: #{$crm_cum_pri[1]['color']};}
+        .chat_record_sid{color: #{$crm_cum_pri[2]['color']};}
+        .chat_record_hid1{color: #{$crm_cum_pri[3]['color']};}
+        .chat_record_hid2{color: #{$crm_cum_pri[4]['color']};}
+        .chat_record_hid3{color: #{$crm_cum_pri[5]['color']};}
+    </style>
+  </head>
+  <body>
+    <include file="Public:header_nav" />

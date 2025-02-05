@@ -1,0 +1,110 @@
+/*!
+ * bootstrap-vertical-tabs - v1.2.2
+ * https://dbtek.github.io/bootstrap-vertical-tabs
+ * 2016-12-02
+ * Copyright (c) 2016 İsmail Demirbilek
+ * License: MIT
+ */
+.tabs-left, .tabs-right {
+  border-bottom: none;
+  padding-top: 2px;
+}
+.tabs-left>li {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: #DDD;
+}
+.tabs-right>li {
+  border-left: 1px solid #ddd;
+}
+.tabs-left>li, .tabs-right>li {
+  float: none;
+  margin-bottom: 2px;
+}
+.tabs-left>li {
+  margin-right: -1px;
+}
+.tabs-right>li {
+  margin-left: -1px;
+}
+.tabs-left>li>a{
+  margin:3px;
+  padding:2px;
+  background-color: #DDD;
+  color:black;
+  border: 0 !important;
+}
+.tabs-left>li:hover,
+.tabs-left>li:focus,
+.tabs-left>li.active {
+  border: 1px solid #000;
+  border-right-width: 0;
+  background-color: white;
+}
+
+.tabs-left>li:hover > a,
+.tabs-left>li:focus > a,
+.tabs-left>li.active > a {
+    border: 0;
+	background-color: white !important;
+	color: black;
+}
+
+.tabs-right>li.active>a,
+.tabs-right>li.active>a:hover,
+.tabs-right>li.active>a:focus {
+  border-bottom: 1px solid #000;
+  border-left-color: white;
+}
+.tabs-left>li>a {
+  border-radius: 4px 0 0 4px;
+  margin-right: 0;
+  display:block;
+}
+.tabs-right>li>a {
+  border-radius: 0 4px 4px 0;
+  margin-right: 0;
+}
+.sideways {
+  margin-top:50px;
+  border: none;
+  position: relative;
+}
+.sideways>li {
+  height: 20px;
+  width: 120px;
+  margin-bottom: 100px;
+}
+.sideways>li>a {
+  border-bottom: 1px solid #000;
+  border-right-color: transparent;
+  text-align: center;
+  border-radius: 4px 4px 0px 0px;
+}
+.sideways>li.active>a,
+.sideways>li.active>a:hover,
+.sideways>li.active>a:focus {
+  border-bottom-color: transparent;
+  border-right-color: #000;
+  border-left-color: #000;
+}
+.sideways.tabs-left {
+  left: -50px;
+}
+.sideways.tabs-right {
+  right: -50px;
+}
+.sideways.tabs-right>li {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.sideways.tabs-left>li {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}

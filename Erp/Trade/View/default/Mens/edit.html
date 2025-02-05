@@ -1,0 +1,1016 @@
+<include file="Public:header2" />
+
+<section class="main document mens">
+	<div class="below">
+		<!-- 共用階層列表 -->
+		<include file="Mens:menu" />
+
+		<!-- END 共用階層列表 -->
+		<div class="right">
+			<form id="profileForm" action="{:U('mens/update')}?id={$em.id}" method="post" enctype="multipart/form-data">
+				<h3 class="mens-title mr-3">員工號：
+					<span class="em" id="thisid">{$em.no}<input type='hidden' name='no' value='{$em.no}' />
+					</span>
+				</h3>
+				<div class="right_cont menSty mens-content">
+					<div class="mens-category">
+						<ul>
+							<li>
+								<div class="upfile">
+									<img class="preview" alt="拖曳或點擊上傳" title="圖片上傳" src="{$em.img}" />
+									<input type="file" name="pics" id="infile" value="{$em.img}" />
+								</div>
+								<p class="small text-danger mb-2" >(請上傳200*200)</p>
+							</li>
+							
+							<if condition="in_array(73, $use_function_top)">
+								<li>所屬部門：
+									<span class="em">
+										<select name="apartmentid" id="apartmentid">
+											<foreach name="apartlist" item="op">
+												<if condition="$op['id'] eq $em['apartmentid']">
+													<option value="{$op.id}" selected>{$op.name}</option>
+												<else />
+													<option value="{$op.id}">{$op.name}</option>
+												</if>
+											</foreach>
+										</select>
+									</span>
+								</li>
+							<else />
+								<input type="hidden" name="apartmentid" value="0" />
+							</if>
+							<if condition="in_array(73, $use_function_top)">
+								<li>員工職務：
+									<span class="em">
+										<select name="jobid" id="eip_jobs">
+											<foreach name="eip_jobs" item="op">
+												<if condition="$op['id'] eq $em['jobid']">
+													<option value="{$op.id}" selected>{$op.name}</option>
+													<else />
+													<option value="{$op.id}">{$op.name}</option>
+												</if>
+											</foreach>
+										</select>
+									</span>
+								</li>
+							<else />
+								<input type="hidden" name="jobid" value="0" />
+							</if>
+
+							<if condition="in_array(5, $use_function_top)">
+								<li>使用權限：
+									<span class="em">
+										<select name="usergroupid">
+											<foreach name="glist_op" item="op">
+												<if condition="$op[id] eq $em[usergroupid]">
+
+													<option value="{$op.id}" selected="selected">{$op.name}</option>
+													<else />
+													<option value="{$op.id}">{$op.name}</option>
+												</if>
+											</foreach>
+										</select>
+									</span>
+								</li>
+							<else />
+								<if condition="$em[usergroupid]">
+									<input type="hidden" name="usergroupid" value="{$em['usergroupid']}">
+								<else />
+									<input type="hidden" name="usergroupid" value="{$glist_op[1]['id']}">
+								</if>
+							</if>
+
+							<if condition="in_array(51, $use_function_top)">
+								<li>週分析：
+									<select name="is_anysis" class="is_anysis">
+										<option value="0">關閉</option>
+										<if condition="$em[is_anysis] eq 1">
+											<option value="1" selected>啟動</option>
+											<else />
+											<option value="1">啟動</option>
+										</if>
+									</select>
+								</li>
+								<div class="anysis_crm">
+									<li>新進客戶期限：<input type="number" name="new_date" value="{$em[new_date]}"
+											style="width:50px" />天</li>
+									<li>潛在客戶限制：<input type="number" name="pot_num" value="{$em[pot_num]}" style="width:50px" />個
+									</li>
+								</div>
+							<else />
+								<input type="hidden" name="is_anysis" value="0" />
+								<input type="hidden" name="new_date" value="0" />
+								<input type="hidden" name="pot_num" value="0" />
+							</if>
+
+
+							<if condition="in_array(106, $use_function_top)">
+								<li>績效：
+									<select name="is_kpi" class="is_kpi">
+										<option value="0">關閉</option>
+										<if condition="$em[is_kpi] eq 1">
+											<option value="1" selected>啟動</option>
+											<else />
+											<option value="1">啟動</option>
+										</if>
+									</select>
+								</li>
+								<li class="kpi_crm">績效模組：
+									<select name="kpimodel" id="kpimodel">
+										<option value="0">請選擇</option>
+										<foreach name="kpimodel" item="op">
+											<if condition="$current_kpimodel eq $op['id']">
+												<option value="{$op.id}" selected>{$op.name}</option>
+												<else />
+												<option value="{$op.id}">{$op.name}</option>
+											</if>
+										</foreach>
+									</select>
+								</li>
+							<else />
+								<input type="hidden" name="is_kpi" value="0" />
+								<input type="hidden" name="kpimodel" value="0" />
+							</if>
+						
+
+							<li>部門代理人A：
+								<span class="em">
+									<select name="smapo" id="ap_user" class="getmen">
+										<foreach name="ap_user" item="op">
+											<if condition="$op['id'] neq $top_adminid">
+												<if condition="$op['id'] eq $em['smapo']">
+													<option value="{$op.id}" selected>{$op.name}</option>
+												<else />
+													<option value="{$op.id}">{$op.name}</option>
+												</if>
+											</if>
+										</foreach>
+									</select>
+								</span>
+							</li>
+							<li>部門代理人B：
+								<span class="em">
+									<select name="smapt" id="ap_user" class="getmen">
+										<foreach name="ap_user" item="op">
+											<if condition="$op['id'] neq $top_adminid">
+												<if condition="$op['id'] eq $em['smapt']">
+													<option value="{$op.id}" selected>{$op.name}</option>
+												<else />
+													<option value="{$op.id}">{$op.name}</option>
+												</if>
+											</if>
+										</foreach>
+									</select>
+								</span>
+							</li>
+							<li>異部代理人：
+								<span class="em">
+									<select name="otap" id="al_user">
+										<foreach name="al_user" item="op">
+											<if condition="$op['id'] neq $top_adminid">
+												<if condition="$op['id'] eq $em['otap']">
+													<option value="{$op.id}" selected>{$op.name}</option>
+													<else />
+													<option value="{$op.id}">{$op.name}</option>
+												</if>
+											</if>
+										</foreach>
+									</select>
+								</span>
+							</li>
+							<if condition="in_array(155, $use_function_top)">
+								<li>是否需月薪打卡：
+									<span class="em">
+										<select name="use_attendance">
+											<if condition="$em['use_attendance'] eq ''">
+												<option value="1" selected>是</option>
+												<option value="0">否</option>
+												<else />
+												<option value="1" {$em['use_attendance']|compare_return='1','selected'}>是</option>
+												<option value="0" {$em['use_attendance']|compare_return='0','selected'}>否</option>
+											</if>
+										</select>
+									</span>
+								</li>
+							</if>
+						</ul>
+					</div>
+
+					<div class="mens-info">
+						<select id="right_type" name="right">
+							<volist name="eip_user_right_type" id="vo">
+								<option value="{$vo.id}">{$vo.name}</option>
+							</volist>
+						</select>
+						<fieldset>
+							<h3 class="casetitle">基本資料</h3>
+							<div class="mens-info-content">
+								<ul class="mens-items">
+									<li class="item">
+										<span class="mens-name"><em>*</em>姓名：</span> 
+										<input type="text" value="{$em.name}" class="input require" name="name" />
+									</li>
+									<li class="item">
+										<span class="mens-name">別稱：</span>
+										<input type="text" value="{$em.ename}" class="input" name="ename"  />
+									</li>
+									<li class="item">
+										<span class="mens-name"><em>*</em>帳號：</span>
+										<input type="text" value="{$em.username}" class="input require" name="username" id="username" />
+									</li>
+									<li class="item">
+										<span class="mens-name"><em>*</em>密碼：</span>
+										<input type="password" value="" class="input require" name="userpw" id="userpw" />
+									</li>
+									<li class="item">
+										<span class="mens-name"><em>*</em>電話：</span>
+										<input type="text" name="phone" class="input require" value="{$em.phone}" />
+									</li>
+									<li class="item">
+										<span class="mens-name"><em>*</em>手機：</span>
+										<input type="text" name="mphone" class="input require" value="{$em.mphone}" />
+									</li>
+									<li class="item mail">
+										<span class="mens-name">
+											<i class="fas fa-exclamation-circle" data-toggle="tooltip" data-placement="bottom"
+												title="會接收系統通知信，請確保上班時能確實收信"></i>通知mail：
+										</span>
+										<input type="text" name="email" class="input" value="{$em.email}" placeholder="接收系統信信箱" />
+									</li>
+									<li class="item mail">
+										<span class="mens-name">公司mail：</span>
+										<input type="text" name="email2" class="input" value="{$em.email2}"  />
+									</li>
+									<li class="item">
+										<span class="mens-name">生日：</span>
+										<input type="date" id="birthday" name="birthday" class="birthday" value="{$em.birthday}" onchange="calculateAge()" />
+									</li>
+									<li class="item">
+										<span class="mens-name">年齡：</span>
+										<span id="calculateAge">0歲</span>
+									</li>
+									<li class="item">
+										<span class="mens-name">到職日：</span>
+										<input type="date" id="dutday" name="dutday" class="require dutday" value="{$em.dutday}" onchange="calculateJobTenure()" />
+									</li>
+									<li class="item">
+										<span class="mens-name">年資：</span>
+										<span id="calculateJobTenure">0年0個月</span>
+									</li>
+									<li class="item address">
+										<span class="mens-name"><em>*</em>現居地：</span>
+										<input type="text" name="addr" class="input require" value="{$em.addr}"  />
+									</li>
+									<li class="item address">
+										<span class="mens-name"><em>*</em>戶籍地：</span>
+										<input type="text" name="resaddr" class="input require" value="{$em.resaddr}"  />
+									</li>
+									<li class="item">
+										<span class="mens-name">身份証：</span>
+										<input type="text" id="idno" name="idno" class="input" value="{$em.idno}" style="text-transform:capitalize" />
+									</li>
+									<li class="item">
+										<span class="mens-name"><em>*</em>公司分機：</span>
+										<input type="text" name="extension" class="input require" value="{$em.extension}" />
+									</li>
+									<li class="item remark address">
+										<span class="mens-name">備註：</span>
+										<input type="text" name="mom" class="input" value="{$em.mom}" />
+									</li>
+									<li class="item">
+										<if condition="in_array(154, $use_function_top)">
+											<span class="mens-name"><em>*</em>時薪統計方式：</span>
+											<select name="pay_count_type">
+												<option value="1" {$em['pay_count_type']|compare_return='1','selected'}>月</option>
+												<option value="2" {$em['pay_count_type']|compare_return='2','selected'}>雙週</option>
+												<option value="3" {$em['pay_count_type']|compare_return='3','selected'}>每日</option>
+											</select>
+										<else />
+											<input name="pay_count_type" type="hidden" value="1">	
+										</if>
+									</li>
+									<li class="item">
+										<if condition="in_array(157, $use_function_top)">
+											<span class="mens-name"><em>*</em>上班時間：</span>
+											<select name="work_time_id">
+												<foreach name="work_times" key="key" item="vo">
+													<option value="{$vo['id']}" {$em['work_time_id']|compare_return=$vo['id'],'selected'}>{$vo.time_come}~{$vo.time_leave}</option>
+												</foreach>
+											</select>
+										</if>
+									</li>
+									<li class="item"></li>
+									<li class="item"></li>
+									<li class="item">
+										<span class="mens-name">戶名：</span>
+										<input type="text" name="bank_account_name" class="input" value="{$em.bank_account_name}" />
+									</li>
+									<li class="item">
+										<span class="mens-name">銀行+代碼：</span>
+										<input type="text" name="bank" class="input" value="{$em.bank}"/>
+										<input type="text" name="bank_code" class="input col-sm-3" value="{$em.bank_code}" />
+									</li>
+									<li class="item">
+										<span class="mens-name">分行：</span>
+										<input type="text" name="bank_branch_name" class="input" value="{$em.bank_branch_name}"  />
+									</li>
+									<li class="item">
+										<span class="mens-name">帳號：</span>
+										<input type="text" name="bank_account" class="input" value="{$em.bank_account}" >
+									</li>
+									<li class="item">
+										<span class="mens-name">聯絡人：</span>
+										<input type="text" name="econtact" class="input" value="{$em.econtact}" />
+									</li>
+									<li class="item">
+										<span class="mens-name">關係：</span>
+										<input type="text" name="relationship" class="input" value="{$em.relationship}" >
+									</li>
+									<li class="item">
+										<span class="mens-name">手機：</span>
+										<input type="text" name="emphone" class="input" value="{$em.emphone}"  />
+									</li>
+									<li class="item">
+										<span class="mens-name">備註：</span>
+										<input type="text" name="ememo" class="input" value="{$em.ememo}" />
+									</li>
+								</ul>
+							</div>
+						</fieldset>
+						
+					    <div class="mens-tabs-box">
+							<if condition="$_SESSION['eid'] neq $_GET[id]">
+								<div class="content_menu">
+									<ul class="tabs">
+										<if condition="$_SESSION['eid'] neq $_GET[id]">
+										 	<li><a href="#tab3">主管評核</a></li>
+											<li><a href="#tab6">其他資訊</a></li>
+										</if>
+									</ul>
+									<!-------------- 主管評核 -------------------->
+									<div class="tab_container">
+										<div id="tab3" class="tab_content" >
+											<table class="ta_box table apply-table" value='{$em[assess]|count}'>
+												<thead>
+													<tr>
+														<th class="evaluate-time">時間</th>
+														<th style="width:35%">情況</th>
+														<th style="width:35%">主管批示</th>
+														<th style="width:16%">積分</th>
+														<th style="width:7.5%">評核人員</th>
+														<th style="width:5%">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr value='{$em[assess]|count}' class="tr_list">
+														<td data-th="時間" ><input class="steps" style="font-size:small" type="date" name="assess[]" /></td>
+														<td data-th="情況"><input  type="text" name="assess[]" /></td>
+														<td data-th="主管批示"><input type="text" name="assess[]" /></td>
+														<td data-th="積分">
+															<div class="d-flex">
+																<select name="assess[]" >
+																	<option value="無"></option>
+																	<option value="大功+9">大功+9</option>
+																	<option value="小功+3">小功+3</option>
+																	<option value="嘉獎+1">嘉獎+1</option>
+																</select>
+																<select name="assess[]" >
+																	<option value="無"></option>
+																	<option value="大過-9">大過-9</option>
+																	<option value="小過-3">小過-3</option>
+																	<option value="警告-1">警告-1</option>
+																</select>
+															</div>
+														</td>
+														<td data-th="評核人員" ><input type="hidden" name="assess[]" value="{$user}">{$user}</td>
+														<td data-th="刪除">
+															<input type="button" value="刪除" style="width:40px" class="btn delate flow_del"/>
+														</td>
+													</tr>
+													<foreach name="em[assess]" item="vo" key="key">
+														<if condition="$vo[0] neq ''">
+															<tr value='{$key}' class="">
+																<td data-th="時間"  >
+																	<input class="steps" style="font-size:small !important;width:100%" type="date" name="assess[]" value="{$vo[0]}" />
+																</td>
+																<td data-th="情況" >
+																	<input style="width:100%" type="text" name="assess[]" value="{$vo[1]}" />
+																</td>
+																<td data-th="主管批示">
+																	<input style=" width:100%" type="text" name="assess[]" value="{$vo[2]}" />
+																</td>
+																<td data-th="積分">
+																	<div class="d-flex">
+																		<select name="assess[]">
+																			<option value="無" {$vo[3]|compare_return='無','selected'}></option>
+																			<option value="大功+9" {$vo[3]|compare_return='大功+9','selected'}>大功+9</option>
+																			<option value="小功+3" {$vo[3]|compare_return='小功+3','selected'}>小功+3</option>
+																			<option value="嘉獎+1" {$vo[3]|compare_return='嘉獎+1','selected'}>嘉獎+1</option>
+																		</select>
+																		<select name="assess[]">
+																			<option value="無" {$vo[4]|compare_return='無','selected'}></option>
+																			<option value="大過-9" {$vo[4]|compare_return='大過-9','selected'}>大過-9</option>
+																			<option value="小過-3" {$vo[4]|compare_return='小過-3','selected'}>小過-3</option>
+																			<option value="警告-1" {$vo[4]|compare_return='警告-1','selected'}>警告-1</option>
+																		</select>
+																	</div>
+																</td>
+																<td data-th="評核人員" ><input type="hidden" name="assess[]" value="{$vo[5]}">{$vo[5]}</td>
+																<td data-th="刪除">
+																	<input type="button" value="刪除" style="width:40px" class="btn delate flow_del"/>
+																</td>
+															</tr>
+														</if>
+													</foreach>
+												</tbody>
+											</table>
+										</div>
+										<div id="tab6" class="tab_content">
+											<table class="ta_box table apply-table" value='{$em[other]|count}'>
+												<thead>
+													<tr>
+														<th>其他資訊</th>
+														<th style="width:4%">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr value='{$em[other]|count}' class="tr_list">
+														<td data-th="其他資訊">
+															<input type="hidden" name="other_time[]" class="steps" value="{$time}" />
+															<textarea name="other[]" class="steps" style="width:100%;"></textarea>
+														</td>
+														<td data-th="刪除">
+															<input type="button" value="刪除" style="width:40px;" class="delate btn flow_del" />
+														</td>
+													</tr>
+													<foreach name="em[other]" item="vo" key="key">
+														<if condition="$vo[0] neq ''">
+															<tr class="">
+																<td data-th="其他資訊">
+																	<input type="hidden" name="other_time[]" value="{$em[other_time]->$key}" />
+																	<textarea name="other[]" style="width:100%;">{$vo}</textarea>
+																</td>
+																<td data-th="刪除">
+																	<input type="button" value="刪除" style="width:40px;" class="delate btn flow_del" />
+																</td>
+															</tr>
+														</if>
+													</foreach>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</if>
+
+							<!-- 員工歷程 -->
+							<div class="content_menu pt-3">
+								<ul class="tabs">
+									<!-- 選項區 -->
+									<li><a href="#tab">重大歷程</a></li>
+									<li><a href="#tab0">過往職場</a></li>
+									<li><a href="#tab1">證照技能</a></li>
+									<li><a href="#tab2">學歷</a></li>
+								</ul>
+								<!-------------- 員工經歷 -------------------->
+								<div class="tab_container">
+									<div id="tab" class="tab_content">
+										<div class="row m-0">
+											<div class="col-xl-6 col-12 edit_form p-0">
+												<table class="table edit_table" style="min-width: unset">
+													<thead>
+														<tr>
+															<th style="min-width: 60px;">類別</th>
+															<th style="min-width: 200px;">介紹</th>
+															<th style="min-width: 75px;">年資</th>
+															<th style="min-width: 200px;">備註</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr>
+															<td data-th="類別">業務類</td>
+															<td data-th="介紹"><input class="form-control" type="text" name="work_intro_sale" value="{$em['work_intro_sale']}"></td>
+															<td data-th="年資"><input class="form-control" type="text" name="work_year_sale" value="{$em['work_year_sale']}"></td>
+															<td data-th="備註"><input class="form-control" type="text" name="work_note_sale" value="{$em['work_note_sale']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">技術類</td>
+															<td data-th="介紹"><input class="form-control" type="text" name="work_intro_skill" value="{$em['work_intro_skill']}"></td>
+															<td data-th="年資"><input class="form-control" type="text" name="work_year_skill" value="{$em['work_year_skill']}"></td>
+															<td data-th="備註"><input class="form-control" type="text" name="work_note_skill" value="{$em['work_note_skill']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">企劃類</td>
+															<td data-th="介紹"><input class="form-control" type="text" name="work_intro_plan" value="{$em['work_intro_plan']}"></td>
+															<td data-th="年資"><input class="form-control" type="text" name="work_year_plan" value="{$em['work_year_plan']}"></td>
+															<td data-th="備註"><input class="form-control" type="text" name="work_note_plan" value="{$em['work_note_plan']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">行政類</td>
+															<td data-th="介紹"><input class="form-control" type="text" name="work_intro_administration" value="{$em['work_intro_administration']}"></td>
+															<td data-th="年資"><input class="form-control" type="text" name="work_year_administration" value="{$em['work_year_administration']}"></td>
+															<td data-th="備註"><input class="form-control" type="text" name="work_note_administration" value="{$em['work_note_administration']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">其它類</td>
+															<td data-th="介紹"><input class="form-control" type="text" name="work_intro_other" value="{$em['work_intro_other']}"></td>
+															<td data-th="年資"><input class="form-control" type="text" name="work_year_other" value="{$em['work_year_other']}"></td>
+															<td data-th="備註"><input class="form-control" type="text" name="work_note_other" value="{$em['work_note_other']}"></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+											<div class="col-xl-6 col-12 edit_form p-0">
+												<table class="table edit_table" style="min-width: unset">
+													<thead>
+														<tr>
+															<th style="min-width: 80px;">類別</th>
+															<th style="min-width: 255px;">選擇</th>
+															<th style="min-width: 200px;">備註</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr>
+															<td data-th="類別">業務管理</td>
+															<td data-th="選擇">
+																<span class="d-inline-block">
+																	<input type="radio" name="saler_options" id="saler_options_1" value="1~5人" {$em['saler_options']|compare_return='1~5人', 'checked'}>
+																	<label for="saler_options_1" class="mr-1">1~5人</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="radio" name="saler_options" id="saler_options_2" value="6-10人" {$em['saler_options']|compare_return='6-10人', 'checked'}>
+																	<label for="saler_options_2" class="mr-1">6-10人</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="radio" name="saler_options" id="saler_options_3" value="10-30人" {$em['saler_options']|compare_return='10-30人', 'checked'}>
+																	<label for="saler_options_3" class="mr-1">10-30人</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="radio" name="saler_options" id="saler_options_4" value="30人以上" {$em['saler_options']|compare_return='30人以上', 'checked'}>
+																	<label for="saler_options_4" class="mr-1">30人以上</label>
+																</span>
+															</td>
+															<td data-th="備註"><input class="form-control" type="text" name="saler_note" value="{$em['saler_note']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">後勤管理</td>
+															<td data-th="選擇">
+																<span class="d-inline-block">
+																	<input type="radio" name="maintainer_options" id="maintainer_options_1" value="1~5人" {$em['maintainer_options']|compare_return='1~5人', 'checked'}>
+																	<label for="maintainer_options_1" class="mr-1">1~5人</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="radio" name="maintainer_options" id="maintainer_options_2" value="6-10人" {$em['maintainer_options']|compare_return='6-10人', 'checked'}>
+																	<label for="maintainer_options_2" class="mr-1">6-10人</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="radio" name="maintainer_options" id="maintainer_options_3" value="10-30人" {$em['maintainer_options']|compare_return='10-30人', 'checked'}>
+																	<label for="maintainer_options_3" class="mr-1">10-30人</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="radio" name="maintainer_options" id="maintainer_options_4" value="30人以上" {$em['maintainer_options']|compare_return='30人以上', 'checked'}>
+																	<label for="maintainer_options_4" class="mr-1">30人以上</label>
+																</span>
+															</td>
+															<td data-th="備註"><input class="form-control" type="text" name="maintainer_note" value="{$em['maintainer_note']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">國際經驗</td>
+															<td data-th="選擇">
+																<span class="d-inline-block">
+																	<input type="checkbox" name="international_options[]" id="international_options_1" value="大陸地區" {$em['international_options']|strpos='大陸地區'||compare_return=null,'','checked'}>
+																	<label for="international_options_1" class="mr-1">大陸地區</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="international_options[]" id="international_options_2" value="港澳地區" {$em['international_options']|strpos='港澳地區'||compare_return=null,'','checked'}>
+																	<label for="international_options_2" class="mr-1">港澳地區</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="international_options[]" id="international_options_3" value="日本韓國" {$em['international_options']|strpos='日本韓國'||compare_return=null,'','checked'}>
+																	<label for="international_options_3" class="mr-1">日本韓國</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="international_options[]" id="international_options_4" value="歐美" {$em['international_options']|strpos='歐美'||compare_return=null,'','checked'}>
+																	<label for="international_options_4" class="mr-1">歐美</label>
+																</span>
+															</td>
+															<td data-th="備註"><input class="form-control" type="text" name="international_note" value="{$em['international_note']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">同行經驗</td>
+															<td data-th="選擇">
+																<span class="d-inline-block">
+																	<input type="checkbox" name="samecompany_options[]" id="samecompany_options_1" value="業務" {$em['samecompany_options']|strpos='業務'||compare_return=null,'','checked'}>
+																	<label for="samecompany_options_1" class="mr-1">業務</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="samecompany_options[]" id="samecompany_options_2" value="技術" {$em['samecompany_options']|strpos='技術'||compare_return=null,'','checked'}>
+																	<label for="samecompany_options_2" class="mr-1">技術</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="samecompany_options[]" id="samecompany_options_3" value="管理" {$em['samecompany_options']|strpos='管理'||compare_return=null,'','checked'}>
+																	<label for="samecompany_options_3" class="mr-1">管理</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="samecompany_options[]" id="samecompany_options_4" value="其它" {$em['samecompany_options']|strpos='其它'||compare_return=null,'','checked'}>
+																	<label for="samecompany_options_4" class="mr-1">其它</label>
+																</span>
+															</td>
+															<td data-th="備註"><input class="form-control" type="text" name="samecompany_note" value="{$em['samecompany_note']}"></td>
+														</tr>
+														<tr>
+															<td data-th="類別">大型專案</td>
+															<td data-th="選擇">
+																<span class="d-inline-block">
+																	<input type="checkbox" name="project_options[]" id="project_options_1" value="台灣企府" {$em['project_options']|strpos='台灣企府'||compare_return=null,'','checked'}>
+																	<label for="project_options_1" class="mr-1">台灣企府</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="project_options[]" id="project_options_2" value="大陸企府" {$em['project_options']|strpos='大陸企府'||compare_return=null,'','checked'}>
+																	<label for="project_options_2" class="mr-1">大陸企府</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="project_options[]" id="project_options_3" value="歐美企府" {$em['project_options']|strpos='歐美企府'||compare_return=null,'','checked'}>
+																	<label for="project_options_3" class="mr-1">歐美企府</label>
+																</span>
+																<span class="d-inline-block">
+																	<input type="checkbox" name="project_options[]" id="project_options_4" value="自營" {$em['project_options']|strpos='自營'||compare_return=null,'','checked'}>
+																	<label for="project_options_4" class="mr-1">自營</label>
+																</span>
+															</td>
+															<td data-th="備註"><input class="form-control" type="text" name="project_note" value="{$em['project_note']}"></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+									<div id="tab0" class="tab_content" >
+										<!-------------- 過往職場 -------------------->
+										<table style="width:100%" class="ta_box table apply-table" value="{$em[work_exp]|count}">
+											<thead>
+												<tr>
+													<th style="width:15%">公司名稱</th>
+													<th style="width:15%">公司職務</th>
+													<th style="width:15%">離職時薪資</th>
+													<th style="width:30%;">時間</th>
+													<th style="width:21%">備註</th>
+													<th style="width:4%">刪除</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr value='{$em[work_exp]|count}' class="tr_list">
+													<td data-th="公司名稱">
+														<input type="text" class="steps w100" name="work_expe[]" />
+													</td>
+													<td data-th="公司職務">
+														<input type="text" name="work_expe[]" style="width:100%"  />
+													</td>
+													<td data-th="離職時薪資">
+														<input type="number" name="work_expe[]" style="width:100%" />
+													</td>
+													<td data-th="時間" class="time">
+														<div>
+															<input type="date" name="work_expe[]" style="font-size:small !important" />~
+															<input type="date" name="work_expe[]" style="font-size:small !important" />
+														</div>
+													</td>
+													<td data-th="備註">
+														<input type="text" name="work_expe[]" style="width:100%" />
+													</td>
+													<td data-th="刪除">
+														<input type="button" value="刪除" style="width:40px;" class="delate btn flow_del" />
+													</td>
+												</tr>
+												<foreach name="em[work_exp]" item="vo" key="key">
+													<if condition="$vo[0] neq ''">
+														<tr value='{$key}' class="">
+															<td data-th="公司名稱">
+																<input type="text" value="{$vo[0]}" class="steps" name="work_expe[]" style="width:100%" />
+															</td>
+															<td data-th="公司職務">
+																<input type="text" value="{$vo[1]}" name="work_expe[]" style="width:100%"/>
+															</td>
+															<td data-th="離職時薪資">
+																<input type="number" value="{$vo[2]}" name="work_expe[]" style="width:100%"/>
+															</td>
+															<td data-th="時間" class="time">
+																<div>
+																	<input type="date" datev="{$vo[3]}" value="{$vo[3]}" name="work_expe[]"
+																		style="font-size:small !important" />~
+																	<input type="date" datev="{$vo[4]}" value="{$vo[4]}" name="work_expe[]"
+																		style="font-size:small !important" />
+																</div>
+															</td>
+															<td data-th="備註">
+																<input type="text" value="{$vo[5]}" name="work_expe[]" style="width:100%" />
+															</td>
+															<td data-th="">
+																<input type="button" value="刪除" style="width:40px;" class="delate btn flow_del" />
+															</td>
+														</tr>
+													</if>
+												</foreach>
+											</tbody>
+										</table>
+									</div>
+									<div id="tab1" class="tab_content">
+										<!-------------- 證照技能 -------------------->
+										<ul class="inline_ul">
+											<li>
+												<label class="name">個人專長：</label>
+												<textarea class="form-control" rows="6" name="expertise">{$em.expertise}</textarea>
+											</li>
+											<li>
+												<label class="name">相關證照：</label>
+												<textarea class="form-control" rows="6" name="license">{$em.license}</textarea>
+											</li>
+											<li>
+												<label class="name">語言能力：</label>
+												<textarea class="form-control" rows="6" name="language">{$em.language}</textarea>
+											</li>
+										</ul>
+									</div>
+									<div id="tab2" class="tab_content">
+										<!-------------- 學歷 -------------------->
+										<table class="ta_box table apply-table" value='{$em[educ_exp]|count}'>
+											<thead>
+												<tr >
+													<th style="width:20%">學校名稱</th>
+													<th style="width:20%">學校科系</th>
+													<th style="width:30%;">時間</th>
+													<th style="width:26%">備註</th>
+													<th style="width:4%">刪除</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr value='{$em[educ_exp]|count}' class="tr_list">
+													<td data-th="學校名稱">
+														<input type="text" class="steps" name="educ_expe[]" style="width:100%" />
+													</td>
+													<td data-th="學校科系">
+														<input type="text" name="educ_expe[]" style="width:100%" />
+													</td>
+													<td data-th="時間" class="time">
+														<div>
+															<input type="date" name="educ_expe[]" style="font-size:small !important" />~
+															<input type="date" name="educ_expe[]" style="font-size:small !important" />
+														</div>
+													</td>
+													<td data-th="備註">
+														<input type="text" name="educ_expe[]" style="width:100%" />
+													</td>
+													<td data-th="刪除">
+														<input type="button" value="刪除" class="btn delate flow_del" style="width:40px" />
+													</td>
+												</tr>
+												<foreach name="em[educ_exp]" item="vo" key="key">
+													<if condition="$vo[0] neq ''">
+														<tr value='{$key}' class="">
+															<td data-th="學校名稱">
+																<input type="text" value="{$vo[0]}" class="steps" style="width:100%" name="educ_expe[]"/>
+															</td>
+															<td data-th="學校科系">
+																<input type="text" value="{$vo[1]}" name="educ_expe[]" style="width:100%">
+															</td>
+															<td data-th="時間" class="time">
+																<div>
+																	<input type="date" datev="{$vo[2]}" value="{$vo[2]}" style="font-size:small !important"
+																		name="educ_expe[]" />~
+																	<input type="date" datev="{$vo[3]}" value="{$vo[3]}" style="font-size:small !important"
+																		name="educ_expe[]" />
+																</div>
+															</td>
+															<td data-th="備註">
+																<input type="text" value="{$vo[4]}" name="educ_expe[]" style="width:100%" />
+															</td>
+															<td data-th="刪除">
+																<input type="button" value="刪除" style="width:40px" class="btn delate flow_del"/>
+															</td>
+														</tr>
+													</if>
+												</foreach>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div>
+					<div class="send">
+						<if condition="$em[id] neq ''">
+							<a class="btn border mt-2" href="/index.php/mens/emshow/id/{$em.id}"> <i class="fas fa-chevron-left"></i> 返回</a>
+						</if>
+						<input type="submit" class="btn addbtn mt-2" style="width:80px" value="更新" />
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" />
+<script language="javascript">
+	$(document).ready(function(){
+		var r=['','{$cou[1]}','{$cou[2]}','{$cou[3]}'];
+		myid='{$myid}';
+		//修改正式員工
+		$("#right_type").change(function(){
+			var word="";
+			word=r[$(this).val()];
+			$("#thisid").html(word+"<input type='hidden' name='no' value='"+word+"' />");
+			
+		});
+		$("#right_type").val("{$em[right]}");
+
+		$( ".content_menu" ).tabs();
+		var ste=0;
+
+		$(document).on('change','.steps',function(){
+			if($(this).parents(".ta_box").attr("value")==''){
+				ste=1;
+			}else{
+				ste=$(this).parents(".ta_box").attr("value");
+			}
+			if($(this).val()==''){
+				$(this).parents(".tr_list").remove();
+				}else{
+				if($(this).parents(".tr_list").attr("value")==ste){
+					ste++;
+					$(this).parents(".ta_box").prepend("<tr class='tr_list' value='"+ste+"'>"+$(this).parents('tr').html()+"</tr>");
+					//console.log($(this).parents('tr').html());
+					//console.log(ste);
+					$(this).parents(".tr_list").removeClass('tr_list');
+					$(this).parents(".ta_box").attr("value",ste);
+					console.log($(this).parents(".ta_box").attr("value",ste));
+
+					init_del_tr();
+				}
+			}
+		});
+
+		function init_del_tr(){
+			$("tr .flow_del").off("click")
+			$("tr .flow_del").on("click",function(){
+				console.log($(this).parents());
+				$(this).parents("tr:not(.tr_list)").remove();
+			});
+		}
+		init_del_tr();
+
+		$('input[type=file]').change(function(){
+			// get preview
+			var preId = $(this).attr('data-id');
+			// get file value
+			var val = $(this).val();
+			var fileName = $(this).val();
+			//顯示圖片名稱
+			if (fileName!==''){
+				var fileName = fileName.split('\\');
+				$("#picName").html(fileName[fileName.length-1]);
+			}
+			//檢驗圖片格式
+			if(!val.match( /.jpg|.gif|.png|.bmp|.jpeg/ ) ){
+				imgtype = false;
+				alert('檔案接受類型為:jpg gif png bmp jpeg!');
+				}else if(FileReader){
+				var reader = new FileReader(),
+				file = this.files[0];
+				reader.onload = function(e){
+					var image = new Image();
+					image.src = e.target.result;					
+					// 單圖版
+					$('.preview').attr('src', e.target.result);
+				};
+				reader.readAsDataURL(file);
+			}
+		});
+		$("#apartmentid").change(function(){
+			myin=$(this);
+			$.ajax({
+				method:'post',
+				data:{apartmentid:myin.val()},
+				dataType:'text',
+				url:"{:U('Ajax/aj_getmean')}",
+				success:function(res){
+					Vue.toasted.show('變更部門', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+					$(".getmen").html(res);
+				}
+			});
+		});
+
+		//修改週分析
+		$(".is_anysis").change(function(){
+			if($(this).val()=='0'){
+				$(".anysis_crm").hide();
+				Vue.toasted.show('隱藏週分析', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			}else{
+				$(".anysis_crm").show();
+				Vue.toasted.show('顯示週分析', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			}
+		});
+		$(".is_anysis").change();
+
+		//修改績效
+		$(".is_kpi").change(function(){
+			if($(this).val()=='0'){
+				$(".kpi_crm").hide();
+				Vue.toasted.show('隱藏績效模組', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			}else{
+				$(".kpi_crm").show();
+				Vue.toasted.show('顯示績效模組', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			}
+		});
+		$(".is_kpi").change();
+
+		$("td").on("change",".pay",function(){
+			var total=0;
+			$(".tr_list[value="+$(this).parents(".tr_list").attr("value")+"] .pay").each(function(){
+				total+=parseInt($(this).val());
+				
+			});
+			$(this).parents(".tr_list").find(".total").val(total);
+		});
+		
+		//權限檢查
+		if("{$access['mens_new']}"!=1 && "{$_GET['id']}"==''){
+			window.location = "{:u('mens/emlist')}";
+		}else if("{$access['mens_edi']}"!=1 && "{$_GET['id']}"!=''){
+			window.location = "{:u('mens/emlist')}";
+		}
+	
+		if("{$_GET['id']}"==''){
+			$("#apartmentid").change();
+		}
+
+		$('#profileForm').on('submit', function() {
+			let username = $("#username").val();
+			let userpw   = $("#userpw").val();
+			let idno     = $("#idno").val();
+
+			function checkVal(value, field) {
+				let regExp = /^([0-9A-Za-z]+)$/;
+
+				if (regExp.test(value) === false) {
+					Vue.toasted.show(field + '限輸入英文(大小寫)跟數字', { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+					return false;
+				}
+
+				return true;
+			}
+
+			// 驄證身份証
+			function verifyIdno(id) {
+				id = id.trim().toUpperCase();
+				
+				verification = id.match("^[A-Z][12]\\d{8}$")
+				if(!verification){
+					Vue.toasted.show('身份証限輸入首位字母加9碼數字', { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+					return false
+				}
+
+				let conver = "ABCDEFGHJKLMNPQRSTUVXYWZIO"
+				let weights = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1]
+
+				id = String(conver.indexOf(id[0]) + 10) + id.slice(1);
+
+				checkSum = 0
+				for (let i = 0; i < id.length; i++) {
+					c = parseInt(id[i])
+					w = weights[i]
+					checkSum += c * w
+				}
+				
+				let retsult = checkSum % 10 == 0;
+				return  retsult ? retsult : Vue.toasted.show('無效身份証', { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+ 			}
+
+			if(username != '' && checkVal(username, '登入帳號') === false)
+				return false;
+
+			if(userpw != '' && checkVal(userpw, '登入密碼') === false)
+				return false;
+
+			if(idno != '' && verifyIdno(idno) === false)
+				return false;
+			
+			return true;
+		});
+
+		calculateAge();
+		calculateJobTenure();
+	});
+
+	$(".team_switch").click(function(){
+		if($(".team_switch").val() == 'close'){
+			$(".team_select").attr('disabled','');
+		}
+		else{
+			$(".team_select").removeAttr('disabled');
+		}
+	});
+</script>
+

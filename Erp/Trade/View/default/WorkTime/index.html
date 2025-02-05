@@ -1,0 +1,74 @@
+<include file="Public:header2" />
+
+<div class="container mw1920 p-4">
+	<form action="{:u($CONTROLLER_NAME.'/add')}" method="post" class="d-flex flex-wrap align-items-start">
+		<div style="overflow-x:auto;">
+        	<table class="table edit_table mb-2" style="min-width: 500px; max-width: 800px;">
+        		<thead>
+              <tr>
+                  <th style="min-width: 100px;">上班時間</th>
+                  <th style="min-width: 100px;">下班時間</th>
+                  <th style="min-width: 75px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="time" name="time_come" class="w100"></td>
+                <td><input type="time" name="time_leave" class="w100"></td>
+                <td>
+                  <input type="submit" class="btn addbtn" value="新增" />
+                </td>
+              </tr>
+              <foreach name="work_time" key="key" item="vo">
+                <tr>
+                  <td>{$vo.time_come}</td>
+                  <td>{$vo.time_leave}</td>
+                  <td>
+                    <button type="button" class="btn delate d-inline" onclick="delete_layer({$vo.id})">
+                      <i aria-hidden="true" class="far fa-trash-alt"></i>
+                    </button>
+                  </td>
+                </tr>
+              </foreach>
+            </tbody>
+        	</table>
+        </div>
+    </form>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+	// var remember_text = '';
+	// $('.update_input').on('focus', function(e){
+	// 	const item = $(e.currentTarget);
+	// 	remember_text = item.val();
+	// });
+	// $('.update_input').on('blur', function(e){
+	// 	const item = $(e.currentTarget);
+	// 	id = item.attr('layer_id');
+	// 	column = item.attr('column');
+	// 	value = item.val();
+	// 	if(remember_text==value){ return; }
+
+	// 	var post_data = {};
+	// 	post_data['id'] = id;
+	// 	post_data[column] = value;
+	// 	$.ajax({
+	// 		method:'post',
+    //         dataType:'json',
+    //         url:"{:u($CONTROLLER_NAME.'/update')}",
+    //         data:post_data,
+    //         success: function(res){
+    //         	bg_class = res.status ? 'bg-success' : 'bg-danger';
+    //         	Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+    //         },
+	// 	});
+	// });
+
+	function delete_layer(id){
+		if(confirm('確定刪除?')){
+			location.href = "{:u($CONTROLLER_NAME.'/delete')}?id="+id;
+		}
+	}
+</script>

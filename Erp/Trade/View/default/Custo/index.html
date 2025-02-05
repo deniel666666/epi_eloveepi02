@@ -1,0 +1,696 @@
+<include file="Public:header2" />
+  <head>
+    <style type="text/css">
+      label{
+        margin-bottom: 0px;
+      }
+      .cooperate_staff tr:hover{
+        background: white;
+      }
+      .cooperate_staff tr th:hover{
+        background: #eeeeee;
+      }
+    </style>
+  </head>
+
+  <section class="main" id="crm_index">
+    <!---->
+    <div id="right">
+      <form id="searchForm" name="search" class="searchForm">
+        <input type="hidden" name="view" value="index" />
+        <input type="hidden" name="teamid" value="{$_GET['teamid']}" />
+
+        <div class="w100 d-flex align-items-start">
+          <div class="w100 d-flex flex-wrap">
+            <ol class="headerOl rightR">
+              <include file="Custo:search_setting_default" />
+
+              <li>
+                <div class="search_bar">
+                  {$system_parameter['起算日期']}：
+                  <input id="newclient_date" type="date" class="text" name="newclient_date" value="{$_GET['newclient_date']}"  autocomplete="off" />
+                </div>
+              </li>
+            </ol>
+            <div class="accordion" id="accordion_search">
+              <div id="collapseOne" class="collapse collapse" aria-labelledby="headingOne" data-parent="#accordion_search">
+                <ol class="headerOl rightR">
+                  <include file="Custo:search_setting" />
+                </ol>
+                <include file="Custo:search_setting_crm_property" />
+              </div>
+            </div>
+            <div class="search_bar">
+              <input type="submit" class="text text-center" readonly
+                  style="width: 80px; cursor: pointer; padding: 0px" type="submit" value="搜尋  ">
+              <input type="submit" value="" class="submit">
+            </div>
+            <div class="search_bar">
+              <a href="{:u('Custo/index')}?teamid={$_GET['teamid']}">
+                <input type="text" class="text text-center" readonly
+                  style="width: 80px; cursor: pointer; padding: 0px" placeholder="清除搜尋">
+              </a>
+            </div>
+          </div>
+          <button class="btn btn-link d-inline-block p-0" type="button" style="width: 100px;" 
+              data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              進階搜尋
+          </button>
+        </div>
+      </form>
+
+      <div class="content-table">
+        <div class="navi1">
+          <div class="menu-sub-btn">
+            <ol>
+              <if condition="$access['custo_new'] eq '1'">
+                <li class="subbtn">
+                  <a href="{:u('Custo/addcrm')}?id=-1" class="" target="_blank">
+                    <i class="fas fa-plus-circle"></i>
+                    {$system_parameter['客戶']}
+                  </a>
+                </li>
+              </if>
+              <li class="subbtn mr-2">
+                <a class='' href="{:u('Custo/crmtrace',$_GET)}" @click="go_crmtrace($event)">現況追蹤</a>
+              </li>
+              <if condition="$system_parameter['類別']">
+                <li>
+                  <a :class="{'current':-1==typeid}" href="{:u('Custo/index')}?typeid=-1"
+                    @click="change_typeid(-1, $event)">
+                    總{$system_parameter['客戶']}數:<span class="blue" v-text="total"></span>
+                  </a>
+                </li>
+              </if>
+              <li v-for="(v_type,v_index) in crmtype" v-if="v_type.id <= 3">
+                <a :class="{'current':v_type.id==typeid}" :href="'{:u('Custo/index')}?typeid='+v_type.id"
+                  @click="change_typeid(v_type.id, $event)">
+                  <span v-text="v_type.name"></span>
+                  <span class="blue" v-if="v_type.count!=null" v-text="':'+v_type.count"></span>
+                </a>
+              </li>
+            </ol>
+            <ol class="vright">
+              <li v-for="(v_type,v_index) in crmtype" v-if="v_type.id > 3" class="">
+                <a :class="{'current':v_type.id==typeid}" :href="'{:u('Custo/index')}?typeid='+v_type.id"
+                  @click="change_typeid(v_type.id, $event)">
+                  <span v-text="v_type.name"></span>
+                  <span class="blue" v-if="count_list[v_index-3]!=null" v-text="':'+count_list[v_index-3]"></span>
+                </a>
+              </li>
+            </ol>
+          </div>
+          <crm_index_pages 
+            :change_page="change_page"
+            :current_page="current_page" 
+            :total_pages="pagwAllA.totalPages"
+          ><crm_index_pages/>
+        </div>
+        <form id="edit_form">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1600px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 20px;" valign="middle" class="text-center">
+                    <input type="checkbox" class="seleall" @click="select_all_crm_list($event)" />
+                  </th>
+                  <th style="width: 50px;" class="text-right" valign=" middle">序號</th>
+                  <th style="width: 100px;" class="text-left">{$system_parameter['簡稱']}</th>
+                  <if condition="$system_parameter['負責人']">
+                    <th style="width: 75px;" class="text-left">{$system_parameter['負責人']}</th>
+                  </if>
+                  <th style="width: 50px;" class="text-left">{$system_parameter['等級']}</th>
+                  <if condition="in_array(115, $use_function_top)">
+                    <th style="width: 200px;" class="text-left">{$system_parameter['產業別']}</th>
+                  </if>
+                  <th style="width: 350px;" class="text-left">{$system_parameter['地址']}</th>
+                  <if condition="$system_parameter['公司資訊']">
+                    <th style="width: 100px;" class="text-right">{$system_parameter['資本額']}</th>
+                    <th style="width: 100px;" class="text-left">{$system_parameter['公司核准日']}</th>
+                  </if>
+                  <if condition="$system_parameter['協同人員']">
+                    <foreach name="crm_cum_pri" item="vo">
+                      <th style="width: 75px;" class="text-left">{$vo['name']}</th>
+                    </foreach>
+                  </if>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(crm, crm_index) in crmlist" :id="crm.id" :class="[{'color1':crm_index%2==0}]">
+                  <td class="text-center">
+                    <input type="checkbox" class="sele" :value="crm.id" name="sele" v-model="crmlist_selected"
+                      @click="select_all_check($event)" />
+                  </td>
+                  <td class="text-right"
+                    v-text="crm_index+1 + (current_page-1)*pagwAllA.listRows"></td>
+                  <td :class="'crm_type'+crm.typeid">
+                    <if condition="in_array(75, $use_function_top)">
+                      <a :href="'{:u('Custo/view_re')}?id='+crm.id+'&teamid={$_GET['teamid']}'" target="_blank">
+                    <else />
+                      <a :href="'{:u('Custo/addcrm')}?id='+crm.id+'&teamid={$_GET['teamid']}'" target="_blank">
+                    </if>
+                      <span v-text="crm.show_name"></span>
+                    </a>
+                    <a :href="'{:u('Custo/addcrm')}?id='+crm.id+'&teamid={$_GET['teamid']}'" target="_blank">
+                      <span class="fas fa-pen"></span>
+                    </a>
+                  </td>
+                  <if condition="$system_parameter['負責人']">
+                    <td v-text="crm.bossname"></td>
+                  </if>
+                  <td class="text-left" v-text="crm.level_name"></td>
+                  <if condition="in_array(115, $use_function_top)">
+                    <td>
+                      <input class="input_content industr1" type="text" 
+                             name="industr" list="industr"
+                             dbname="crm_crm" column="industr" maxlength="4" :index="crm_index" :myid="crm.id"
+                             v-model="crm.industr" 
+                             @change="input_content_update($event)"/>
+                      <datalist id="industr">
+                        <option v-for="op in industr_all" v-text="op.industr"></option>
+                      </datalist>
+
+                      <select :class="['input_content', 'industr2_'+crm_index]" 
+                              name="industr2" style="width:100px"
+                              dbname="crm_crm" column="industr2" 
+                              :myid="crm.id"
+                              v-model="crm.industr2"
+                              @change="input_content_update($event)">
+                        <option v-if="crm.industr2" v-text="crm.industr2"></option>
+                        <option v-for="op in industr2[crm_index+1]" v-text="op.industr2"></option>
+                      </select>
+                    </td>
+                  </if>
+                  <td class="short" v-text="crm.zip+crm.addr"></td>
+                  <if condition="$system_parameter['公司資訊']">
+                    <td class="text-right">
+                      <template v-if="crm.zbe">
+                        <span v-text="Number(crm.zbe).toLocaleString('en-US')"></span>
+                      </template>
+                    </td>
+                    <td class="short" v-text="crm.hzrq"></td>
+                  </if>
+                  <if condition="$system_parameter['協同人員']">
+                    <td><span v-if="eip_user_all[crm.wid]" v-text="eip_user_all[crm.wid]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.did]" v-text="eip_user_all[crm.did]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.sid]" v-text="eip_user_all[crm.sid]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.hid1]" v-text="eip_user_all[crm.hid1]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.hid2]" v-text="eip_user_all[crm.hid2]['name']"></span></td>
+                    <td><span v-if="eip_user_all[crm.hid3]" v-text="eip_user_all[crm.hid3]['name']"></span></td>
+                  </if>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="send">
+            <if condition="$access['custo_edi'] eq '1'">
+              <div class="vRight" style="right:1%">
+                修改內容：
+                <if condition="$system_parameter['類別']">
+                  <select name="typeid">
+                    <option value="-1">{$system_parameter['類別']}</option>
+                    <option v-for="type in crmtype" :value="type.id" v-text="type.name">類別</option>
+                    <option v-if="typeid=='6'" value="7">刪除</option>
+                  </select>
+                <else />
+                  <input type="hidden" name="typeid" value="3">
+                </if>
+                <select name="levelid">
+                  <option value="-1">{$system_parameter['等級']}</option>
+                  <option v-for="level in levels" :value="level.id" v-text="level.name">等級</option>
+                </select>
+
+                <if condition="in_array(115, $use_function_top)">
+                  <select class="industr1_select_up" name="industr" style="width:100px">
+                    <option value="">{$system_parameter['產業別']}</option>
+                    <option v-for="industr in industr_all" :value="industr.industr" v-text="industr.industr">產業大項
+                    </option>
+                  </select>
+                  <select class="industr2_select_up" name="industr2" style="width:100px">
+                    <option value="">{$system_parameter['產業次項']}</option>
+                  </select>
+                </if>
+
+                <if condition="$system_parameter['協同人員']">
+                  <select v-for="vo in crm_cum_pri" :name="vo.ename">
+                    <option value="-1" v-text="vo.name"></option>
+                    <option v-for="user in eip_user" v-if="user.id" :value="user.id" v-text="user.name">員工
+                    </option>
+                  </select>
+                </if>
+
+                <input type="submit" name="update" value="確定修改" class="sendbtn btn" @click="edit_crm($event)" />
+              </div>
+            </if>
+            <div class="page mt-2">
+              <input type="button" value="列印橫大信封" onclick="print_envelope('h_b')" />
+              <input type="button" value="列印橫小信封" onclick="print_envelope('h_s')" />
+              <input type="button" value="列印直小信封" onclick="print_envelope('v_s')" />
+              <if condition="$control_export_crm == 1">
+                <input type="button" value="匯出EXCEL" class="export_btn" />
+                <input type="button" value="匯出EXCEL(匯入格式)" class="export_btn_import" />
+              </if>
+              <crm_index_pages 
+                :change_page="change_page"
+                :current_page="current_page" 
+                :total_pages="pagwAllA.totalPages"
+              ><crm_index_pages/>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <include file="Public:footer" />
+  <include file="Custo:search_setting_js" />
+
+  <!--縮排-->
+  <script src="__PUBLIC__/js/jquery.readmore.js"></script>
+
+  <script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('#searchForm').on('submit', function(e){
+        e.preventDefault();
+        crm_indexVM.current_page = 1;
+        crm_indexVM.go_search();
+      });
+    });
+
+    var crm_indexVM = new Vue({
+      el: '#crm_index',
+      data: {
+        crmlist_selected: [],
+
+        /*客戶列表*/
+          count_list: [],
+          crm_cum_pri: [],
+          crmlist: [],
+          crmtype: [],
+          eip_user: [],
+          eip_user_all: [],
+          industr: [],
+          industr2: [],
+          industr2_search: [],
+          industr_all: [],
+          levels: [],
+          linit: 0,
+          pagwAllA: {
+            totalPages: 1,
+            listRows: 0,
+          },
+          current_page: 1,
+          team_id: "",
+          team_name: "",
+          total: 0,
+          typeid: "-1",
+          typespan: "",
+          country: "",
+          district: "",
+          scv: "",
+
+        /*特性*/
+          crm_property: [],
+      },
+      updated: function () {
+        this.$nextTick(function () {
+          // Code that will run only after the
+          // entire view has been re-rendered
+          init_event();
+        })
+      },
+      methods: {
+        get_crm_property: function(){
+          self = this;
+          return $.ajax({
+                  method:'get',
+                  dataType:'json',
+                  url:"{:U('Crmproperty/get_feilds_with_defult_ans')}",
+                  success:function(res){
+                    self.crm_property = res;
+                  },
+              });
+        },
+        /*送出請求*/
+        arrange_crm_property_data(){
+          self = this;
+                    // console.log(self.crm_property);
+                    post_data = {};
+                    for (var i = 0; i < self.crm_property.length; i++) {
+                        post_data['field_id_'+self.crm_property[i].id] = self.crm_property[i].ans;
+                    }
+                    post_data = JSON.stringify(post_data);
+                    // console.log(post_data);
+                    $('input[name="fields_data"]').val(post_data);
+        },
+        go_search: function(){ /*搜尋*/
+          self = this;
+                self.crmlist = [];
+                self.arrange_crm_property_data();
+                Vue.toasted.show("搜尋中，請稍候", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+
+                /*整理POST資料*/
+                postData = {};
+                form = new FormData($("#searchForm")[0]);
+                for (var group of form.entries()) {
+             postData[group[0]] = group[1];
+          }
+          postData['p'] = self.current_page;
+          postData['typeid'] = self.typeid;
+          // console.log(postData);
+
+          /*發送請求 取得資料*/
+          $.ajax({
+            method: "POST",
+            dataType:'json',
+            url: "{:u('Custo/ajax_search_customer')}", /*搜尋客戶*/
+            data: postData,
+            success: function(res){
+              Vue.toasted.show("搜尋完成", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              // console.log(res);
+              self.count_list = res.count_list;
+              self.crm_cum_pri = res.crm_cum_pri;
+              self.crmlist = res.crmlist;
+              self.crmtype = res.crmtype;
+              self.eip_user = res.eip_user;
+              self.eip_user_all = res.eip_user_all;
+              self.industr = res.industr;
+              self.industr2 = res.industr2;
+              self.industr2_search = res.industr2_search;
+              self.industr_all = res.industr_all;
+              self.levels = res.levels;
+              self.linit = res.linit;
+              self.pagwAllA = res.pagwAllA;
+              self.team_id = res.team_id;
+              self.team_name = res.team_name;
+              self.total = res.total;
+              self.typeid = res.typeid;
+              self.typespan = res.typespan;
+              self.country = res.country;
+              self.district = res.district;
+              self.scv = res.scv;
+            },
+            error: function(res){
+              Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            },
+          });
+        },
+
+        /*更換搜尋客戶類別*/
+        change_typeid: function(typeid, $event){
+          self = this;
+          $event.preventDefault();
+          self.current_page = 1;
+          self.typeid = typeid;
+          self.go_search();
+        },
+        /*更換搜尋客戶頁數*/
+        change_page: function(page){
+          self = this;
+          if(page > 0 && page <= self.pagwAllA.totalPages){
+            self.current_page = page;
+          }
+          self.go_search();
+        },
+          
+        /*列表操作*/
+          select_all_crm_list: function($event){
+            self = this;
+            self.crmlist_selected = [];
+
+            var select_all = $($event.currentTarget);
+            if(select_all.prop('checked')==true){
+                for (var i = 0; i < self.crmlist.length; i++) {
+                    self.crmlist_selected.push(self.crmlist[i].id);
+                }
+            }
+          },
+          select_all_check: function($event){
+              self = this;
+              var check_select_all = true;
+              for (var i = 0; i < self.crmlist.length; i++) {
+                  if(self.crmlist_selected.indexOf(self.crmlist[i].id) == -1){
+                      check_select_all = false;
+                      break;
+                  }
+              }
+              
+              /*修改權選的勾選狀態*/
+              var select_all = $($event.currentTarget).parent().parent().parent().find('.seleall');
+              select_all.prop('checked', check_select_all);
+          },
+          /*批次修改客戶*/
+          edit_crm: function($event){
+            self = this;
+            $event.preventDefault();
+            /*整理POST資料*/
+            postData = {};
+            form = new FormData($("#edit_form")[0]);
+            for (var group of form.entries()) {
+               postData[group[0]] = group[1];
+            }
+
+            var sele = [];
+            var multi = $('input[name="sele"]:checked');
+            for (var i = 0; i < multi.length; i++) {
+              sele.push($(multi[i]).val())
+            }
+            if(sele.length==0){
+              Vue.toasted.show("請選擇修改對象", { duration: 1500, className: ["toasted-primary", "bg-warning"] });
+              return;
+            }
+            postData['sele'] = sele;
+            // console.log(postData);return;
+            $.ajax({
+              method: "POST",
+              dataType:'json',
+              url: "{:u('Custo/patchupdate')}",
+              data: postData,
+              success: function(res){
+                // console.log(res);
+                if(res.status==1){
+                  bg_class = "bg-success";
+                }else{
+                  bg_class = "bg-danger";
+                }
+
+                Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+                if(res.status==1){ 
+                  self.go_search(); /*更新crm_list*/
+                  self.crmlist_selected = [];
+                  $('.seleall').prop('checked', false);
+                }
+              },
+              error: function(res){
+                Vue.toasted.show("發生錯誤，請再試一次", { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+              },
+            });
+          },
+          input_content_update :function($event){
+            var myin=$($event.target);
+            ajax_edit({
+              dbname:myin.attr("dbname"), 
+              id:myin.attr("myid"), 
+              column:myin.attr("column"), 
+              value:myin.val(),
+              teamid:"''",
+            });
+          },
+
+        /*現況追蹤*/
+        go_crmtrace: function($event){
+          self = this;
+          $event.preventDefault();
+
+          /*整理POST資料*/
+                postData = {};
+                form = new FormData($("#searchForm")[0]);
+                for (var group of form.entries()) {
+             postData[group[0]] = group[1];
+          }
+          postData['p'] = 1;
+          postData['typeid'] = self.typeid;
+          delete postData.fields_data;
+          // console.log(postData);return;
+
+          url = "{:u('Custo/crmtrace')}?" + $.param( postData );
+          // console.log(url);return;
+
+          location.href = url;
+        },
+      },
+    });
+    crm_indexVM.get_crm_property().done(function(){
+      if("{$_GET['typeid']}"){
+        self.typeid = "{$_GET['typeid']}";
+      }
+      crm_indexVM.go_search();
+    });
+  </script>
+  <script language="javascript" type="text/javascript">
+    $(".short").readmore({
+      substr_len: 20,
+      more_link: '<a class="more" >...</a>'
+    });
+    
+    // 點擊匯出EXCEL
+    $(".export_btn").click(function(){
+      var sele = $("input[name='sele']:checked").map(function(){return $(this).val();}).get();
+      if(sele.length==0){
+        if(!confirm("確定依搜尋結果匯出excel？\n會拆一個檔案1萬筆，分批下載")){
+          return;
+        }
+      }
+
+      Vue.toasted.show('開始下載檔案，請勿重複點擊', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      $('#body_block').css('display','block');
+
+      if(sele.length==0){ // 根據搜尋結果產生
+        p = Number(crm_indexVM.pagwAllA.totalPages);
+        perPage = Number(crm_indexVM.pagwAllA.listRows);
+        files = Math.ceil(p*perPage/10000);
+
+        time = 200*perPage*files;
+        for (var i = 1; i <= files; i++) {
+          go_down_load(i, 500+time*(i-1) ) ;
+        }
+        setTimeout(function(){ 
+          // Vue.toasted.show('下載檔案結束', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          $('#body_block').css('display','none');
+        }, 500+time*(i));
+
+      }else{ // 依勾選產生
+        location.href="{:u('Custo/index_excel')}?ids="+JSON.stringify(sele);
+        setTimeout(function(){ 
+          $('#body_block').css('display','none');
+        }, sele.length*50);
+      }
+    })
+    function go_down_load(page, time){
+      setTimeout(function(){
+        location.href="{:u('Custo/index_excel')}?"+get_crm_search_pars()+'&p='+page;
+      }, time);
+    }
+
+    // 點擊匯出EXCEL(匯入格式)
+    $(".export_btn_import").click(function(){
+      var sele = $("input[name='sele']:checked").map(function(){return $(this).val();}).get();
+      if(sele.length==0){
+        if(!confirm("確定依搜尋結果匯出excel？\n會拆一個檔案1萬筆，分批下載")){
+          return;
+        }
+      }
+
+      Vue.toasted.show('開始下載檔案，請勿重複點擊', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      $('#body_block').css('display','block');
+
+      if(sele.length==0){ // 根據搜尋結果產生
+        p = Number(crm_indexVM.pagwAllA.totalPages);
+        perPage = Number(crm_indexVM.pagwAllA.listRows);
+        files = Math.ceil(p*perPage/10000);
+
+        time = 200*perPage*files;
+        for (var i = 1; i <= files; i++) {
+          go_down_load_import(i, 500+time*(i-1) ) ;
+        }
+        setTimeout(function(){ 
+          // Vue.toasted.show("下載檔案結束", { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          $('#body_block').css('display','none');
+        }, 500+time*(i));
+
+      }else{ // 依勾選產生
+        location.href="{:u('Custo/index_excel_import')}?ids="+JSON.stringify(sele);
+        setTimeout(function(){ 
+          $('#body_block').css('display','none');
+        }, sele.length*50);
+      }
+    });
+    function go_down_load_import(page, time){
+      setTimeout(function(){
+        location.href="{:u('Custo/index_excel_import')}?"+get_crm_search_pars()+'&p='+page;
+      }, time);
+    }
+    function get_crm_search_pars(){
+      crm_indexVM.arrange_crm_property_data();
+
+        /*整理POST資料*/
+        postData = {};
+        form = new FormData($("#searchForm")[0]);
+        for (var group of form.entries()) {
+         postData[group[0]] = group[1];
+      }
+      postData['typeid'] = self.typeid;
+
+        return Object.entries(postData).map(function(kv){ return kv.join("=")}).join("&");
+    }
+
+    function init_event(){
+      $(".industr1_select").off();
+      $(".industr1_select_up").off();
+      $(".industr1").off();
+
+      $(".industr1_select").change(function(){
+        $.ajax({
+          method:'post',
+          data:{
+            industr1:$(this).val(),
+          },
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            $(".industr2_select").html(res);
+          }
+        });
+      });
+      $(".industr1_select_up").change(function(){
+        $.ajax({
+          method:'post',
+          data:{industr1:$(this).val()},
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            $(".industr2_select_up").html(res);
+          }
+        });
+      });
+      $(".industr1").change(function(){
+        num = $(this).attr('index');
+        
+        $.ajax({
+          method:'post',
+          data:{industr1:$(this).val(),myid:$(this).attr('myid')},
+          dataType:'text',
+          url:"{:U('Industr/industr_select')}",
+          success:function(res){
+            console.log($(".industr2_"+num));
+            $(".industr2_"+num).html(res);
+          }
+        });
+      });
+    };
+
+    function ajax_edit(data){
+      $.ajax({
+        method:'post',
+        data:data,
+        dataType:'json',
+        url:"{:U('Custo/ajax_save_one_value')}",
+        success:function(res){
+          if(res.status == 0){
+            Vue.toasted.show("res.info", { duration: 1500, className: ["toasted-primary", "bg-danger"] });	
+          }
+          else{
+            Vue.toasted.show('修改了文字:'+ data.value, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+
+            if(data.column=='industr'){ /*如果改的是產業大項，也修改次項成空白*/
+              data.column = 'industr2';
+              data.value = '';
+              ajax_edit(data);
+            }
+          }
+        }
+      });
+    }
+  </script>
+  <include file="Custo:print_js" />

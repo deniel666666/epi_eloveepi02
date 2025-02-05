@@ -1,0 +1,29 @@
+
+						<volist name="today_chats" id="vo">
+							<ul>
+								<li>
+									<if condition="in_array(75, $use_function_top)">
+										<a href="{:u('Custo/view_re', ['id'=>$vo['id']])}" target="_blank">
+									<else />
+										<a href="{:u('Custo/addcrm')}?id={$vo['id']}" target="_blank">
+									</if>
+										{$vo['show_name']}
+									</a>
+								</li>
+								<li>
+									<span>等級：</span>
+									{$vo['level_name']}
+								</li>
+								<li>
+									<if condition="$vo['appmdate'] neq 0">
+										{$vo['appmdate_format']|mb_substr=###,0,16}
+									</if>
+								</li>
+								<li><span>聯繫人：</span>{$vo['contacter']}</li>
+								<li>
+									<span>訪談品質：</span>
+									{$vo['cq_name']}
+								</li>
+								<li><span>訪談內容：</span>{$vo['content']}</li>
+							</ul>
+						</volist>

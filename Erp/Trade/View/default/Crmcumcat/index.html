@@ -1,0 +1,497 @@
+<include file="Public:header2" />
+<head>
+  <style>
+    .item_block_td{
+      flex-wrap: wrap;
+    }
+    .align_items_center{
+      display: flex;
+      align-items: center;
+    }
+    .item_block{
+      margin: 5px 0px;
+    }
+    .item{
+        align-items: center;
+        background-color: #cdcdcd;
+        border-radius: 5px;
+        padding: 5px;
+        margin: 0px 3px;
+    }
+    .item.show{
+      display: inline-flex;
+    }
+    .item.hide{
+      display: none;
+    }
+    .item .img{
+      display: inline-block; 
+      width: 25px;
+      border-radius: 15px;
+        padding: 5px;
+    }
+    input.closebtn, .item .img{
+      background-color: #696969;
+    }
+    .item img{
+      width: 100%;
+    }
+    .cursor_point{
+      cursor: pointer;
+    }
+
+    input.plus, input.closebtn{
+      border-radius: 20px;
+        width: 25px;
+        height: 25px;
+        line-height: inherit;
+    }
+
+    .crmcumcat_modal .modalinner{
+      max-height: 80vh;
+      overflow-y: scroll;
+    }
+    .tool_area{min-width: auto !important;}
+    .signature_area .act_area{ border:none!important; height: auto!important;}
+  
+    @media (max-width: 992px) {
+      .signature_area .act_area{ position: relative!important;right: 0;left: 0; }
+    }
+  </style>
+
+  <!-- 簽名功能 -->
+  <link href="/Public/qhand/signature/signature.css?1" rel="stylesheet" type="text/css" />
+</head>
+
+<div class="w1920 p-4">
+  <!--<a href="{:u($CONTROLLER_NAME.'/trash')}"><input type="button" value="垃圾桶" /></a> -->
+  <form action="{:u($CONTROLLER_NAME.'/add_cat')}" method="post">
+    <label class="smallText">請輸入新增的{$system_parameter['合約']}SN編號：</label>
+    <input name="sn_num" maxlength="2" placeholder="僅輸入英文大寫" onkeyup="value=value.replace(/[^A-Z]/g,'')" >
+    <label class="smallText">請輸入新增的{$system_parameter['合約']}種類名稱：</label><input type="text" name="name" id="XX" />
+    <input type="submit" class="btn addbtn" value="送出" />
+  </form>
+  <form>
+    <h3 class="casetitle">已有的{$system_parameter['合約']}種類：</h3>
+    <div style="overflow-x:auto;">
+      
+      <table class="table edit_table" style="min-width: 1000px;" id="vm_table">
+        <thead>
+          <tr>
+            <th style="width: 9%">
+              <input id="ck_all" type="checkbox" class="click_all" name="click_all">
+              <label class="mb-0" for="ck_all">SN編號</label>
+            </th>
+            <th style="width: 12%">名稱</th>
+          </tr>
+        </thead>
+        <tbody>
+          <foreach name="crm_cum_cat" item="vo">
+            <tr>
+              <td style="width: 9%">
+                <input id="ck_{$vo.id}" type="checkbox" class="groups" name="sn_num[]" value="{$vo.sn_num}">
+                <label for="ck_{$vo.id}">{$vo.sn_num}</label>
+              </td>
+              <td style="width: 12%"><a href="javascript:openModal('{$vo.id}')">{$vo.name}</a></td>
+            </tr>
+          </foreach>
+        </tbody>
+      </table>
+    </div>
+
+    <input type="button" class="delate btn mt-2" style="width: 80px;" value="刪除" id="del">
+  </form>
+</div>
+
+<div id="signature" class="crmcumcat_modal">
+  <!-- Modal -->
+  <a id="exampleModalCenter_btn" class="d-none" data-toggle="modal" data-target="#exampleModalCenter">跳出視窗</a>
+  <div class="modal fade large_modal" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">編輯合約預設內容</h5>
+        </div>
+        <div class="modal-body">
+          <div class="modalinner p-0">				   		
+            <h3 class="edit_section_title access-top">
+              <label class="mb-0 small">名稱：</label>					
+              <input type="text" name="name" v-model="name"> 
+            </h3>
+            <!-- 內容設定區 -->
+            <h4 class="casetitle">內容設定</h4>
+            <p class="small text-danger">如需貼入表格，請使用excel製作完後再複製貼入此區塊</p>
+            <div class="col-12 mb-4">
+              <textarea id="note" style="width: 100%; height: 500px;"></textarea>
+              <input id="cat_id" value="" type="hidden" />
+            </div>
+            <div class="{$control_sign_in|compare_return='0', 'd-none'}">
+              <!-- 設定簽名區 -->
+              <h4 class="casetitle">簽名設定</h4>
+              <div class="signature_area mb-4">
+                <div class="d-flex flex-wrap w-100">
+                  <!-- 工具區 -->
+                  <div class="tool_area col-md-3">
+                    <div class="thead mb-2 text-center font-weight-bold">
+                      工具
+                    </div>
+                    <div class="row p-2 align-items-center  mb-3">
+                      <p class="col-4 mb-2 p-0">1.上傳圖片</p>
+                      <input class="col-8 mb-2 p-0" type="file" id="add_img" accept="image/*" @change="add_img">
+                      <a id="open_btn" class="col-5 btn bg-danger text-white"
+                        @click="cancel_imgs">清空
+                      </a>
+                      <!-- <a class="col-6 offset-1 btn bg-success text-white" @click="add_img">添加</a> -->
+                    </div>
+                    <div class="row p-2 align-items-center  mb-3">
+                      <p class="col-12 mb-2 p-0">
+                        2.設定簽名 (目前已添加{{signatures.length}}個)
+                      </p>
+                      <a id="open_btn" class="col-5 btn bg-danger text-white"
+                          @click="cancel_signatures">清空
+                      </a>
+                      <a id="open_btn" class="col-6 offset-1 btn bg-success text-white"
+                        data-toggle="modal" data-target="#signatureEditView"
+                        @click="reset_edit_view">添加
+                      </a>
+                    </div>
+                    <div class="row p-2 align-items-center  mb-3">
+                      <p class="col-12 mb-2 p-0">
+                        3.設定問題 (目前已添加{{questions.length}}個)
+                      </p>
+                      <a id="open_btn" class="col-5 btn bg-danger text-white"
+                        @click="cancel_questions">清空
+                      </a>
+                      <a id="open_btn" class="col-6 offset-1 btn bg-success text-white"
+                        data-toggle="modal" data-target="#signatureEditView_question"
+                        @click="reset_edit_view_question">添加
+                      </a>
+                    </div>
+                  </div>
+                  <!-- 畫面區 -->
+                  <div class="view_area col-md-9 ">
+                    <div class="row w-100 m-0 mb-2 font-weight-bold">
+                      <div class="thead p-0 col-md-11 col-12 text-center">
+                        合約畫面
+                      </div>
+                      <div class="thead col-md-1 col-12 d-none d-md-block text-center">
+                        操作
+                      </div>
+                    </div>
+                    <div id="view_area_content" class="view_area_content">
+                      <div class="row w-100 m-0 position-relative">
+                        <div class="col-md-11 col-12 p-0 border-right">
+                          <div class="overflow_hidden">
+                            <div class="signature_click cursor_move" :id="'signature_click_' + index"
+                                v-for="(signature, index) in signatures"
+                                v-bind:style="{
+                                  width: signature.w + 'px',
+                                  height: signature.h + 'px',
+                                  left: signature.p_x + 'px',
+                                  top: signature.p_y + 'px',
+                                }"
+                                @mousedown="move_signature(index, signature)">
+                              <a data-toggle="modal" data-target="#signatureEditView" 
+                                @click="eidt_signature(index)">
+                                點我編輯
+                              </a>
+                            </div>
+                            <div class="question_click cursor_move" :id="'question_click_' + index"
+                                v-for="(question, index) in questions"
+                                v-bind:style="{
+                                    width: question.w + 'px',
+                                    height: question.h + 'px',
+                                    left: question.p_x + 'px',
+                                    top: question.p_y + 'px',
+                                }"
+                                @mousedown="move_question(index, question)">
+                              <a data-toggle="modal" data-target="#signatureEditView_question" 
+                                @click="eidt_question(index)" v-text="question.title">
+                                點我編輯
+                              </a>
+                            </div>
+                          </div>
+                          <div>
+                          <div class="position-relative" v-for="(img, index) in imgs_show">
+                            <img class="w-100" :src="img">
+                            <div class=" col-12 col-md-1 act_area">
+                              <a class="btn bg-danger text-white" @click="cancel_img(index)">刪除</a>
+                            </div>
+                          </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <input value="儲存" type="button" class="btn addbtn w100" @click="submit" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--添加簽名畫面///////////////////////////////////////////////-->
+  <div class="modal fade" id="signatureEditView" tabindex="-1" role="dialog" 
+       aria-labelledby="signatureEditViewTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="signatureEditViewTitle">添加簽名</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body container-fluid">
+          <div class="row w-100 m-0">
+            <div class="col-12 mb-3">
+              <div class="mb-1">
+                寬度：<input type="number" v-model="edit_view.w">px
+              </div>
+              <div class="mb-1">
+                高度：<input type="number" v-model="edit_view.h">px
+              </div>
+              <div class="mb-1">
+                距離左側：<input type="number" v-model="edit_view.p_x">px
+              </div>
+              <div class="mb-1">
+                距離頂端：<input type="number" v-model="edit_view.p_y">px
+              </div>
+              <div class="mb-1">
+                必填：<input type="checkbox" v-model="edit_view.required" true-value="1" false-value="0"/>
+              </div>
+              <div class="mb-1">
+                <span class="text-danger">填加後可於合約畫面內拖拉位置，也可點擊簽名區編輯寬高</span>
+              </div>
+            </div>
+            <button class="btn btn-success col-12" 
+                    v-if="edit_view.method=='add'" 
+                    @click="save_signature">建立
+            </button>
+            <button class="btn btn-danger col-5" 
+                    v-if="edit_view.method=='edit'" 
+                    @click="cancel_signature(edit_view.i)">刪除
+            </button>
+            <button class="btn btn-success col-6 offset-1" 
+                    v-if="edit_view.method=='edit'" 
+                    @click="save_signature">設定
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--添加問題畫面///////////////////////////////////////////////-->
+  <div class="modal fade" id="signatureEditView_question" tabindex="-1" role="dialog" 
+     aria-labelledby="signatureEditViewTitle_question" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="signatureEditViewTitle_question">添加問題</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body container-fluid">
+                <div class="row w-100 m-0">
+                  <div class="col-12 mb-3">
+                    <div class="mb-1">
+                          寬度：<input type="number" v-model="edit_view_question.w">px
+                        </div>
+                        <div class="mb-1">
+                          高度：<input type="number" v-model="edit_view_question.h">px
+                        </div>
+                        <div class="mb-1">
+                          距離左側：<input type="number" v-model="edit_view_question.p_x">px
+                        </div>
+                        <div class="mb-1">
+                          距離頂端：<input type="number" v-model="edit_view_question.p_y">px
+                        </div>
+                        <div class="mb-1">
+                          <span class="text-danger">填加後可於合約畫面內拖拉位置，也可點擊簽名區編輯寬高</span>
+                        </div>
+                  </div>
+                  <div class="col-12 mb-3">
+                    <div class="mb-1">
+                      資料類型：
+                            <select v-model="edit_view_question.type" @change="change_type" :disabled="edit_view_question.fields_set_id!=0">
+                                <option v-for="key in Object.keys(data_types)" :value="key" v-text="data_types[key]"></option>
+                            </select>
+                            <!-- 
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            資料來源：
+                            <span v-if="edit_view_question.fields_set_id!=0">常用欄位</span>
+                            <span v-if="edit_view_question.fields_set_id==0">自訂</span>
+                          -->
+                          &nbsp;&nbsp;&nbsp;&nbsp;
+                          員工填寫：<input type="checkbox" v-model="edit_view_question.staff_only" true-value="1" false-value="0"/>
+                        </div>
+                        <div class="mb-1">
+                            問題名稱：<input type="text" v-model="edit_view_question.title" :disabled="edit_view_question.fields_set_id!=0"/>
+                            &nbsp;&nbsp;
+                            必填：<input type="checkbox" v-model="edit_view_question.required" true-value="1" false-value="0"
+                                        :disabled="[1,2].indexOf(edit_view_question.fields_set_id)!=-1"/>
+                            <!-- 
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                            <div class="mt-1">
+                                特殊欄位：<input type="checkbox" v-model="edit_view_question.special" true-value="1" false-value="0"/>
+                                <span class="text-danger  remark">(勾選後，若使用者有填寫此欄位之內容，將通知管理者)</span>
+                            </div> -->
+                        </div>
+                        <div class="mb-1 format">
+                          <template v-if="types_need_limit.indexOf(edit_view_question.type) != -1">
+                              限定格式：<input type="text" v-model="edit_view_question.limit"/ style="width: 100%;" :disabled="edit_view_question.fields_set_id!=0"><br>
+                              <ul class="m-1">
+                                  <li>文字類型資料請輸入「正規表達式」，可參考<a href="https://ihateregex.io" target="_blank">此網站</a>，用於檢查輸入內容是否符合格式</li>
+                                  <li>檔案資料則請參考<a href="https://blog.gtwang.org/web-development/html-input-accept-attribute-tutorial/" target="_blank">此網頁的「指定副檔名」格式</a>來輸入，用於設定允許上傳的檔案類型</li>
+                              </ul>
+                          </template>
+                        </div>
+                        <!-- 
+                        <p>
+                            排序：<input type="number" v-model="edit_view_question.order_id"/>
+                            &nbsp;&nbsp;
+                            <!-- 狀態：
+                            <select v-model="edit_view_question.online" :class="[edit_view_question.online== 0 ? 'text-danger' : 'text-success']">
+                                <option class="text-success" value="1">啟用</option>
+                                <option class="text-danger" value="0">停用</option>
+                            </select> ->
+                        </p>
+                        -->
+                        <div v-if="types_need_option.indexOf(edit_view_question.type) != -1">
+                            <table class="w-100 mb-1">
+                                <tr>
+                                    <td>選項內容</td>
+                                    <td>操作
+                                      <input type="button" class="plus cursor_point" value="+"
+                                           @click="add_option()" v-if="edit_view_question.fields_set_id==0">
+                                    </td>
+                                </tr>
+                                <tr v-for="(item, index) in edit_view_question.options">
+                                    <td>
+                                        <input type="text" v-model="edit_view_question.options[index]" :disabled="edit_view_question.fields_set_id!=0">
+                                    </td>
+                                    <td>
+                                        <a  href="###" @click="del_option(index)" v-if="edit_view_question.fields_set_id==0">
+                                          刪除
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <br>
+                        </div>
+                        <div class="mb-1">
+                            欄位說明：
+                            <textarea id="editor_question" :disabled="edit_view_question.fields_set_id!=0"></textarea>
+                            <input type="hidden" v-model="edit_view_question.discription"/>
+                        </div>
+                  </div>
+                      <button class="btn btn-success col-12" 
+                          v-if="edit_view_question.method=='add'" 
+                          @click="save_question">建立
+                      </button>
+                      <button class="btn btn-warning col-12 mb-2" 
+                          v-if="edit_view_question.method=='edit'" 
+                          @click="copy_question(edit_view_question.i)">複製
+                      </button>
+                      <button class="btn btn-danger col-5" 
+                          v-if="edit_view_question.method=='edit'" 
+                          @click="cancel_question(edit_view_question.i)">刪除
+                      </button>
+                      <button class="btn btn-success col-6 offset-1" 
+                          v-if="edit_view_question.method=='edit'" 
+                          @click="save_question">設定
+                      </button>
+                </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+<include file="Public:footer" />
+
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/kindeditor.js"></script>
+<script charset="utf-8" src="__PUBLIC__/js/kindeditor/lang/zh_TW.js"></script>
+
+<!-- 簽名功能 -->
+<script>
+  window['Crmcumcat'] = "{$CONTROLLER_NAME}"
+</script>
+<script src="/Public/qhand/signature/signature.js?333"></script>
+
+<script>
+  $(".click_all").click(function(){
+    if($(this).prop('checked'))
+    {
+      $('.groups').prop('checked',true);
+    }else
+    {
+      $('.groups').prop('checked',false);
+    }
+  });
+  $("#del").click(function(){
+    var id_array=new Array();
+
+    $('input[name="sn_num[]"]:checked').each(function(){
+        id_array.push($(this).val());//向数组中添加元素
+    });
+
+    var idstr=id_array.join(',');//将数组元素连接起来以构建一个字符串
+    $.ajax({
+      method:'POST',
+      data:{str:idstr},
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/aj_sn_ck')}",
+      success:function(res){
+        if(res.status==1){
+          window.location.reload();
+        }else{
+          alert(res.info);
+        }
+      }
+    });
+  });
+</script>
+<script type="text/javascript">
+  // 初始化文字編輯器
+  var editor;
+    editor = KindEditor.create('#note', {
+        afterBlur: function(){this.sync();},
+        langType : 'zh_TW',
+        items:[
+          'source', '|',
+          'undo', 'redo', '|', 'preview', 'cut', 'copy', 'paste','plainpaste', 'wordpaste', '|',
+          'justifyleft', 'justifycenter', 'justifyright','justifyfull', 'link', 'unlink', 'selectall', '|',
+          'fontname', 'fontsize', '|',
+          'forecolor','hilitecolor', 'bold', 'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|',
+          'hr',  '|',
+          'fullscreen', '|',
+          'about'
+      ],
+        width:'100%',
+        height:'300%',
+        resizeType:0
+    });
+
+  function openModal(cat_id){
+    $('#cat_id').val(cat_id);
+
+    signatureVM.get_data(cat_id);
+    $('#exampleModalCenter_btn').click();
+  }
+
+  $("#exampleModalCenter").on('hide.bs.modal', function (e) {
+    if(!confirm("確定離開編輯？")){
+      e.preventDefault();
+    }
+  });
+  
+</script>

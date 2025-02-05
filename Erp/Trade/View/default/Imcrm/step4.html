@@ -1,0 +1,53 @@
+<include file="Public:header2" />
+
+<section class="document main">
+	<div class="top_bar">
+		<div class="crumbs">
+			<a href="#">匯入客戶</a>
+			<span>></span><a href="#">切換本機名單{$coper_role['name']}人員</a>
+		</div>
+	</div>
+	<div class="below">
+		
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+		
+		<div class="right">
+			<div class="document_edit">
+				<form method="post" action="{:u('Imcrm/step4')}">
+					<div>切換本機名單{$coper_role['name']}</div>						
+					<div class="edit_form">
+						<table cellpadding="0" cellspacing="0" id="sameTable" class="table edit_table" style="min-width:1200px"> 
+							<thead>
+								<tr>
+									<th><input type="checkbox" class="seleall" /></th>
+									<th>原始{$coper_role['name']}人員</th>
+									<th>切換{$coper_role['name']}人員</th>
+									<th>{$system_parameter["廠商類型"]}</th>
+									<th>{$system_parameter["公司名稱"]}</th>
+									<th>{$system_parameter["統編"]}</th>
+									<th>{$system_parameter["地址"]}</th>
+									<th>{$system_parameter["公司電話"]}</th>
+									<th>{$system_parameter["官方網站"]}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{$op}
+							</tbody>
+						</table>
+					</div>
+					<div class="naviPage">
+						<!--<input type="submit" value="刪除所選">-->
+					<span class="vRight">{$nav['previous']}{$nav['mun']}{$nav['next']}</span></div>
+					<div style="text-align:right;">
+							<input type="submit" value="完成" class="btn sendbtn"/>
+					</div>
+				</form>
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+<include file="Public:footer" />

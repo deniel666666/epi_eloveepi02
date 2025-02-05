@@ -1,0 +1,89 @@
+<include file="Public:header2" />
+
+<section class="document main">
+	<div class="below">
+				
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<div class="document_edit">
+				<form id="steptwoform" method="post" action="">
+					<div class="d-flex flex-wrap">
+						<input type="submit" value="刪除所選">
+					<div class="search_bar ml-2" style="width:250px">
+						<input class="text w-100" type="text" value="{$Think.post.name}" name="search" />
+						<input class="submit btn" type="submit" value="" />
+					</div>
+					</div>
+					
+					
+					<!-- 選擇匯入腳色 -->
+					<include file="Imcrm:select_import_role" />
+					<div class="edit_form">
+						<table class="table edit_table" style="min-width:1200px" cellpadding="0" cellspacing="0" id="sameTable">
+							<thead>
+								<tr>
+									<th><input type="checkbox" class="seleall" /></th>
+									<th>操作者</th>
+									<th>{$system_parameter["廠商類型"]}</th>
+									<th>{$system_parameter["公司名稱"]}</th>
+									<th>{$system_parameter["統編"]}</th>
+									<th>{$system_parameter["地址"]}</th>
+									<th>{$system_parameter["公司電話"]}</th>
+									<th>{$system_parameter["官方網站"]}</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+								
+								{$gop}
+								
+							</tbody>
+						</table>
+					</div>
+					
+					<div class="naviPage">
+						<input type="submit" value="刪除所選">
+						<span class="vRight">{$nav['previous']}{$nav['mun']}{$nav['next']}</span>
+					</div>
+					<div style="text-align:right;">
+						<input id="to_step2" type="submit" value="繼續處理"/>
+					</div>
+				</form>
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+<include file="Public:footer" />
+<script type="text/javascript">
+</script>
+<script language="javascript" type="text/javascript">
+	$('.allgroup').click(function(){
+		if($(this).attr('checked'))
+		{
+			$('.groups').attr('checked',true);
+		}else
+		{
+			$('.groups').attr('checked',false);
+		}
+	})
+	$(function(){
+		$('.seleall').click(function(){
+		if($(this).attr('checked'))
+			$('.seleck').attr('checked',true);
+		else
+			$('.seleck').attr('checked',false);
+		})
+	})
+
+	$('#to_step2').on('click', function(e){
+		e.preventDefault();
+		var steptwoform = $('#steptwoform');
+		steptwoform.attr("action", "{:u('Imcrm/other_step2')}");
+		steptwoform.submit();
+	})
+</script>

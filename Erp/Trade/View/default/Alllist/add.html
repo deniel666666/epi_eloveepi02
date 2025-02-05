@@ -1,0 +1,167 @@
+<include file="Public:header2" />
+
+<section class="main ">
+  <!---->
+  <div id="right">
+    <form method="post" action="{:u($CONTROLLER_NAME.'/do_addcontract')}">
+      <input type="hidden" value="{$crm_crm['id']}" name="cid" />
+      <input type="hidden" value="{$crm_crm['wid']}" name="eid" />
+      <div class="contract-new">
+        <h3 class="company-title mr-3">
+          <if condition="in_array(75, $use_function_top)">
+            <a href="{:u('Custo/view_re')}?id={$crm_crm['id']}" target="_blank">
+          <else />
+            <a href="{:u('Custo/addcrm')}?id={$crm_crm['id']}" target="_blank">
+          </if>
+            <i class="fas fa-users mr-1"></i>{$crm_crm['show_name']}
+          </a>
+        </h3>
+        <if condition="$_GET['pid'] eq ''">
+          <div>
+            <foreach name="crm_cum_cat" key="num" item="one">
+              <label class="mb-0 mr-2">
+                <input type="radio" name="cate" value="{$one['id']}" class="RadioCat mr-1">{$one['name']}
+              </label>
+            </foreach>
+          </div>	
+        </if>
+        <p>{$crm_cum_pri[0]['name']}：
+          <if condition="$_GET['pid'] neq ''">
+            {$eip_user[$crm_contract['eid']]['name']}
+          <else />
+            {$eip_user[$crm_crm['wid']]['name']}
+          </if>
+        </p>
+      </div>
+
+      <!--顯示ajax回傳資料-->
+      <div class="table table_content">
+      </div>
+    </form>
+  </div>
+</section>
+
+<a id="contract_units_modal_btn" class="d-none" data-toggle="modal" data-target="#contract_units_modal">選擇提供服務跳出視窗</a>
+<div class="modal fade large_modal" id="contract_units_modal" tabindex="-1" role="dialog"
+   aria-labelledby="contract_units_modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div class="modal-header">
+            <h5 class="modal-title" id="contract_units_modalTitle">選擇項目</h5>
+          </div>
+          <div class="modal-body">
+            <if condition="$get_or_pay==0">
+              <crm_cum_cat_unit_selector
+                ref="crm_cum_cat_unit_selector"
+                :do_select="select_unit"
+                :columns="columns"
+                :get_or_pay="0"
+              ></crm_cum_cat_unit_selector>
+            <else />
+              <crm_cum_cat_unit_selector
+                ref="crm_cum_cat_unit_selector"
+                :do_select="select_unit"
+                :columns="columns"
+                :get_or_pay="1"
+                :crm_id="{$crm_crm['id']}"
+                :crm_provide="1"
+              ></crm_cum_cat_unit_selector>
+            </if>
+          </div>
+        </div>
+    </div>
+</div>
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--換頁元件-->
+<script src="__PUBLIC__/js/vue_components/crm_cum_cat_unit_selector.js?111"></script> <!--合約項目選擇元件-->
+<script type="text/javascript">
+  // 提供服務
+  var columns = [
+    {name:'分類', key:'category_name'},
+    {name:'商品代號', key:'number'},
+    {name:'品名', key:'name'},
+    {name:'規格', key:'type'},
+    {name:'單位', key:'unit'},
+    {name:'{$system_parameter[商品網路價]}', key:'list_price'},
+    {name:'<if condition="$get_or_pay==0">業績BV</if>', key:'profit'},
+    {name:'{$system_parameter[商品售價]}', key:'sale_price'},
+  ].filter((item)=>{ return item.name!=''; });
+  var columns_aj_add = [
+    {name:'分類', key:'category_name', editable:false,},
+    {name:'商品代號', key:'number', editable:false,},
+    {name:'品名', key:'name', editable:false,},
+    {name:'規格', key:'type', editable:true,},
+    {name:'單位', key:'unit', editable:false,},
+    {name:'{$system_parameter[商品網路價]}', key:'list_price', editable:false,},
+    {name:'<if condition="$get_or_pay==0">業績BV</if>', key:'profit', editable:false,},
+  ].filter((item)=>{ return item.name!=''; });
+
+  var contract_units_modal_data = {
+  };
+  var contract_units_modalVM = new Vue({
+    el: '#contract_units_modal', 
+    data: contract_units_modal_data,
+    computed: {
+    },
+    methods: {
+      change_page: function(p){
+        this.currentPage = p;
+        get_cat_unit();
+      },
+      select_unit: function(items){
+        for (var i = 0; i < items.length; i++) {
+          unit = Object.assign({}, items[i]);
+          unit['cat_unit_id'] = unit['id'];
+          unit['id'] = 0;
+          unit['num'] = 0;
+          unit['total'] = 0;
+          unit['total_dis'] = 0;
+          contract_uintsVM.units.push(unit);
+        }
+        Vue.toasted.show('已選擇', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+      },
+    },
+  });
+</script>
+
+<script>
+  if("{$_GET['pid']}" !=''){
+    get();
+    function get(){
+      $.ajax({
+        method:'GET',
+        data:{ pid:"{$crm_contract['id']}" },
+        url:"{:U($CONTROLLER_NAME.'/aj_add')}",
+        dataType:'text',
+        success:function(res){
+          $(".table_content").html(res);
+        }
+      });
+    }
+  }else{
+    $(document).on('click','.RadioCat',function(){
+      $.ajax({
+        type:'GET',
+        data:{
+          cate:$(this).val(),
+          belongs_to: "{$_GET['belongs_to'] ?? 0}",
+          pay_to: "{$_GET['pay_to'] ?? 0}",
+        },
+        url:"{:U($CONTROLLER_NAME.'/aj_add')}",
+        dataType:'text',
+        success:function(res){
+          $(".table_content").html(res);
+        },
+        error:function(request, error){
+          console.log(arguments);
+          alert(" Can't do because: " + error);
+        }
+      });
+    });
+  }
+</script>

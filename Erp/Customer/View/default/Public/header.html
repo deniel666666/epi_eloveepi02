@@ -1,0 +1,80 @@
+<!DOCTYPE>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>{$eip_company_custom['name']}</title>
+
+    <!-- PWA 加入桌面-->
+    <link rel="manifest" href="/Public/manifest.json">
+    
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0">
+    <link href="__PUBLIC__/css/reset.css" rel="stylesheet" type="text/css" />
+    <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+      <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+      
+    <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+    <link rel="stylesheet" type="text/css" href="__PUBLIC__/dnCalendar/css/dncalendar-skin.min.css">
+    <!-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+    <link href="__PUBLIC__/css/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="__PUBLIC__/css/style-medium.css" media="only screen and (min-width: 1281px) and (max-width: 1500px)" />
+    <link rel="stylesheet" type="text/css" href="__PUBLIC__/css/style-small.css" media="only screen and (min-width: 0px) and (max-width: 1280px)" />
+    <link href="__PUBLIC__/css/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="__PUBLIC__/css/alert.css">
+    <link href="__PUBLIC__/css/old.css" rel="stylesheet" type="text/css" />
+    <link href="__PUBLIC__/css/use-phone.css" rel="stylesheet" type="text/css" />
+    <link href="__PUBLIC__/css/use2021.css?20240919-1" rel="stylesheet" type="text/css" />	
+    
+    
+    <!-- <link href="__PUBLIC__/css/all.css" rel="stylesheet" type="text/css" /> -->
+    <!--提示視窗css -->
+    <link rel="Shortcut Icon" type="image/x-icon" href="__PUBLIC__/images/icon.png" />
+
+    <!-- Fontawesome kit(ICON) -->
+    <script src="https://kit.fontawesome.com/9a2047a60f.js" crossorigin="anonymous"></script>
+
+    <script src="__PUBLIC__/js/jquery/jquery-1.12.4.js"></script>
+
+    <!-- Vue -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.1/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+    <script src="https://unpkg.com/vue-toasted@1.1.26/dist/vue-toasted.min.js"></script>
+      <script>Vue.use(Toasted);</script>
+  </head>
+
+  <body>
+    <div id="body_block" class="bg-dark position-fixed w-100" style="
+      display: none;
+      height: 100vh;
+      z-index: 10000;
+      opacity: 0.5;
+      top: 0;
+    "></div>
+    <header id="header">
+      <div class="top">
+        <a target="_self">
+          <h1 style="background:url(/Uploads/parameter/1/{$eip_company.head_logo}) no-repeat;
+                 background-size: contain;">{$eip_company['eip_name']}
+          </h1>
+        </a>
+        <a class="rwd_menu_sp rwd_setting"></a>
+        <p style="display:inline-block; color:rgba(256,256,256,0.3);text-decoration:underline;">
+          {$eip_company['version']}版
+        </p>
+        <ul class="right">
+          <li><a target="_blank" class="text-photonic" href="http://shop.photonic.com.tw/">購物車系統</a></li>
+            <li><a target="_blank" class="text-photonic" href="http://erp2000.com/">CRM</a></li>
+            <li><a target="_blank" class="text-photonic" href="http://www.photonic.com.tw/">網頁設計</a></li>
+            <li><a target="_blank" class="text-photonic" href="https://sprlight.net/index.php/">SEO關鍵字優化</a></li>
+        </ul>
+      </div>
+      <div class="bottom">
+        <h2>{$eip_company['eip_en_name']}</h2>
+        <div class="scroll_box">
+        </div>
+      </div>
+    </header>
+

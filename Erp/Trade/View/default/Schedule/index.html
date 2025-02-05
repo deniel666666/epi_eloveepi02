@@ -1,0 +1,620 @@
+<include file="Public:header2" />
+
+<section id="right">
+  <div class="container mw1920 p-4" id="schedule_div">
+    <div class="navi1 justify-content-start">
+      <if condition="$access['schedule_new'] eq '1'">
+          <button class="btn btn-primary mr-4" @click="open_add(-1)">
+            <i class="fas fa-plus-circle"></i>
+            日程組
+          </button>
+      </if>
+      <div class="menu-sub-btn">
+        <ol>
+          <li class="">
+            <a href="{:U('Schedule/index')}" class="current">
+              依日程組查看
+            </a>
+          </li>
+          <li class="">
+            <a href="{:U('Schedule/date')}" class="">
+              依日期查看
+            </a>
+          </li>
+        </ol>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center pt-1 pb-1">
+      <input class="w100 mr-2" v-model="search_params.searchtext" placeholder="名稱/地點" style="max-width: 300px;">
+      <if condition="in_array(18, $use_function_top)">
+        <input class="w100 mr-2" v-model="search_params.evesno" placeholder="事件編號" style="max-width: 150px;">
+      </if>
+      <input class="w100 mr-2" v-model="search_params.sn" placeholder="{$system_parameter['合約']}編號" style="max-width: 150px;">
+      <input class="w100 mr-2" v-model="search_params.crm_text" placeholder="{$system_parameter['客戶']}{$system_parameter['名稱']}/{$system_parameter['簡稱']}" style="max-width: 150px;">
+      <span class="ml-4">
+        依日程搜尋：<input class="w100 mr-2" v-model="search_params.schedule_date" type="date" style="max-width: 120px;" @change="search_schedules">
+      </span>
+      
+      <a href="###" class="btn addbtn mr-2" @click="search_schedules">搜尋</a>
+      <a href="javascript:location.reload()" class="btn btn-light">清除搜尋</a>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table edit_table mb-2" style="min-width: 1420px;">
+        <thead>
+          <tr>
+            <th style="width: 50px;" class="text-right" valign="middle">序號</th>
+            <th style="min-width: 200px;">名稱</th>
+            <th style="min-width: 300px;">地點</th>
+            <if condition="in_array(18, $use_function_top)">
+              <th style="min-width: 200px;">走期</th>
+              <th style="min-width: 150px;">事件編號</th>
+            </if>
+            <th style="min-width: 150px;">{$system_parameter['合約']}編號</th>
+            <th style="min-width: 100px;">{$system_parameter['客戶']}</th>
+            <th style="min-width: 100px;">審核者</th>
+            <th style="min-width: 100px;">依人力請款</th>
+            <th style="min-width: 170px;">操作</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr v-for="(schedule,schedule_index) in schedules">
+            <td class="text-right"><span v-text="(search_params.current_page-1)*search_params.count_of_page + schedule_index+1"></span></td>
+            <td><span v-text="schedule.name"></span></td>
+            <td><span v-text="schedule.location"></span></td>
+            <if condition="in_array(18, $use_function_top)">
+              <td>
+                <span v-if="schedule.start_time" v-text="schedule.start_time_format.substr(0, 10)"></span>
+                ~
+                <span v-if="schedule.end_time" v-text="schedule.end_time_format.substr(0, 10)"></span>
+              </td>
+              <td><span v-text="schedule.evesno"></span></td>
+            </if>
+            <td>
+              <template v-if="schedule.caseid!=0">
+                <a :href="'{:U('Alllist/view')}?id='+schedule.caseid" target="_blank">
+                  <span v-text="schedule.sn"></span>
+                </a>
+                (<a :href="'{:U('Getmoney/records')}?id='+schedule.caseid" target="_blank">查單</a>)
+              </template>
+            </td>
+            <td><span v-text="schedule.show_name_full"></span></td>
+            <td><span v-text="schedule.user_name"></span></td>
+            <td>
+              <span v-if="schedule.auto_money==1">需要</span>
+              <span v-else>不需要</span>
+            </td>
+            <td>
+              <!-- 顯示日程組 -->
+              <a :href="'{:U('Schedule/index_date')}?schedule_id='+schedule.id" target="_blank" class="mr-3">
+                <button class="btn btn-warning">查看日程</button>
+              </a>
+              <template v-if="search_params.schedule_date">
+                <!-- 顯示日程 -->
+                <a :href="'{:U('ScheduleDetail/users')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank" class="mr-3">
+                  <button class="btn btn-warning">名單</button>
+                </a>
+                <a :href="'{:U('ScheduleDetail/report')}?schedule_date_primary='+schedule.schedule_date_primary" target="_blank" class="mr-3">
+                  <button class="btn btn-warning">驗收</button>
+                </a>
+              </template>
+              <button type="button" class="btn btn-primary mr-2" @click="open_add(schedule_index)">
+                <i aria-hidden="true" class="fas fa-edit"></i>
+              </button>
+              <button type="button" class="btn delate" @click="delete_schedule(schedule.id)">
+                <i aria-hidden="true" class="far fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="send d-flex justify-content-between">
+      <!-- <button class="btn btn-success" @click="create_money_search">依搜尋參數生成人力請款</button> -->
+      <crm_index_pages 
+        :change_page="change_page"
+        :current_page="search_params.current_page" 
+        :count_of_items="count_of_items" 
+        :count_of_page="search_params.count_of_page"
+      ></crm_index_pages>
+    </div>
+  </div>
+</section>
+<!-- Modal -->
+<a id="schedule_panel_btn" class="d-none" data-toggle="modal" data-target="#schedule_panel">設定日程組</a>
+<div class="modal fade" id="schedule_panel" tabindex="-1" role="dialog" aria-labelledby="schedule_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="schedule_panelTitle">設定日程組</h5>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          名稱：<input type="text" v-model="new_schedule.name" class="w100">
+        </div>
+        <div class="form-group">
+          地點：<input type="text" v-model="new_schedule.location" class="w100">
+        </div>
+        <div class="form-group">
+          地點經緯度：<span class="text-danger">此為員工自行打卡使用，限定可打卡的範圍</span>
+          <input type="text" v-model="new_schedule.location_gps" class="w100">
+          <span class="text-danger">輸入格式參考:25.02500316260215, 121.55338708314407</span>
+        </div>
+        <div class="form-group">
+          打卡距離：<span class="text-danger">此為員工自行打卡使用，限定可打卡的距離(公尺)</span>
+          <input type="text" v-model="new_schedule.location_range" class="w100">
+          <span class="text-danger">輸入格式參考:50</span>
+        </div>
+        <div class="form-group">
+          依人力請款：
+          <select v-model="new_schedule.auto_money">
+            <option class="w100" value="0">不需要</option>
+            <option class="w100" value="1">需要</option>
+          </select>
+        </div>
+        <template v-if="new_schedule.eve_step_id==0">
+          <div class="form-group">
+            客戶篩選：<span>(請輸入簡稱/客戶名稱)</span>
+            <input type="text" v-model="searchname" class="w100" @change="reset_contracts">
+          </div>
+          <div class="form-group">
+            對應合約：
+            <select v-model="new_schedule.contract_id" @change="change_contract">
+              <option class="w100" 
+                      v-for="contract in contracts" :value="contract.id"
+                      v-text="contract.name + ' ' + contract.sn + '('+ contract.allmoney +')'">
+              </option>
+            </select>
+            <div>
+              對應客戶：<span v-text="contracts_crm_name"></span>
+            </div>
+          </div>
+        </template>
+
+        <div class="d-none">
+          <section id="use_function_top-153" class="{$use_function_top|in_array=153, ###|compare_return=1, 'default_block', 'default_none'}">
+            預估人力：<span class="text-danger">假設需5人施作8小時，預估工時請輸入40</span>
+            <div class="edit_form">
+              <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 450px; width: auto;">
+                <thead class="edit_table_thead">
+                  <tr class="edit_table tr ">
+                    <th style="width: 90px">
+                      <label class="mb-0">
+                        項次
+                        <a class="btn addbtn text-white" href="###" data-toggle="modal" data-target="#user_skills_panel">
+                          <i aria-hidden="true" class="fas fa-plus-circle"></i>
+                        </a>
+                      </label>
+                    </th>
+                    <th style="min-width: 100px;">工種名稱</th>
+                    <th style="min-width: 100px;" class="text-right">工種時薪</th>
+                    <th style="min-width: 100px;" class="text-right">預估工時(H)</th>
+                    <th style="min-width: 60px;">操作</th>
+                  </tr>	
+                </thead>
+                <tbody>
+                  <tr v-for="(item,key) in new_schedule.units">
+                    <td>
+                      <label v-text="key+1"></label>
+                      <input type="hidden" v-model="item['id']">
+                      <input type="hidden" v-model="item['name']">
+                      <input type="hidden" v-model="item['hour_pay']">
+                      <input type="hidden" v-model="item['user_skill_id']">
+                    </td>
+                    <td><span v-text="item.name"></span></td>
+                    <td class="text-right"><span v-text="item.hour_pay"></span></td>
+                    <td class="text-right">
+                      <input type="number" min="0" step="1" class="text-right w-100" :name="'units3['+key+'][hour_predict]'" 
+                             v-model="item.hour_predict" @change="count_total_uints">
+                    </td>
+                    <td>
+                      <!-- 選擇 -->
+                      <a href="###" class="btn delate" @click="cancel_unit(key)">
+                        刪除
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"></td>
+                    <td class="text-right">總計</td>
+                    <td class="text-right" v-text=total_uints></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="text-right">
+            <button class="btn btn-primary" @click="set_schedule">
+              送出
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="user_skills_panel" tabindex="-1" role="dialog"
+	 aria-labelledby="user_skills_panelTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="user_skills_panelTitle">選擇工種</h5>
+      </div>
+      <div class="modal-body">
+        <section class="main">
+          <div class="edit_form">
+            <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 300px;">
+              <thead class="edit_table_thead">
+                <tr class="edit_table tr ">
+                  <th style="width: 70px">
+                    <input id="ck_all3" type="checkbox">
+                    <label class="mb-0" for="ck_all3">項次</label>
+                  </th>
+                  <th style="min-width: 150px;">工種名稱</th>
+                  <th style="min-width: 100px;" class="text-right">工種時薪</th>
+                  <th style="min-width: 50px;">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item,key) in units">
+                  <td>
+                    <input :id="'ck3_'+item.id" type="checkbox" class="groups3" :index="key">
+                    <label :for="'ck3_'+item.id" v-text="(currentPage-1)*countOfPage + key+1"></label>
+                  </td>
+                  <td><span class="item" v-text="item.name"></span></td>
+                  <td class="text-right"><span class="item" v-text="item.hour_pay"></span></td>
+                  <td>
+                    <!-- 選擇 -->
+                    <a href="###" class="btn sendbtn" @click="select_unit(key)">
+                      選擇
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <a href="###" class="btn sendbtn" @click="select_units(3)">
+            批次選擇
+          </a>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/js/vue_components/crm_index_pages.js"></script> <!--分頁元件-->
+<script type="text/javascript">
+  const contract_id_create = "{$_GET['contract_id_create'] ?? ''}";
+  const show_name = "{$_GET['show_name'] ?? ''}";
+
+  const new_schedule_empty = {
+    name: '',
+    location: '',
+    location_gps: '',
+    location_range: '',
+    auto_money: 1,
+    eve_step_id: 0,
+    contract_id: 0,
+    units: [],
+    units_del: [],
+  };
+  const schedule_div_data = {
+    new_schedule: JSON.parse(JSON.stringify(new_schedule_empty)),
+    total_uints: 0,
+
+    count_of_items: 0,
+    search_params: {
+      current_page: 1, 
+      count_of_page: 20,
+      searchtext: '',
+      evesno: '',
+      sn: '',
+      crm_text: '',
+      schedule_date: '',
+    },
+    schedules: [],
+
+    searchname: '',
+    contracts: [],
+    contracts_crm_name:'',
+  };
+  const schedule_divVM = new Vue({
+    el:'#schedule_div',
+    data: schedule_div_data,
+    methods: {
+      open_add: function(schedule_index=-1){
+        chedule_panelVM.set_schedule_panel(schedule_index);
+        $('#schedule_panel_btn').click();
+      },
+      change_page: function(page){ /*配合分頁元件*/
+        schedule_divVM.search_params.current_page = page;
+        schedule_divVM.get_schedules();
+      },
+      search_schedules: function(){
+        schedule_divVM.search_params.current_page = 1;
+        schedule_divVM.get_schedules();
+      },
+      get_schedules: function(){
+        schedule_divVM.schedules = [];
+        data = JSON.parse(JSON.stringify(schedule_divVM.search_params));
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: data,
+          url: "{:u('Schedule/get_schedules')}",
+          success:function(res){
+            schedule_divVM.schedules = res.list;
+            schedule_divVM.count_of_items = res.count_of_items;
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+      delete_schedule: function(schedule_id){
+        if(!confirm('確定刪除?')){ return; }
+        $('#body_block').show();
+        $.ajax({
+          type: 'GET',
+          dataType:'json',
+          data: {
+            schedule_id: schedule_id,
+          },
+          url: "{:u('Schedule/delete_schedule')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              schedule_divVM.get_schedules();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+    },
+  });
+  const chedule_panelVM = new Vue({
+    el:'#schedule_panel',
+    data: schedule_div_data,
+    methods: {
+      set_schedule_panel: async function(index=-1){
+        chedule_panelVM.searchname ='';
+        if(index==-1){
+          temp_data = new_schedule_empty;
+        }else{
+          temp_data = {
+            id: schedule_divVM.schedules[index].id,
+            name: schedule_divVM.schedules[index].name,
+            location: schedule_divVM.schedules[index].location,
+            location_gps: schedule_divVM.schedules[index].location_gps,
+            location_range: schedule_divVM.schedules[index].location_range,
+            auto_money: schedule_divVM.schedules[index].auto_money,
+            eve_step_id: schedule_divVM.schedules[index].eve_step_id,
+            contract_id: schedule_divVM.schedules[index].caseid,
+            units: [],
+            units_del: [],
+          }
+
+          if(temp_data.eve_step_id==0){
+            await chedule_panelVM.get_contracts(temp_data.contract_id);
+          }
+          chedule_panelVM.get_schedule_user_skill(temp_data.id);
+        }
+        chedule_panelVM.new_schedule = JSON.parse(JSON.stringify(temp_data));
+        chedule_panelVM.change_contract();
+      },
+      set_schedule: function(){
+        $('#body_block').show();
+        $.ajax({
+          type: 'POST',
+          dataType:'json',
+          data: chedule_panelVM.new_schedule,
+          url: "{:u('Schedule/set_schedule')}",
+          success:function(res){
+            if(res.status==1){
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+              $('#schedule_panel').modal('hide');
+              chedule_panelVM.set_schedule_panel();
+              schedule_divVM.get_schedules();
+            }else{
+              Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            }
+            $('#body_block').hide();
+          },
+          error: function(res){
+            $('#body_block').hide();
+          },
+        });
+      },
+
+      get_schedule_user_skill: function(schedule_id){
+        schedule_divVM.new_schedule.units = [];
+        $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U('Schedule/get_schedule_user_skill')}",
+          data:{
+            schedule_id: schedule_id,
+          },
+          success:function(res){
+            // console.log(res)
+            chedule_panelVM.new_schedule.units=res.schedule_user_skills;
+            chedule_panelVM.count_total_uints();
+          }
+        });
+      },
+      count_price: function(index){
+				if(schedule_divVM.new_schedule.units[index]['sale_price']){
+					price = schedule_divVM.new_schedule.units[index]['sale_price'] * schedule_divVM.new_schedule.units[index]['num'];
+					schedule_divVM.new_schedule.units[index]['total'] = price;
+					schedule_divVM.new_schedule.units[index]['total_dis'] = price;
+				}
+				chedule_panelVM.count_total_uints();
+			},
+      cancel_unit: function(index){
+        const item = schedule_divVM.new_schedule.units[index];
+				if(item['id']){
+					schedule_divVM.new_schedule.units_del.push(item['id']);
+				}
+				schedule_divVM.new_schedule.units.splice(index, 1);
+				chedule_panelVM.count_total_uints();
+			},
+      count_total_uints: function(){
+				schedule_divVM.total_uints = 0;
+				for (var i = 0; i < schedule_divVM.new_schedule.units.length; i++) {
+					const unit = schedule_divVM.new_schedule.units[i];
+					schedule_divVM.total_uints += Number(unit['hour_pay'])*Number(unit['hour_predict']);
+				}
+			},
+
+      reset_contracts: async function(){
+        chedule_panelVM.new_schedule.contract_id = 0;
+        chedule_panelVM.contracts_crm_name ='';
+        await chedule_panelVM.get_contracts();
+      },
+      get_contracts: async function(contract_id=0){
+        const searchname = chedule_panelVM.searchname;
+        const post_data = { flag: -1, searchname: searchname}
+        if(contract_id){
+          post_data.crm_contract_id = contract_id;
+        }
+        await $.ajax({
+          method:'GET',
+          dataType:'json',
+          url:"{:U('Schedule/get_contracts')}",
+          data: post_data,
+          success:function(res){
+            // console.log(res);
+            chedule_panelVM.contracts = res.contracts;
+          },
+          error: function(e){
+            chedule_panelVM.contracts = [];
+          },
+        });
+      },
+      change_contract: function(){
+        name = ''; topic = '';
+        for (let i = 0; i < chedule_panelVM.contracts.length; i++) {
+          const element = chedule_panelVM.contracts[i];
+          if(chedule_panelVM.new_schedule.contract_id == element.id){
+            name = element.name;
+            topic = element.topic;
+            break;
+          }
+        }
+        if(!chedule_panelVM.new_schedule.location){
+          chedule_panelVM.new_schedule.location = topic;
+        } 
+        chedule_panelVM.contracts_crm_name = name;
+      },
+    },
+  });
+  schedule_divVM.get_schedules();
+
+  if(contract_id_create){
+    schedule_divVM.open_add(-1);
+    chedule_panelVM.searchname = show_name;
+    chedule_panelVM.reset_contracts().then(()=>{
+      chedule_panelVM.new_schedule.contract_id = contract_id_create;
+      chedule_panelVM.change_contract();
+    });
+  }
+</script>
+<script type="text/javascript">
+	// 預估人力
+	var user_skills_panel_data = {
+		units: [],
+
+		searchKeyword:"",
+
+		countOfPage: 0,
+		currentPage: 1,
+    totalPage: 1,
+    pages: [],
+    p_prev: "",
+    p_next: "",
+	};
+	var user_skills_panelVM = new Vue({
+		el: '#user_skills_panel', 
+		data: user_skills_panel_data,
+		computed: {
+		},
+		methods: {
+			change_page: function(p){
+				this.currentPage = p;
+				get_cat_unit();
+			},
+			select_unit: function(index){
+				unit = Object.assign({}, this.units[index]);
+				unit['user_skill_id'] = unit['id'];
+				unit['id'] = 0;
+				unit['hour_predict'] = 0;
+				schedule_divVM.new_schedule.units.push(unit);
+				Vue.toasted.show('已選擇', { duration: 1500, className: ["toasted-primary", "bg-success"] });
+			},
+			select_units: function(index=''){
+				units = $('input.groups'+index+':checked');
+				for (var i = 0; i < units.length; i++) {
+					var index = $(units[i]).attr('index');
+					this.select_unit(index);
+				}
+			},
+		},
+	});
+
+	function get_cat_unit3(){
+		user_skills_panelVM.units = [];
+		$.ajax({
+			method:'post',
+			dataType:'json',
+			url:"{:U('Ajax/get_user_skill_ajax')}",
+			data:{
+				cond: {
+					currentPage: user_skills_panelVM.currentPage,
+					searchKeyword: user_skills_panelVM.searchKeyword,
+				},
+			},
+			success:function(res){
+				// console.log(res)
+				user_skills_panelVM.units=res;
+				
+				// user_skills_panelVM.countOfPage = res.countOfPage;
+				// user_skills_panelVM.currentPage = res.currentPage;
+				// user_skills_panelVM.totalPage = res.totalPage;
+				// user_skills_panelVM.pages = res.pages;
+				// user_skills_panelVM.p_prev = res.p_prev;
+				// user_skills_panelVM.p_next = res.p_next;
+
+				init_checkbox_event('3');
+			}
+		});
+	}
+	get_cat_unit3();
+
+  function init_checkbox_event(group=''){
+		$("#ck_all"+group).off();
+		$("#ck_all"+group).click(function(){
+			if($(this).prop('checked'))
+			{
+				$('.groups'+group).prop('checked',true);
+			}else
+			{
+				$('.groups'+group).prop('checked',false);
+			}
+		});
+	}
+</script>

@@ -1,0 +1,12 @@
+{
+  "editor.indentSize": "tabSize",
+  "editor.detectIndentation": true,
+  "editor.tabSize": 2,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "security.workspace.trust.untrustedFiles": "open",
+  "workbench.startupEditor": "none",
+  "solang.updates.askBeforeDownload": true,
+  "python.defaultInterpreterPath": "C:\\Windows\\py.exe",
+  "settingsSync.ignoredExtensions": [],
+  "settingsSync.ignoredSettings": []
+}

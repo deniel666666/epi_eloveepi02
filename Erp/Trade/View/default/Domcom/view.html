@@ -1,0 +1,70 @@
+<include file="Public:header2" />
+
+<section class="main ">
+	<!---->
+	<div id="right" >
+		
+		<div class="right_cont">
+			<if condition="$page eq ''">
+				<form name="search" id="searchform" action="{:u('Domcom/index')}" method="get">
+					<else />
+					<form name="search" id="searchform" action="{:u('Domcom/index')}?p={$Think.get.p}" method="get">
+					</if>
+					<ol class="headerOl rightR">
+						
+						<li>
+							<div class="search_bar">
+								<label for=""></label>
+								<input class="text" type="text"  placeholder="搜尋..." name="nick" value="{$nick}"   />
+								<input class="submit" type="submit" value="" />
+							</div>
+						</li>
+						<if condition="$access['domcom_new'] eq '1'">
+						<li style="float:right"><a href="{:u('Domcom/editor')}"><input type="button" class="btn addbtn" value="新增域名廠商" /></a></li>
+						</if>
+					</ol>
+				</form>
+				
+			</div>
+			<div class="content-table">
+				<div class="sercom-box col-lg-6 mb-2">
+					<ul>
+						<li><label class="name">公司名</label><div class="copy text" data-clipboard-text="{$data.nick}">{$data.nick}</div></li>
+						<li><label class="name">網址</label>
+							<div class="copy text">
+								<a href="{$data.url}" target="_blank">{$data.url}</a>
+							</div>
+						</li>
+						<li><label class="name">聯絡人</label><div class="copy text" data-clipboard-text="{$data.nane}">{$data.nane}</div></li>
+						<li><label class="name">信箱</label><div class="copy text" data-clipboard-text="{$data.mail}">{$data.mail}</div></li>
+						<li><label class="name">電話</label><div class="copy text" data-clipboard-text="{$data.moble}">{$data.moble}</div></li>
+						<li><label class="name">帳號</label><div class="copy text" data-clipboard-text="{$data.user}">{$data.user}</div></li>
+						<li><label class="name">密碼</label><div class="copy text" data-clipboard-text="{$data.pwd}">{$data.pwd}</div></li>
+						<li class="note"><label class="name">備註</label><div class="text">{$data.bz}</div></li>
+					</ul>
+				</div>
+				<if condition="$access['domcom_edi'] eq '1'">
+					<div class="send">
+						<a href="{:u('Domcom/editor')}?id={$_GET['id']}">
+							<input type="button" class="btn sendbtn" value="修改資料" />
+						</a>
+					</div>
+				</if>
+			</div>
+	
+			
+			<!--content end-->
+			
+		</div>
+		
+	</div>
+	
+</div>
+</section>
+<!-- .wrapAll end-->
+<include file="Public:footer" />
+
+<script>
+	
+	
+</script>

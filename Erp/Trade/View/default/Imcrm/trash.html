@@ -1,0 +1,58 @@
+<include file="Public:header2" />
+
+<section class="document main">
+	<div class="below">
+				
+		<!-- 共用階層列表 -->
+		<include file="Imcrm:left_menu" />
+		<!-- END 共用階層列表 -->
+		
+		<div class="right">
+			<div class="document_edit">
+				<p class="norText">批次丟棄說明：<br />
+					本批次丟棄功能可將比對到的多筆名單轉換至垃圾桶，請下載範例格式Excel修改後再匯入系統。</p>
+					<a href='/Uploads/Events/Import_customer_list_trash.xlsx' download='丟棄匯入範本.xlsx'><img src='/Public/qhand/images/save.png' />匯入範本</a><br><br>
+					<form method="post" action="{:u('Imcrm/trash_table','','')}" enctype="multipart/form-data">
+						<h3 class="excel bgBlue"><img src="__PUBLIC__/images/icon_doc.png" />匯入丟棄名單(第1欄請不要放資料也勿刪除)</h3>
+						<input type="file" name="file1" id="fileField" style="width:160px;" />
+						<input type="submit" class="btn btn-primary" name="submit" onclick="showWait()" value="匯入" />
+						<p class="importwait" hidden="true">資料匯入中請稍候...</p>
+						<br />
+					</form>
+					<hr style="margin-top: 5px; color: #000; width: 100%;">
+					<br />
+					<p style="font-size:14px;">※請參照下列 excel 匯入之格式來排版並匯入檔案：</p>
+					<div class="edit_form">
+						<table cellpadding="0" cellspacing="0" id="edm-table" class="edit_table table"  style="min-width: auto;">
+							<tbody>
+								<tr style="background:#DDD">
+									<td align="center">A</td>
+									<!-- <td align="center">B</td> -->
+								</tr>
+								<tr class="gray">
+									<td align="center">{$system_parameter["統編"]}</td>			
+									<!-- <td align="center">公司</td>-->
+								</tr>
+								<tr>
+									<td align="center">xxx</td>
+									<!-- <td align="center">xxx</td> -->
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+			</div>
+			
+		</div>
+	</div>
+</div>
+</section>
+
+<script language="javascript">
+	function showWait()
+	{
+		$('.importwait').show();
+	}
+</script>
+
+<include file="Public:footer" />

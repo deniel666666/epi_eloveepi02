@@ -1,0 +1,28 @@
+		<!-- End main --><!-- Start footer -->
+		<footer>	
+			<ul>
+				<li>{$eip_company_custom['name']} 版權所有 © 2014 {$eip_company_custom['en_name']}. All Rights Reserved.</li>
+				<li>
+					<if condition="$eip_company_custom['tel']">
+						<a href="tel:{$eip_company_custom['tel']}">電話：{$eip_company_custom['tel']}</a>
+					</if>
+					<if condition="$eip_company_custom['fax']">
+						<a>傳真：{$eip_company_custom['fax']}</a>
+					</if>
+					<if condition="$eip_company_custom['addr']">
+						<a href="{$eip_company_custom['addr_link']}" target="_blank">地址：{$eip_company_custom['addr']}</a>
+					</if>
+				</li>
+			</ul>
+		</footer>
+		<!-- End footer -->
+	</body>
+</html>
+
+<script src="__PUBLIC__/js/jquery/jquery-migrate-1.2.1.js"></script>
+<script src="__PUBLIC__/js/jquery/jquery.MenuTree.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/ui/jquery-ui.js" type="text/javascript"></script>
+<!--提示視窗-->
+<script src="__PUBLIC__/js/jquery.toaster.js"></script>
+	
+

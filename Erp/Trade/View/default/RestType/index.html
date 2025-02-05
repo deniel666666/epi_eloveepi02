@@ -1,0 +1,121 @@
+<include file="Public:header2" />
+
+<div class="container mw1920 p-4">
+  <p class="text-danger">刪除後再新增將視為全新勤務/假別，每年申請限制不會合併計算</p>
+  <form action="{:u($CONTROLLER_NAME.'/add')}" method="post" class="d-flex flex-wrap align-items-start">
+    <div style="overflow-x:auto;">
+      <table class="table edit_table mb-2" style="min-width: 1000px; max-width: 1100px;">
+        <thead>
+          <tr>
+            <th style="min-width: 100px;">名稱</th>
+            <th style="min-width: 100px;" class="text-right">每小時薪資變動<br>(扣50%請輸入 -0.5)</th>
+            <th style="min-width: 230px;" class="text-right">每年上限幾小時(設-1則不限制)</th>
+            <th style="min-width: 200px;" class="text-right">幾日前申請(設-1則不限制)</th>
+            <th style="min-width: 100px;" class="text-right">需公司審核(小時)</th>
+            <th style="min-width: 100px;" class="text-right">最短申請單位(分鐘)</th>
+            <th style="min-width: 75px;">操作</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr>
+            <td><input type="text" name="name" class="w100"></td>
+            <td>
+              <div class="d-flex align-items-center">
+                *
+                <input type="number" name="deduct_percent" step="0.01" class="w100 text-right update_input">
+              </div>
+            </td>
+            <td><input type="number" name="month_limit" min="-1" step="1" class="w100 text-right"></td>
+            <td><input type="number" name="preapply_days" min="-1" step="1" class="w100 text-right"></td>
+            <td><input type="number" name="top_examine_hours" min="0" step="1" class="w100 text-right"></td>
+            <td><input type="number" name="min_range" min="0" step="1" class="w100 text-right"></td>
+            <td>
+              <input type="submit" class="btn addbtn" value="新增" />
+            </td>
+          </tr>
+          <foreach name="rest_type" key="key" item="vo">
+            <tr>
+                <td>{$vo.name}</td>
+                <td class="text-right">
+                  <div class="d-flex align-items-center">
+                    *
+                    <input step="0.01" class="w100 text-right update_input" type="number" 
+                           value="{$vo.deduct_percent}" layer_id="{$vo.id}" column="deduct_percent"/>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <if condition="$vo.id neq 1">
+                    <input min="-1" step="1" class="w100 text-right update_input" type="number"
+                           value="{$vo.month_limit}" layer_id="{$vo.id}" column="month_limit"/>
+                  <else />
+                    依給定特休數	
+                  </if>
+                </td>
+                <td class="text-right">
+                  <div class="d-flex align-items-center">
+                    <input min="-1" step="1" class="w100 text-right update_input" type="number" 
+                           value="{$vo.preapply_days}" layer_id="{$vo.id}" column="preapply_days"/>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <div class="d-flex align-items-center">
+                    <input min="0" step="1" class="w100 text-right update_input" type="number" 
+                           value="{$vo.top_examine_hours}" layer_id="{$vo.id}" column="top_examine_hours"/>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <div class="d-flex align-items-center">
+                    <input min="0" step="1" class="w100 text-right update_input" type="number" 
+                           value="{$vo.min_range}" layer_id="{$vo.id}" column="min_range"/>
+                  </div>
+                </td>
+                <td>
+                  <if condition="$vo.id neq 1">
+                    <button type="button" class="btn delate d-inline" onclick="delete_layer('{$vo.id}')">
+                      <i aria-hidden="true" class="far fa-trash-alt"></i>
+                    </button>
+                  </if>
+                </td>
+            </tr>
+          </foreach>
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  var remember_text = '';
+  $('.update_input').on('focus', function(e){
+    const item = $(e.currentTarget);
+    remember_text = item.val();
+  });
+  $('.update_input').on('blur', function(e){
+    const item = $(e.currentTarget);
+    id = item.attr('layer_id');
+    column = item.attr('column');
+    value = item.val();
+    if(remember_text==value){ return; }
+
+    var post_data = {};
+    post_data['id'] = id;
+    post_data[column] = value;
+    $.ajax({
+      method:'post',
+      dataType:'json',
+      url:"{:u($CONTROLLER_NAME.'/update')}",
+      data:post_data,
+      success: function(res){
+        bg_class = res.status ? 'bg-success' : 'bg-danger';
+        Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+      },
+    });
+  });
+
+  function delete_layer(id){
+    if(confirm('確定刪除?')){
+      location.href = "{:u($CONTROLLER_NAME.'/delete')}?id="+id;
+    }
+  }
+</script>

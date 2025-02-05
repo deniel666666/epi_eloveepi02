@@ -1,0 +1,228 @@
+<if condition="$acc[$right_edi] eq '1'">
+    <div class="btn_area document-mode-btn">
+
+        <if condition="$ACTION_NAME neq 'index'">
+            <a href="{:u($daoModel.'/index')}">
+                <input type="button" class="typeBtn addbtn btn " value="已發佈" />
+            </a>
+        </if>
+
+        <if condition="$ACTION_NAME neq 'trash'">
+            <a href="{:u($daoModel.'/trash')}">
+                <input type="button" class="typeBtn btn delate " value="垃圾桶" />
+            </a>
+        </if>
+
+        <if condition="$ACTION_NAME neq 'others'">
+            <a href="{:u($daoModel.'/others')}">
+                <input type="button" class="typeBtn btn sendbtn" value="暫停或未發佈" />
+            </a>
+        </if>
+    </div>
+</if>
+
+<label class="editmenu-open">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up"
+        viewBox="0 0 16 16">
+        <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+    </svg>
+    文章選單
+</label>
+<form action="{:u($daoModel.'/order')}" method="post" class="left-file-menu">
+    <div class="list_layer">
+        <div class="menu_controll">
+            <div style=" position: relative;">
+                <a class="open_btn" onclick="open_all()">全開</a>
+                <a class="close_btn" onclick="close_all()">全關</a>
+                <if condition="$acc[$right_new] eq '1'">
+                    <a href="{:u($daoModel.'/edit')}">新增</a>
+                </if>
+            </div>
+        </div>
+        
+        <div class="leftview">
+            <div class="upwards">
+                <foreach name="leftview" key="k_year" item="v_year">
+                    <div class="list_group">
+                        <div class="layer_1_tab mainMenu click{$k_year}" alt="s_{$k_year}">
+                            <a>{$k_year}年</a>
+                            <if condition="$v_year['need_read'] neq 0">
+                                <text class="read_ck text-danger font-weight-bold" id="file_not_read_{$k_year}">
+                                    {$v_year['need_read']}
+                                </text>
+                            </if>
+                        </div>
+                        <foreach name="leftview[$k_year]['month']" key="k_month" item="v_month">
+                            <ul class="s_{$k_year}">
+                                <li class="mainMenu click{$k_year}{$k_month}" alt="s_{$k_year}{$k_month}">
+                                    <div class="layer_2_tab">
+                                        <a>{$k_month}月
+                                            <if condition="$v_month['need_read'] neq 0">
+                                                <text class="read_ck text-danger font-weight-bold" id="file_not_read_{$k_year}{$k_month}">
+                                                    {$v_month['need_read']}
+                                                </text>
+                                            </if>
+                                        </a>
+                                    </div>
+                                </li>
+                                <foreach name="leftview[$k_year]['month'][$k_month]['file']" key="k" item="v">
+                                    <ul id="del_{$v['id']}" class="">
+                                        <li class="s_{$k_year}{$k_month}">
+                                            <div class="color_{$v.id} layer_3_tab">
+                                                <a class="file_click" year="{$k_year}" month="{$k_year}{$k_month}" fid="{$v.id}" style="padding:0" href="{:u($daoModel.'/read')}?id={$v.id}">
+                                                    <div class="text-white d-flex align-items-center">
+                                                        <text class="ellipsis d-inline-block" style="width: 90%;">
+                                                            {$v.type|date="d",###}日{$v.num|str_pad=3,"0",STR_PAD_LEFT} {$v['title']}
+                                                        </text>
+                                                        <if condition="$v['read_ck'] neq 0">
+                                                            <text class="read_ck text-danger font-weight-bold" id="file_not_read_{$v.id}">
+                                                                {$v['read_ck']}
+                                                            </text>
+                                                        </if>
+                                                    </div>
+                                                </a>
+                                                <if condition="$acc[$right_hid] eq '1'">
+                                                    <div href="#" class="item_setting opt_color_01">
+                                                        <div class="cog"><i class="fas fa-cog" aria-hidden="true"></i>
+                                                        </div>
+                                                        <div class="opt_group">
+                                                            
+                                                            <if condition="$acc[$right_hid] eq '1'">
+                                                                <input type="button" class="opt_btn del" value="" fid="{$v['id']}">
+                                                            </if>
+                                                        </div>
+                                                    </div>
+                                                </if>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </foreach>
+                            </ul>
+                        </foreach>
+                    </div>
+                </foreach>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+
+<script>
+    $(".editmenu-open").click(function (e) {
+        $(this).toggleClass('arrow');
+        $(".left-file-menu").toggleClass('on');
+    });
+    $(".close-below").click(function (e) {
+        $(".left-file-menu").removeClass('on');
+        $('.editmenu-open').removeClass('arrow');
+    });
+    $(".list_group a").click(function (e) {
+        $(".left-file-menu").removeClass('on');
+    });
+    $(".cog").click(function (e) {
+        if(!$(this).next('.opt_group').hasClass("open")){
+            $(this).next('.opt_group').addClass('open');
+        }else {
+            $(this).next('.opt_group').removeClass('open');
+        }
+    });
+    /*展開當前文章的年月*/
+    function load(){
+        // $( ".click" + {$file_click['year']}).click();
+        // $( ".click" + {$file_click['month']}).click();
+    }
+    
+    $('.mainMenu').click(function(){
+		var thisMenu = $(this).children('.glyphicon');
+		thisMenu.toggleClass('glyphicon-triangle-right');
+		thisMenu.toggleClass('glyphicon-triangle-bottom');
+		$('.' + $(this).attr('alt')).stop().slideToggle(300);
+	});
+	$(".opt_btn").click(function(){
+		id = $(this).attr("fid");
+		$.ajax({
+			method:'post',
+			data:{id:$(this).attr("fid")},
+            dataType:'json',
+			url:"{:U($daoModel.'/file_del')}",
+			success:function(res){
+                if(res.status==1){
+    				$("#del_"+id).html("");
+    				$("#del"+id).html("");
+                    location.href=document.location.href;
+                }else{
+                    Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+                }
+			}
+		});
+	});
+    $(".file_click").click(function(){
+		$.ajax({
+			method:'post',
+			data:{year:$(this).attr("year"),month:$(this).attr("month"),fid:$(this).attr("fid")},
+			url:"{:U($daoModel.'/file_click')}",
+			success:function(res){
+			}
+		});
+	});
+
+    function open_all(){
+        $('.list_group ul>li').slideDown();
+        $('.document .below .list_layer ul').slideDown(); 
+        localStorage.setItem('Datefiletemplate_mainMenu_close', '[]');
+    }
+    function close_all(){
+        $('.list_group ul>li').slideUp();
+        mainMenu = $('.mainMenu');
+        mainMenu_close = [];
+        for (var i = 0; i < mainMenu.length; i++) {
+            mainMenu_close.push($(mainMenu[i]).attr('alt'));
+        }
+        localStorage.setItem('Datefiletemplate_mainMenu_close', JSON.stringify(mainMenu_close));
+    }
+
+    /*紀錄選單開關*/
+        $('.left-file-menu .list_layer').on("scroll", function(e){
+            target = e.currentTarget;
+            localStorage.setItem('Datefiletemplate_mainMenu_scrollTop', $(target)[0].scrollTop);
+        });
+        $('.mainMenu').on('click', function(e){
+            target = e.currentTarget;
+            var target_id = $(target).attr('alt');
+            var mainMenu_close = localStorage.getItem('Datefiletemplate_mainMenu_close');
+            mainMenu_close = mainMenu_close ? JSON.parse(mainMenu_close) : [];
+            index = mainMenu_close.indexOf(target_id);
+            if( index==-1 ){ /*不存在關閉紀錄*/
+                mainMenu_close.push(target_id);
+            }
+            else{
+                mainMenu_close.splice(index, 1);
+            }
+
+            localStorage.setItem('Datefiletemplate_mainMenu_close', JSON.stringify(mainMenu_close));
+        });
+        $(document).ready(function(){
+            var mainMenu_close = localStorage.getItem('Datefiletemplate_mainMenu_close');
+            mainMenu_close = mainMenu_close ? JSON.parse(mainMenu_close) : [];
+            if(mainMenu_close.length>0){
+                for (var i = 0; i < mainMenu_close.length; i++) {
+                    $('[alt="'+mainMenu_close[i]+'"]').click();
+                }
+            }else{
+                window.onload=load;
+            }
+            localStorage.setItem('Datefiletemplate_mainMenu_close', JSON.stringify(mainMenu_close));
+
+            setTimeout(function(){
+                var mainMenu_scrollTop = localStorage.getItem('Datefiletemplate_mainMenu_scrollTop');
+                mainMenu_scrollTop = mainMenu_scrollTop ? mainMenu_scrollTop : '0';
+                $('.left-file-menu .list_layer')[0].scroll('0', mainMenu_scrollTop);
+            },300);
+
+            if("{$_GET['id']}"){
+                $(".color_"+ "{$_GET['id']}").css("background-color","green");
+            }
+        });
+</script>

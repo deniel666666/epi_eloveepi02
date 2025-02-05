@@ -1,0 +1,413 @@
+<fieldset class="filelist">
+    <div class="edit_form">
+        <table id="table_box" class="myFormTheme table edit_table mb-0" style="min-width: 1400px;">
+            <thead>
+                <tr class="gray not_sort">
+                    <th style="width: 7%;">選擇功能</th>
+                    <th style="width: 7%;">選擇部門</th>
+                    <th style="width: 6%;">人員</th>
+                    <th style="width: 20%;">行文紀錄</th>
+                    <th style="width: 6%;" class="text-right">績效(稅前)</th>
+                    <th style="width: 6%;" class="text-right">預估工時</th>
+                    <th style="width: 6%;" class="text-right">實際工時</th>
+                    <th >走期</th>
+                    <th style="width: 6%;">操作</th>
+                </tr>
+                <!--定義新增事件時-->
+            </thead>
+            <tbody class="fig_step">
+                <!--模組事件 或 排定事件-->
+                <foreach name="schedule" key="sckey" item="sc">
+                    <tr value="{$sckey+1}" {$sc['step_id']|compare_return=-1, 'style="opacity:0.5" class="not_sort"', ''}>
+                        <!-- 選擇功能 -->
+                        <td>
+                            <input type="hidden" name="row_ids[]" value="{$sc[row_id]}" />
+                            <select class="steps" name="steps[]" value="{$sc['step_id']}">
+                                <option value="-1">選擇功能</option>
+                                <foreach name="eve_role_steps" key="key" item="em">
+                                    <if condition="$em['name'] neq ''">
+                                        <if condition="$sc['step_id'] eq $em['id']">
+                                            <option value="{$em['id']}" selected>{$em['name']}</option>
+                                            <else />
+                                            <option value="{$em['id']}">{$em['name']}</option>
+                                        </if>
+                                    </if>
+                                </foreach>
+                            </select>
+                        </td>
+
+                        <!-- 選擇部門 -->
+                        <td>
+                            <select class="option" name="apart[]">
+                                <option value="">所有部門</option>
+                                <foreach name="eip_apart" key="key" item="em">
+                                    <option value="{$em['id']}">{$em['name']}</option>
+                                </foreach>
+                            </select>
+                        </td>
+
+                        <!-- 選擇人員 -->
+                        <td>
+                            <select class="code" href=".rx1" name="code[]">
+                                <foreach name="eip_user" key="key" item="em">
+                                    <if condition="$em[id] neq $top_adminid">
+                                        <if condition="$em['id'] eq $sc['code']">
+                                            <option value="{$em['id']}" selected>{$em['name']}</option>
+                                        <else />
+                                            <option value="{$em['id']}">{$em['name']}</option>
+                                        </if>
+                                    </if>
+                                </foreach>
+                            </select>
+                        </td>
+
+                        <!-- 輸入行文紀錄 -->
+                        <td>
+                            <input type="text" class="w100" name="work[]" value="{$sc['work']}" placeholder="輸入工作..."  />
+                        </td>
+
+                        <!-- 輸入績效(稅前) -->
+                        <td class="div_price">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">
+                                $<input class="eve_price change_sum text-right" type="text" name="price[]" value="{$sc[price]}" placeholder="0" />
+                            <else />
+                                <input class="eve_price change_sum text-right" type="hidden" name="price[]" value=""/>
+                            </if>
+                        </td>
+
+                        <!-- 預估工時 -->
+                        <td class="div_estimated_time">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">
+                                <input class="eve_estimated_time change_sum text-right" type="text" name="estimated_time[]" value="{$sc[estimated_time]}" placeholder="0" />天
+                            <else />
+                                <input class="eve_estimated_time change_sum text-right" type="hidden" name="estimated_time[]" value=""/>
+                            </if>
+                        </td>
+                        <!-- 實際工時 -->
+                        <td class="div_exact_time">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5">
+                                <input class="eve_exact_time change_sum text-right" type="text" name="exact_time[]" value="{$sc[exact_time]}" placeholder="0" />天
+                            <else />
+                                <input class="eve_exact_time change_sum text-right" type="hidden" name="exact_time[]" value=""/>
+                            </if>
+                        </td>
+
+                        <!-- 輸入走期 -->
+                        <td class="div_ans">
+                            <if condition="$sc['step_id'] eq 3 || $sc['step_id'] eq 5"> <!--如果是執行者才需要輸入時間+內外單-->
+                                <div>
+                                    <span  class="count_type_area">
+                                        <if condition="$sc['count_type'] eq ''">
+                                            <span>
+                                                <input id="count_type{$sckey+1}_1" class="count_type" 
+                                                       type="radio" name="count_type[{$sckey+1}]" value="1" checked>
+                                                <label for="count_type{$sckey+1}_1">外單</label>
+                                            </span>
+                                            <span>
+                                                <input id="count_type{$sckey+1}_0" class="count_type" 
+                                                       type="radio" name="count_type[{$sckey+1}]" value="0">
+                                                <label for="count_type{$sckey+1}_0">內單</label>
+                                            </span>
+                                        <else />
+                                            <span>
+                                                <input id="count_type{$sckey+1}_1" {$sc['count_type']|compare_return='1','checked'}
+                                                       type="radio" name="count_type[{$sckey+1}]" value="1" class="count_type">
+                                                <label for="count_type{$sckey+1}_1">外單</label>
+                                            </span>
+                                            <span>
+                                                <input id="count_type{$sckey+1}_0" {$sc['count_type']|compare_return='0','checked'}
+                                                       type="radio" name="count_type[{$sckey+1}]" value="0" class="count_type">
+                                                <label for="count_type{$sckey+1}_0">內單</label>
+                                            </span>
+                                        </if>
+                                    </span>
+
+                                    <if condition="$sc['start_time']">
+                                        <!--如果有開始時間-->
+                                        <if condition="$sc['start_time'] egt $sc['end_time']">
+                                            <input class="datetime" type="datetime-local"  name='sdate[]' value="{$sc['start_time']|date='Y-m-d',###}T{$sc['start_time']|date='H:i',###}" style="opacity: 0.2">
+                                        <else />
+                                            <input class="datetime" type="datetime-local"  name='sdate[]' value="{$sc['start_time']|date='Y-m-d',###}T{$sc['start_time']|date='H:i',###}">
+                                        </if>
+                                    <else />
+                                        <input class="datetime" type="datetime-local"  name='sdate[]' value="" style="opacity: 0.2">
+                                    </if>
+                                    ~
+                                    <if condition="$sc['end_time']">
+                                        <!--如果有結束時間-->
+                                        <if condition="$sc['start_time'] egt $sc['end_time']">
+                                            <input class="datetime" type="datetime-local"  name='edate[]' value="{$sc['end_time']|date='Y-m-d',###}T{$sc['end_time']|date='H:i',###}" style="opacity: 0.2">
+                                        <else />
+                                            <input class="datetime" type="datetime-local"  name='edate[]' value="{$sc['end_time']|date='Y-m-d',###}T{$sc['end_time']|date='H:i',###}">
+                                        </if>
+                                    <else />
+                                        <input class="datetime" type="datetime-local"  name='edate[]' value="" style="opacity: 0.2">
+                                    </if>
+
+                                    <input value="不排定時間" type="button" class="unset_btn addbtn">
+                                </div>
+                            <else />
+                                <input name='count_type[{$sckey+1}]' type='hidden' class='count_type' value='0' />
+                                <input name='sdate[]' type='hidden' value='' />
+                                <input name='edate[]' type='hidden' value='' />
+                            </if>
+                        </td>
+                        <!-- 操作 -->
+                        <td>
+                            <span class="btn btn-warning cursor_pointer pt-1 pb-1 mr-2 copy_step">複製</span>
+                            <input type="button" value="刪除" class="flow_del delate" />
+                        </td>
+                    </tr>
+                </foreach>
+            </tbody>
+            <tfooter>
+                <tr class="not_sort">
+                    <td colspan="4" class="text-right">加總：</td>
+                    <td class="text-right">$<span id="sum_eve_price"></span></td>
+                    <td class="text-right"><span id="sum_eve_estimated_time"></span>天</td>
+                    <td class="text-right"><span id="sum_eve_exact_time"></span>天</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tfooter>
+        </table>
+    </div>
+</fieldset>
+<!--http://yhhuang1966.blogspot.tw/2013/04/jquery-ui-timepicker.html-->
+<link href="__PUBLIC__/css/jquery-ui-timepicker-addon.css" rel="stylesheet"></link>
+<script src="__PUBLIC__/js/ui/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="__PUBLIC__/js/ui/jquery-ui-sliderAccess.js" type="text/javascript"></script>
+<script>
+    $(document).ready(function() {
+        $('.filelist #table_box').off();
+
+        var color = ["#1f497d", "#c0504d", "#9bbb59", "#8064a2", "#4bacc6", "#ffaa00", "#ff77ff"];
+        // 初始化每列顏色
+        $(".steps").each(function() {
+            set_color(this);
+        });
+
+        // var steps_count = Number('{$steps_count}')-1;
+        // alert(steps_count);
+
+        //部門改變
+        $('.filelist #table_box').on('change', '.option', function() {
+            get_depart_user(this)
+        });
+        $(document).ready(function(){
+            var option = $('.option');
+            for (var i = 0; i < option.length-1; i++) {
+                get_depart_user(option[i]);
+            }
+        });
+        function get_depart_user(item){
+           var my = $(item);
+            $.ajax({
+                type: 'POST',
+                data: {
+                    apartmentid: $(item).val(),
+                    ck: my.parents("tr").find(".code").val()
+                },
+                dataType:'text',
+                url: "{:U('Ajax/aj_getmean')}",
+                success: function(res) {
+                    if (res.trim() == '') {
+                        my.parents("tr").find(".code").html("<option>無</option>");
+                        my.parents("tr").find(".code").val('無');
+                    } else {
+                        my.parents("tr").find(".code").html(res);
+                    }
+                }
+            });
+        }
+
+        // 
+        $('.filelist #table_box').on('change', '.steps', function () {
+            set_color(this) /*腳色換色*/
+
+            if ($(this).val() == '-1') { // 設定階段人員成請選擇
+                remove_step(this);
+            } else {
+                /*所修改的是最後一列*/
+                if ($(this).parents('tr')[0]===$("#table_box tbody.fig_step tr:last-child")[0]) {
+                    /*多新增一列*/
+                    var steps_count_new = $("#table_box tbody.fig_step tr").length;
+                    var count_type_index_new = steps_count_new.toString() + '-' + Math.round(Math.random()*100000);
+                    $('#table_box').append(
+                        "<tr class='not_sort' style='opacity:0.5' value='" + count_type_index_new + "'>" + $(this).parents('tr').html() + "</tr>"
+                    );
+                    $(this).parents("tr").css("opacity", "1");
+                    $(this).parents("tr").next().find('.count_type').attr("name", 'count_type[' + (count_type_index_new) + ']');
+                }
+            }
+
+            var count_type_index = $(this).parents("tr").attr('value');
+            if ($(this).val()==3 || $(this).val()==5) {
+                $(this).parents("tr").find(".div_ans").html('\
+                    <div>\
+                        <span  class="count_type_area">\
+                            <span>\
+                                <input id="count_type' + count_type_index + '_1" class="count_type" \
+                                       type="radio" name="count_type[' + count_type_index + ']" value="1" checked>\
+                                <label for="count_type' + count_type_index + '_1">外單</label>\
+                            </span>\
+                            <span>\
+                                <input id="count_type' + count_type_index + '_0" class="count_type" \
+                                       type="radio" name="count_type[' + count_type_index + ']" value="0">\
+                                <label for="count_type' + count_type_index + '_0">內單</label>\
+                            </span>\
+                        </span>\
+                        <input class="datetime" type="datetime-local"  name="sdate[]" value="{$de_date}T09:00">\
+                        ~\
+                        <input class="datetime" type="datetime-local"  name="edate[]" value="{$de_date}T18:15">\
+                        <input value="不排定時間" type="button" class="unset_btn addbtn">\
+                    </div>\
+                ');
+                $(this).parents("tr").find(".div_price").html('$<input class="eve_price change_sum text-right" name="price[]" type="text" value="0"/>');
+                $(this).parents("tr").find(".div_estimated_time").html('<input class="eve_estimated_time change_sum text-right" name="estimated_time[]" type="text" value="0"/>天');
+                $(this).parents("tr").find(".div_exact_time").html('<input class="eve_exact_time change_sum text-right" name="exact_time[]" type="text" value="0"/>天');
+            }
+            else{
+                $(this).parents("tr").find(".div_ans").html("\
+                    <input name='count_type[" + count_type_index + "]' class='count_type' type='hidden' value='0' />\
+                    <input name='sdate[]' type='hidden' value='' />\
+                    <input name='edate[]' type='hidden' value='' />\
+                ");
+                $(this).parents("tr").find(".div_price").html('<input class="eve_price change_sum text-right" name="price[]" type="hidden" value=""/>');
+                $(this).parents("tr").find(".div_estimated_time").html('<input class="eve_estimated_time change_sum text-right" name="estimated_time[]" type="hidden" value="0"/>');
+                $(this).parents("tr").find(".div_exact_time").html('<input class="eve_exact_time change_sum text-right" name="exact_time[]" type="hidden" value="0"/>');
+            }
+
+            init_sum_eve_column_listener();
+        });
+        // 點擊複製
+        $('.filelist #table_box').on('click', '.copy_step', function() {
+            var copy_step = $('.copy_step');
+            var last_copy_step = copy_step[copy_step.length-1];
+            if(this!=last_copy_step){
+                var item = $(this).parents("tr");
+                // console.log(item)
+                var ori_count_type_index = item.attr('value');
+                // console.log(ori_count_type_index)
+                var steps_count = $("#table_box tbody.fig_step tr").length + 1;
+                var count_type_index = steps_count.toString() + '-' + Math.round(Math.random()*100000);
+
+                var new_html = item.prop('outerHTML');
+                new_html = new_html.replaceAll('count_type[' + ori_count_type_index + ']', 'count_type[' + count_type_index + ']');
+                new_html = new_html.replaceAll('count_type' + ori_count_type_index + '_1', 'count_type' + count_type_index + '_1');
+                new_html = new_html.replaceAll('count_type' + ori_count_type_index + '_0', 'count_type' + count_type_index + '_0');
+                // console.log(new_html)
+                new_html = $(new_html).attr('value', count_type_index);
+                $(item).after(new_html);
+
+                /*重設對應step的id*/
+                $('tr[value="'+count_type_index+'"]').find('[name="row_ids[]"]').val(0);
+
+                /*重設內外單設定*/
+                $(new_html).find('select.steps').val(item.find('select.steps').val());
+                $('tr[value="'+count_type_index+'"]').find('select[name="steps[]"]').val(item.find('select[name="steps[]"]').val());
+                $('tr[value="'+count_type_index+'"]').find('select[name="apart[]"]').val(item.find('select[name="apart[]"]').val());
+                $('tr[value="'+count_type_index+'"]').find('select[name="code[]"]').val(item.find('select[name="code[]"]').val());
+                var count_type_value = item.find('[name="count_type[' + ori_count_type_index + ']"]:checked').val();
+                $('tr[value="'+count_type_index+'"]').find('[name="count_type[' + count_type_index + ']"][value="'+count_type_value+'"]').prop('checked', true);
+                $('tr[value="'+count_type_index+'"]').find('input[name="sdate[]"]').val(item.find('input[name="sdate[]"]').val());
+                $('tr[value="'+count_type_index+'"]').find('input[name="edate[]"]').val(item.find('input[name="edate[]"]').val());
+
+                init_sum_eve_column_listener();
+            }
+        });
+        // 點擊刪除
+        $('.filelist #table_box').on('click', '.flow_del', function() {
+            var flow_del = $('.flow_del');
+            var last_flow_del = flow_del[flow_del.length-1];
+            if(this!=last_flow_del){
+                remove_step(this);
+            }
+        });
+        // 處理刪除事件步驟
+        function remove_step(item){
+            $(item).parents("tr").remove();
+        }
+
+        // 腳色上字色、背景色
+        function set_color(item) {
+            if($(item).val()!='-1'){
+                $(item).parents("tr").removeClass('not_sort');
+                $(item).parents("tr").css("background", color[$(item).val()]);
+                $(item).parents("tr").css("color","#fff");
+            }
+        }
+        // 監聽不排定時間事件
+        $('.filelist #table_box').on('click', '.unset_btn', function(e) {
+            var dt = new Date();
+            var time_s = dt.getFullYear().toString()+'-'+
+                         (dt.getMonth()+1).toString().padStart(2, "0")+'-'+
+                         dt.getDate().toString().padStart(2, "0")+'T'+
+                         // dt.getHours().toString().padStart(2, "0")+':'+
+                         // dt.getMinutes().toString().padStart(2, "0")
+                         '09:00'
+
+            // 讓結束時間比開始時間早一天
+            if(dt.getDate()-1 == 0){
+                e_date = dt.getDate();
+                if(dt.getMonth()==0){
+                    e_year = dt.getFullYear()-1
+                    e_month = dt.getMonth()+1
+                }else{
+                    e_year = dt.getFullYear()
+                    e_month = dt.getMonth()
+                }
+            }else{
+                e_year = dt.getFullYear()
+                e_month = dt.getMonth()+1
+                e_date = dt.getDate()-1
+            }
+            var time_e = e_year.toString()+'-'+
+                         e_month.toString().padStart(2, "0")+'-'+
+                         e_date.toString().padStart(2, "0")+'T'+
+                         '18:15'
+            console.log(time_e);
+            datetime = $($(e.target).parents('div')[0]).find('.datetime');
+            // $(datetime[0]).val(time_s);
+            $(datetime[0]).val("");
+            // $(datetime[1]).val(time_e);
+            $(datetime[1]).val("");
+            datetime.css('opacity',0.2);
+        });
+        $('input[class="datetime"]').on('change', function(e) {
+            $(this).css('opacity', 1);
+        });
+
+
+        $("#table_box tbody.fig_step").sortable({ /*允許拖拉排序*/
+            items: "tr:not(.not_sort)"
+        });
+    });
+</script>
+<script>
+    function sum_eve_column(){
+        let targets = ['eve_price', 'eve_estimated_time', 'eve_exact_time'];
+        for (var i = 0; i < targets.length; i++) {
+            let elements = $('.'+targets[i]);
+            let total = 0;
+            for (var x = 0; x < elements.length; x++) {
+                let text = $(elements[x]).val();
+                text = text.replaceAll('$', '').replaceAll('天', '');
+                text = Number(text);
+                if(text){ total += text; }
+            }
+            let sum_selector = '#sum_' + targets[i];
+            $(sum_selector).html(total);
+        }
+    }
+    function init_sum_eve_column_listener(){
+        $('.change_sum').off('blur');
+        $('.change_sum').on('blur', function(){
+            sum_eve_column();
+        });
+    }
+    $(document).ready(function(){
+        sum_eve_column();
+        init_sum_eve_column_listener()
+    });
+</script>

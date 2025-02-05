@@ -1,0 +1,180 @@
+
+<include file="Public:header2" />
+
+  <!-- Start document_template -->
+  <section class="main document">
+    <!-- 共用路徑 -->
+    <include file="Km:public_myfile_btn" />
+
+    <div class="below">
+      <!-- 共用階層列表 -->
+      <include file="Km:leftlist" />
+      <!-- END 共用階層列表 -->
+
+      <div class="right">
+        <div class="document_edit">
+          <div class="document-mode">
+            <form action="{:U('Km/trash', ['type'=>$fileCode])}" method="get">
+              <div class="d-flex flex-wrap">
+                <label for="">搜尋文章：</label>
+                <div class="search_bar" style="width:250px">
+                  <input class="text" type="text" name="title" value="{$_GET['title']}" placeholder="請輸入文章/階層標題或內容"
+                          style="width: 250px;">
+                  <input class="submit submit_button" type="submit" value="">
+                </div>
+              </div>
+            </form>
+
+            <include file="Km:public_file_location_btn"/>
+          </div>
+          <!-- //////////////////////////// 搜尋頁 ////////////////////////// -->
+          <form action="{:U('Km/file_action', ['type'=>$fileCode])}" method="post" id="del_form">
+            <table class="document_list table">
+              <tr>
+                <th style="width: 20px;">
+                  <input type="checkbox" class="click_all" />
+                </th>
+                <th class="document_head">主標題</th>
+                <th class="document_time">公告日期</th>
+                <th class="document_pub">發佈者</th>
+              </tr>
+              <foreach name="file" item="vo">
+                <tr id="del{$vo.id}">
+                  <td>
+                    <input class="click" type="checkbox" name="fid[]" value="{$vo.id}" />
+                  </td>
+                  <td>
+                    <a href="{:U('Km/trash_read', ['type'=>$fileCode])}?id={$vo.id}">
+                      {$vo.title}
+                    </a>
+                  </td>
+                  <td>{$vo.start_time|date="Y-m-d H:i",###}</td>
+                  <td>{$vo.name}</td>
+                  <!--<td>
+                <input type="button" class="action" fid="{$vo.id}" action="recovery" value="復原" />
+                <if condition="$vo['creater'] eq $_SESSION['userName']">
+                  <input type="button" class="action" fid="{$vo.id}" action="delete" value="刪除" />
+                </if>
+              </td>-->
+                </tr>
+              </foreach>
+            </table>
+            <select name="action">
+              <option>請選擇</option>
+              <option value="recovery">還原</option>
+              <if condition="$acc[$right_del] eq '1'">
+                <option value="delete">刪除</option>
+              </if>
+            </select>
+            <input type="submit" class="btn addbtn"  value="送出" />
+          </form>
+        </div>
+
+        <!-- 換頁按鈕 -->
+        <div class="page">
+          {$show}
+        </div>
+
+        <script>
+          // 離開頁面時是否檢確認離開
+          var check_renew = false;
+          
+          $(".click_all").click(function(){
+            if($('.click_all').prop('checked') == true){
+              $(".click").prop('checked',true);
+            }
+            else{
+              $(".click").prop('checked',false);
+            }
+          });
+
+            $('#del_form').submit(function(e){
+              // 檢查操作方式
+              if($('select[name="action"]').val()=='請選擇'){
+                alert("請選擇操作方式")
+                e.preventDefault();
+                return;
+              }
+
+              // 檢查勾選項目
+              select_item = 0;
+              var serialize_data = ($('#del_form').serializeArray());
+              for (var i = 0; i < serialize_data.length; i++) {
+                if(serialize_data[i]['name'] == "fid[]"){
+                  select_item = 1;
+                  break;
+                }
+              }
+              if(!select_item){
+                alert("請選文章")
+                e.preventDefault();
+                return;
+              }
+
+              // 確認操作
+              if(!confirm('確定操作？')){
+                e.preventDefault();
+                return;
+              }
+            })
+
+            $( document ).ready(function() {
+
+              // 使用搜尋
+            $('input.submit_button').on('click', function(e){
+              var title = $('input[name="title"]').val();
+              url = "{:U('Km/trash', ['type'=>$fileCode])}?title="+title;
+              history.pushState({}, "", url);
+              $.ajax({
+                method:'get',
+                dataType:'text',
+                url:url,
+                success:function(res){
+                  ajax_change_right(res) //定義在Km/js.html
+                }
+              });
+              e.preventDefault();
+            })
+            
+              // 點擊文章連結 || 分頁連結
+              $('.document_list a, .page a').on('click', function(e){
+                  url = $(e.currentTarget).attr('href');
+                  if(url !='' && url !='#' && url != 'javascript:void(0)'){
+                    history.pushState({}, "", url);
+                    $.ajax({
+                      method:'get',
+                      dataType:'text',
+                      url:url,
+                      success:function(res){
+                        ajax_change_right(res) //定義在Km/js.html
+                      }
+                    });
+                  }
+                  e.preventDefault();
+              })
+
+              //修改路徑
+              if($('.breadcrumbs_add').length>0){
+                $('.breadcrumbs_add a').html('垃圾桶');
+              }else{
+                $('.breadcrumbs').append(`
+                  <li class="breadcrumbs_add"><a class="Km_auto_no pathBtn" href="{:U('Km/trash', ['type'=>$fileCode])}">垃圾桶</a></li>
+                `);
+              }
+            // $('#mainPath').html(`
+            // 	<span>></span><a class="Km_auto_no pathBtn" href="{:U('Km/trash', ['type'=>$fileCode])}">垃圾桶</a>
+            // `)
+            // $('#secondPath').html(``)
+            // $('#thirdPath').html(``)
+
+            //調整狀態按鈕
+            $('.on_btn').show();
+            $('.trash_btn').hide();
+            $('.others_btn').show();
+          })
+        </script>
+        <include file="Km:js" />
+      </div right_end>
+    
+    </div>
+  </section>

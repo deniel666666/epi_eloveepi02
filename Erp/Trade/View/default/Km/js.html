@@ -1,0 +1,101 @@
+<script>
+  function ajax_change_right(res){
+    // console.log(res)
+    var start_point = '<div class="right">';
+    var end_point = '</div right_end>';
+    s_index = res.search(start_point);
+    e_index = res.search(end_point);
+    e_index = res.indexOf(end_point, e_index+100); // 找下一個end_point
+    if(e_index==-1){ e_index=res.length; }
+    // console.log(s_index+'~'+e_index)
+    // console.log(res.slice(s_index+start_point.length, e_index))
+    res = res.slice(s_index+start_point.length, e_index);
+    $('.document .right').html(res);
+    
+    // 關閉手機選單
+    $(".left-file-menu").removeClass('on');
+    $('.editmenu-open').removeClass('arrow');
+    
+    localStorage.setItem('Km_auto', 'yes');
+  }
+
+  function clean_not_read(url){
+    // console.log(url);return;
+    if(url.match('read')){
+      let file_id = url.split('?id=');
+      file_id = file_id.length == 2 ? file_id[1] : '';
+      if(file_id){
+        let not_read = $('#file_not_read_'+file_id);
+        if(not_read.length>0){
+          /*清文章*/
+          not_read.remove();
+
+          /*清右上選單*/
+          let top_right_not_read = $('ul.menu li a.active .read_ck');
+          if(top_right_not_read.length>0){
+            let top_right_not_read_num = Number(top_right_not_read.html().trim()) - 1;
+            if(top_right_not_read_num<=0){
+              top_right_not_read.remove();
+            }else{
+              top_right_not_read.html(top_right_not_read_num);
+            }
+          }
+
+          /*清頂層選單*/
+          let top_not_reads = $('ul.dropdown-menu li a');
+          for (var i = 0; i < top_not_reads.length; i++) {
+            let type = $(top_not_reads[i]).attr('href').split('/').pop().split('.html')[0];
+
+            if("{$fileCode}"==type){
+              let top_not_read = $(top_not_reads[i]).find('.read_ck');
+              if(top_not_read.length>0){
+                let top_not_read_num = Number(top_not_read.html().trim()) - 1;
+                if(top_not_read_num<=0){
+                  top_not_read.remove();
+                }else{
+                  top_not_read.html(top_not_read_num);
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  $( document ).ready(function() {
+    $('.list_layer a:not(".adj_order_btn, .close_btn, .open_btn, .del, .article_sort_btn")').off('click');
+    $('a.typeBtn, a.pathBtn').off('click');
+    $('a.Km_auto_no').off('click');
+
+    // 點擊選單內連結，點擊已發佈、垃圾桶、暫停或未發佈，麵包屑
+    $('.list_layer a:not(".adj_order_btn, .close_btn, .open_btn, .del, .article_sort_btn"), a.typeBtn, a.pathBtn').on('click', function(e){
+      url = $(e.currentTarget).attr('href');
+      if(url !='' && url !='#' && url != 'javascript:void(0)'){
+        if($('#edit_section_title').length>0){ //如果是在新增/編輯文張章頁面
+          if(!confirm("確定離開當前頁面嗎？\n系統可能不會儲存您所做的變更。")){
+            e.preventDefault();
+            return;
+          }
+        }
+        history.pushState({}, "", url);
+        clean_not_read(url);
+        $.ajax({
+          method:'get',
+          dataType:'text',
+          url:url,
+          success:function(res){
+            ajax_change_right(res) //定義在Km/js.html
+          }
+        });
+      }
+      e.preventDefault();
+    })
+
+    // 點擊上方文章目錄、共用文件
+    $('a.Km_auto_no').on('click', function(e){
+      localStorage.setItem('Km_auto', 'no');
+    })
+  });
+</script>

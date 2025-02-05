@@ -1,0 +1,399 @@
+<include file="Public:header2" />
+
+<section class="main document">
+	<div class="below">
+		<label class="editmenu-open">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up"
+				viewBox="0 0 16 16">
+				<path fill-rule="evenodd"
+					d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+			</svg>
+			職稱&部門管理選單
+		</label>
+
+		<!-- 共用階層列表 -->
+		<include file="Jobs:job_menu" />
+		<!-- END 共用階層列表 -->
+
+		<div class="right">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-6 col-12">
+						<div class="document_edit">
+							<div class="apart">
+								<form id="reset">
+									<div class="jobs_op"> 新增職稱
+										<input type="text" class="input" value="" id="addjob" name="addjob">
+										<input value="確定" type="button" id="addbtn_job" />
+									</div>
+								</form>
+								<div class="jobs_content">
+									<form action="{:U('Jobs/deljobs')}" method="post" id="part_form">
+										<table id="joblist">
+											<foreach name="joblist" item="one">
+												<tr>
+													<td>
+														<input type="checkbox" name="jobs_id[]" value="{$one.id}" class="jobs" />
+														<a href="javascript:job_editer({$one.id})">
+															<span class="apartname" id="job_name_{$one.id}">{$one.name}</span>
+														</a>
+													</td>
+												</tr>
+											</foreach>
+										</table>
+										<div class="apart_send">
+											<input type="checkbox" id="checkall" class="alljobs" name="alljobs" />
+											<label for="checkall" class="ml-2"> 選擇全部</label>
+											<input type="submit" class="delate btn d-inline" value="刪除" />
+											<br>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-12">
+						<div class="document_edit">
+							<div class="apart">
+								<form id="reset">
+									<div class="apart_op"> 新增部門
+										<input type="text" class="input" value="" id="addapart" name="addapart">
+										<input value="確定" type="button" id="addbtn" />
+									</div>
+								</form>
+								<div class="apart_content">
+									<form action="{:U('Jobs/delaparts')}" method="post" id="part_form">
+										<table id="apartlist">
+											<foreach name="apartlist" item="one">
+												<tr>
+													<td>
+														<input type="checkbox" name="apart_id[]" value="{$one.id}" class="aparts" />
+														<a href="javascript:apart_editer({$one.id})">
+															<span class="apartname">
+																<span id="apart_name_{$one.id}" boss_id="{$one.boss_id}">{$one.name}</span>
+																(<span id="apart_boss_{$one.id}">{$eip_user[$one["boss_id"]]["rname"]}</span>)
+															</span>
+														</a>
+													</td>
+												</tr>
+											</foreach>
+
+										</table>
+										<div class="apart_send">
+											<input type="checkbox" id="checkall_aparts" class="allaparts" name="allaparts" />
+											<label for="checkall_aparts" class="ml-2"> 選擇全部</label>
+											<input type="submit" class="btn delate d-inline" value="刪除" />
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<a id="job_editer" class="d-none" data-toggle="modal" data-target="#job_editer_modal">編輯職稱</a>
+<!-- 跳出視窗：會員登入 -->
+<div class="modal fade" id="job_editer_modal" tabindex="-1" role="dialog"
+    aria-labelledby="job_editer_modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="job_editer_modalTitle">編輯職稱</h5>
+            </div>
+            <div class="modal-body">
+            	<div class="right_cont">
+					<form id="job_editer_form">
+						<ul>
+							<li>
+								<input type="hidden" id="job_editer_id" name="id" value="" />
+								職稱名稱:<input type="text" id="job_editer_name" name="name" value="" />
+							</li>
+							<li>
+								<input type="submit" class="btn addbtn" />
+							</li>
+						</ul>
+					</form>
+				</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a id="apart_editer" class="d-none" data-toggle="modal" data-target="#apart_editer_modal">編輯部門</a>
+<!-- 跳出視窗：會員登入 -->
+<div class="modal fade" id="apart_editer_modal" tabindex="-1" role="dialog"
+    aria-labelledby="apart_editer_modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="apart_editer_modalTitle">編輯部門</h5>
+            </div>
+            <div class="modal-body">
+            	<div class="right_cont">
+					<form id="apart_editer_form">
+						<ul>
+							<li class="mb-2">
+								<input type="hidden" id="apart_editer_id" name="id" value="" />
+								編輯部門:<input type="text" id="apart_editer_name" name="name" value="" />
+							</li>
+							<li class="mb-2">
+								部門主管:
+								<select id="boss_id" name="boss_id">
+								</select>
+							</li>
+							<if condition="in_array(137, $use_function_top)">
+								<li class="mb-2">指定該部門核假:
+									<select id="rest_examine" name="rest_examine" class="rest_examine">
+										<option value="0">關閉</option>
+										<option value="1">啟動</option>
+									</select>
+								</li>
+							</if>
+							<if condition="in_array(106, $use_function_top)">
+								<li class="mb-2">追蹤績效：
+									<select id="is_kpi" name="is_kpi" class="is_kpi">
+										<option value="0">關閉</option>
+										<option value="1">啟動</option>
+									</select>
+								</li>
+							</if>
+							<li>
+								<input type="submit" class="btn addbtn" />
+							</li>
+						</ul>
+					</form>
+				</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<include file="Public:footer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js"></script>
+<script language="javascript">
+	// 左選單
+	$(".editmenu-open").click(function (e) {
+		$(this).toggleClass('arrow');
+		$(".left-file-menu").toggleClass('on');
+	});
+
+	$(".close-below").click(function (e) {
+		$(".left-file-menu").removeClass('on');
+		$('.editmenu-open').removeClass('arrow');
+	});
+
+	$(function(){
+		String.prototype.Trim = function() { 
+			return this.replace(/(^\s*)|(\s*$)/g, ""); 
+		}
+
+		function delHtmlTag(str)		
+		{
+			return str.replace(/<[^>]+>/g,"");//去掉所有的html标记	
+		}
+
+		/*新增---------*/
+		$('#addbtn_job').click(function(){
+			var name = delHtmlTag($('#addjob').val()).Trim();
+			if(name==''){
+				Vue.toasted.show('請填寫職稱名稱', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+				return false;
+			}
+
+			var that = this;
+			$(this).next().show();
+			
+			var obj = new Object();
+			obj.aname=name;
+			
+			$.ajax({
+				type:'GET',
+				dataType:'json',
+				url:"{:U('Jobs/addjob')}",
+				data:obj,
+				success:function(e){
+					bg_class = e.status==1 ? 'bg-success' : 'bg-danger';
+					Vue.toasted.show(e.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+					
+					if(e.status==1){
+						document.getElementById("reset").reset();
+						var li ='<tr>\
+									<td>\
+										<input type="checkbox" name="jobs_id[]" value="'+e.info.trim()+'" class="jobs" />\
+										<a href="javascript:job_editer('+e.info.trim()+')">\
+											<span class="apartname" id="job_name_'+e.info.trim()+'">'+name+'</span>\
+										</a>\
+									</td>\
+								</tr>';
+						$('#joblist').append(li);
+						$(that).next().hide();
+					}
+				}
+			})
+		});
+		$('#addbtn').click(function(){
+			var name = delHtmlTag($('#addapart').val()).Trim();
+			if(name==''){
+				Vue.toasted.show('請填寫部門名稱', { duration: 1500, className: ["toasted-primary", 'bg-danger'] });
+				return false;
+			}
+
+			var that = this;
+			$(this).next().show();
+			var obj = new Object();
+			obj.aname=name;
+			$.ajax({
+				type:'GET',
+				dataType:'json',
+				url:"{:U('Jobs/addapart')}",
+				data:obj,
+				success:function(e){
+					bg_class = e.status==1 ? 'bg-success' : 'bg-danger';
+					Vue.toasted.show(e.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+
+					if(e.status==1){
+						document.getElementById("reset").reset();
+						var li ='<tr>\
+									<td>\
+										<input type="checkbox" name="apart_id[]" value="'+e.info.trim()+'" class="apart" />\
+										<a href="javascript:apart_editer('+e.info.trim()+')">\
+											<span class="apartname">\
+												<span id="apart_name_'+e.info.trim()+'" boss_id="0">'+name+'</span>\
+												(<span id="apart_boss_'+e.info.trim()+'">無</span>)\
+											</span>\
+										</a>\
+									</td>\
+								</tr>';
+						$('#apartlist').append(li);
+						$(that).next().hide();
+					}
+				}
+			})
+		});
+
+		/*全選---------*/
+		$('.alljobs').click(function(){
+			if($(this).attr('checked')){
+				$('.jobs').attr('checked',true);	
+			}else{
+				$('.jobs').attr('checked',false);	
+			}
+		});
+		$('.allaparts').click(function(){
+			if($(this).attr('checked')){
+			$('.aparts').attr('checked',true);
+			}else{
+				$('.aparts').attr('checked',false);
+			}
+		})
+	});
+
+	function job_editer(id){
+		$('#job_editer_id').val(id);
+		var name = $('#job_name_'+id).html();
+		$('#job_editer_name').val(name);
+		$('#job_editer').click();
+	}
+	$('#job_editer_form').on('submit', function(e){
+		e.preventDefault();
+		var id = $('#job_editer_id').val();
+		var name = $('#job_editer_name').val();
+		$.ajax({
+			method: 'POST',
+			dataType:'json',
+			url: "{:u('Jobs/job_do_editer')}",
+			data:{
+				id: id,
+				name: name,
+			},
+			success: function(e){
+				bg_class = e.status==1 ? 'bg-success' : 'bg-danger';
+				Vue.toasted.show(e.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+				if(e.status==1){
+					$('#job_name_'+id).html(name);
+					$('#job_editer_modal').modal('hide');
+				}
+			},
+		})
+	});
+
+	function apart_editer(id){
+		$('#apart_editer_id').val(id);
+		var name = $('#apart_name_'+id).html();
+		var boss_id = $('#apart_name_'+id).attr('boss_id');
+		$('#apart_editer_name').val(name);
+
+		$.ajax({
+			method: 'GET',
+			dataType:'json',
+			url: "{:u('Jobs/get_edit_apart')}?id="+id,
+			success: function(e){
+				console.log(e);
+
+				var options = '<option value="0">無</option>';
+				for (var i = 0; i < e.eip_user.length; i++) {
+					options += '<option value="'+e.eip_user[i].id+'"';
+					if(e.eip_user[i].id==boss_id){
+						options += ' selected ';
+					}
+					options += '>'+e.eip_user[i].name+'</option>'
+				}
+				$('#boss_id').html(options);
+
+				if(e.my_apart.rest_examine=="1"){
+					$('#rest_examine option:last-child').prop('selected', true);
+				}else{
+					$('#rest_examine option:first-child').prop('selected', true);
+				}
+				if(e.my_apart.is_kpi=="1"){
+					$('#is_kpi option:last-child').prop('selected', true);
+				}else{
+					$('#is_kpi option:first-child').prop('selected', true);
+				}
+				
+				$('#apart_editer').click();
+			}
+		})
+	}
+	$('#apart_editer_form').on('submit', function(e){
+		e.preventDefault();
+		var id = $('#apart_editer_id').val();
+		var name = $('#apart_editer_name').val();
+		var boss_id = $('#boss_id').val();
+		var boss_name = $('#boss_id option:selected').html();
+		var rest_examine = $('#rest_examine').val();
+		var is_kpi = $('#is_kpi').val();
+		$.ajax({
+			method: 'POST',
+			dataType:'json',
+			url: "{:u('Jobs/apart_do_editer')}",
+			data:{
+				id: id,
+				name: name,
+				boss_id: boss_id,
+				rest_examine: rest_examine,
+				is_kpi: is_kpi,
+			},
+			success: function(e){
+				bg_class = e.status==1 ? 'bg-success' : 'bg-danger';
+				Vue.toasted.show(e.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+				if(e.status==1){
+					$('#apart_name_'+id).html(name);
+					$('#apart_boss_'+id).html(boss_name);
+					$('#apart_name_'+id).attr('boss_id', boss_id);
+					$('#apart_editer_modal').modal('hide');
+				}
+			},
+		})
+	});
+</script>																																																												

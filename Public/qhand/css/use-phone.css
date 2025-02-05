@@ -1,0 +1,353 @@
+/* ------------ */
+@media (min-width: 1025px) {
+
+	header .top{
+		height: 100px;
+	}
+	header .bottom{
+		width: 100%;
+	    -ms-flex-pack: justify!important;
+	    justify-content: space-between!important;
+	    display: -ms-flexbox!important;
+	    display: flex!important;
+	}
+	header .bottom .scroll_box{
+	    display: initial;
+	    max-width: initial;
+	    float: initial;
+	    vertical-align: initial;
+	    box-sizing: initial;
+	    position: initial;
+	    padding-right: initial;
+	}
+
+}
+button.btn-dark.active{
+    background-color: #35b6df!important;
+    border-color: #35b6df!important;
+}
+.btn-secondary:not(:disabled):not(.disabled).active{
+	/* background-color: #20282c;
+    border-color: #20282c; */
+    background-color: #35b6df;
+    border-color: #35b6df;
+}
+.btn-group>.btn-group:not(:last-child)>.btn, .btn-group>.btn:not(:last-child):not(.dropdown-toggle),
+.btn-group>.btn-group:not(:first-child)>.btn, .btn-group>.btn:not(:first-child){
+    border-radius: 0px;
+}
+
+
+/* ------------ */
+
+.container{
+    max-width: initial!important;
+}
+.use-container{
+    width: 100%;
+    padding-right: 10px;
+    padding-left: 10px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#use-index .right .container .calendar_box .top .left_col{
+	padding-left:15px; 
+	padding-right:15px; 
+}
+/* ---------部分頁面--------- */
+/* section.main {
+    width: 100%;
+    display: flex;
+} */
+/* ---------部分頁面--------- */
+
+section.main ,.document{
+	display: block;
+}
+
+/* section#use-index{
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+} */
+
+@media (min-width: 1025px) {
+	.d-block-ipad{
+		display: none;
+	}
+}
+
+
+@media (max-width: 1024px) {
+	header#header .bottom{
+		display: none;
+	}
+	body{
+		overflow-x: hidden;
+
+	}
+	.d-none-ipad{
+		display: none !important;
+	}
+	.main{
+		padding-top: .25rem;
+	}
+
+	.main .right .container .right_col{
+		padding: 0px !important;
+	}
+	.main .right .container{
+		padding: 0px;
+		margin-bottom: 0px;
+	}
+	.main .right .container .topic_box{
+		margin-bottom: 0px;
+	    border: none;
+	}
+	.dvmain font{
+		font-size: 12px;
+	}
+	.container{
+		min-height: inherit;
+	}
+
+/* 	#form-d-none-ipad form{
+		display: none;
+	}
+	#form-d-none-ipad table tr td:not(:first-child){
+		display: none;
+	} */
+
+	.main .right .container .calendar_box .top .left_col,
+	.main .right .container .calendar_box .top .right_col{
+		    height: initial;
+	}
+	/* ----------------------------------------------- */
+	#crmIntro .row.introBox{
+	    margin-right: -5px;
+	    margin-left: -5px;
+	}
+	#crmIntro .row.introBox .col-form-label{
+		color: #777;
+	}
+	#crmIntro .introBox .col-6,#crmIntro .introBox .col-12{
+	    padding-right: 5px;
+	    padding-left: 5px;
+	}
+
+	#crmIntro .col-form-label{
+		font-size: .875rem;
+	    color: #343a40;
+	    padding-bottom: .25rem;
+	    padding-top: 0px;
+
+	}
+	#crmIntro a {
+		text-decoration: none;
+	}
+
+	#crmIntro .form-control{
+		border-radius: 0px;
+	    padding: .25rem .25rem;
+	    font-size: .85rem;
+	}
+	#crmIntro .introBox .form-group{
+		margin-bottom: .25rem;
+	}
+
+	#crmIntro tbody tr td:first-child,#crmIntro tbody tr td:nth-child(3){
+	    text-align: center;
+	    vertical-align:middle
+	}
+	#crmIntro tbody tr td{
+		color: #777;
+	}
+	#crmIntro th,#crmIntro td{
+		padding: .25rem;
+	}
+	#crmIntro thead th,#crmIntro thead td{
+	    text-align: center;
+	    vertical-align:middle
+	}
+	#crmIntro .table .thead-dark th{
+	    background-color: #C5ECFF;
+	    border-color:#C5ECFF ;
+	    color: #343a40;
+	}
+	#crmIntro button.modify{
+	    background-color: #0092c1;
+	    border-color: #0092c1;
+	    border-radius: 0px;
+	    padding: .25rem;
+	}
+	#crmIntro .table-striped tbody tr:nth-of-type(odd){
+		background-color: initial;
+	}
+	#crmIntro .table-striped tbody tr.smevtColor{
+	    /* background: #edf4ff; */
+	    background: #f2fbde;
+	}
+	#crmIntro .table-striped tbody tr.otherColor{
+	    background: #f0f0f0!important;
+	}
+
+	#crmIntro .table-striped tbody tr.expired{
+	    background: #ffe3de!important;
+	}
+	#crmIntro tbody tr.smevtColor td{
+		/* color: #0092c1; */
+		color: #77933c;
+	}
+	#crmIntro tbody tr.otherColor td{
+		color: #333!important;
+	}
+
+	#crmIntro tbody tr.expired td{
+		color: #ff4c47!important;
+	}
+	span.colorBox{
+		display: inline-block;
+		width: .85rem;
+		height: .85rem;
+		margin-right: 5px;
+	}
+	span.expired{
+		background-color: #ffe3de;
+	}
+
+	/* ///////// */
+	button.btn-secondary{
+		font-size: 12px;
+		padding: 5px;
+	}
+
+	#crmIntro .table-striped tbody tr.today{
+	    background: #e6f3ff!important;
+	}
+	#crmIntro tbody tr.today td{
+		color: #4eb0e0!important;
+	}
+	span.today{
+		background-color: #e6f3ff;
+	}
+
+	/* ///////// */
+
+	span.smevtColor{
+		/* background-color: #edf4ff; */
+		background: #f2fbde;
+	}
+	span.otherColor{
+		background-color: #f0f0f0;
+	}
+
+	table#table td, table#table th{
+		padding: 5px;
+		font-size: .85rem;
+		
+	}
+	table#table tbody tr:hover {
+	    background: #343a40;
+	    color: #fff;
+	    cursor: pointer;
+	}
+	table#table thead tr:hover {
+	    background: initial;
+	    color: initial;
+	}
+	table tr:hover {
+	    background: inherit;
+	}
+
+	tbody.eventBox tr:hover {
+	    background: #C5ECFF !important;
+	    cursor: pointer;
+	}
+
+	footer{
+		 padding: .5rem;
+		 background: #ededed;
+		 text-align: center;
+	}
+	footer ul{
+		margin: 0px;
+	}
+	footer ul li ,footer ul li a{
+		font-size: .85rem;
+		line-height: 1.15rem;
+		display: inline-block;
+	}
+
+	.btn-secondary{
+	    cursor: pointer;
+
+	}
+}
+/* dncalendar start */
+.dncalendar-header .dncalendar-links .dncalendar-prev-month{
+	left: 0px;
+}
+.dncalendar-header .dncalendar-links .dncalendar-next-month{
+	right: 0px;
+}
+
+.dncalendar-body table td.calendarClick.default-date .entry{
+	color: red ;
+}
+.dncalendar-body tbody td .entry:after{
+	display: none;
+}
+
+
+.dncalendar-note-list{
+	display: none;
+}
+
+#calendarClick span.event{
+	color: #0d7fcc;
+}
+/* dncalendar end */
+
+
+
+@media (min-width: 576px) {
+}
+
+@media (min-width: 768px) {
+}
+
+@media (min-width: 991px) {
+}
+
+@media (max-width: 1199px) {
+}
+@media screen and (min-width: 576px) and (max-width: 991px) {}
+@media screen and (min-width: 768px) and (max-width: 1199px) {}
+@media (max-width: 1140px) {
+}
+@media (max-width: 991px) {
+}
+@media (max-width: 767px) {
+}
+
+@media (max-width: 576px) {
+}
+
+@media (max-width: 414px) {
+}
+
+/* ////////////// */
+th{
+	text-align: center;
+}
+section.main.main_box{
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+}
+/* ////////////// */

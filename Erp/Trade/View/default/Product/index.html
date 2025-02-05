@@ -1,0 +1,519 @@
+<include file="Public:header2" />
+<head>
+  <style type="text/css">
+    table input[type="text"]{
+      width: 100%;
+    }
+  </style>
+</head>
+
+<section class="main mb-4" id="vm_table">
+  <div class="d-flex justify-content-between">
+    <a href="###" data-toggle="modal" data-target="#crm_cum_cat_unit_category" class="btn btn-primary mb-2 mt-4">分類設定</a>
+    
+    <if condition="$current_position=='列表'">
+      <if condition="$access[$access_controller.'_hid']">
+        <a href="{:u($CONTROLLER_NAME.'/trash')}" class="btn delate mb-2 mt-4">垃圾桶</a>
+      </if>
+    </if>
+    <if condition="$current_position=='垃圾桶'">
+      <a href="{:u($CONTROLLER_NAME.'/index')}" class="btn sendbtn mb-2 mt-4">列表</a>
+    </if>
+  </div>
+  <div class="d-flex justify-content-between">
+    <div>
+      <select v-model="search_category_id">
+        <option value="-1">全部</option>
+        <option value="0">無</option>
+        <option v-for="category in categorys" :value="category.id" v-text="category.name"></option>
+      </select>
+      <input type="text" v-model="searchKeyword" placeholder="請輸入商品代號/品名/規格" style="width:250px;">
+      <a href="javascript:get_cat_unit()" class="btn addbtn">搜尋</a>
+    </div>
+    <div class="page">
+      <div>
+        <a v-if="currentPage-1 > 0" href="###" @click="change_page(currentPage-1)" class="prev">上頁</a>
+        <sapn v-for="page in pages">
+          <a v-if="page != currentPage" href="###" class="num" v-text="page" @click="change_page(page)"></a>
+          <span v-if="page == currentPage" class="current" v-text="page"></span>
+        </sapn>
+        <a v-if="currentPage+1 <= totalPage" href="###" @click="change_page(currentPage+1)" class="next">下頁</a>
+      </div>
+    </div>
+  </div>
+  <p class="text-danger">可隨時修改，但除了會計名稱外，其餘資料不會連動至已套用合約</p>
+  <form action="{:u($CONTROLLER_NAME.'/patchupdate')}" method="post" enctype="multipart/form-data">
+    <div class="edit_form">
+      <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 1180px;">
+        <thead class="edit_table_thead">
+          <tr class="edit_table tr ">
+            <th style="width: 70px">
+              <input id="ck_all" type="checkbox" class="click_all" name="click_all">
+              <label class="mb-0" for="ck_all">項次</label>
+            </th>
+            <if condition="(in_array(132, $use_function_top) && $get_or_pay==0) || (in_array(138, $use_function_top) && $get_or_pay==1)">
+              <th style="width: 200px">會計名稱</th>
+            </if>
+            <th style="width: 100px">分類</th>
+            <th v-for="column in columns"
+                :class="['list_price', 'sale_price', 'profit', 'orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                v-text="column.name"
+            ></th>
+            <th style="width: 70px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 新增 -->
+          <if condition="$access[$access_controller.'_new'] eq '1' && $current_position=='列表'">
+            <tr>
+              <td class="text-right">新增：</td>
+              <if condition="(in_array(132, $use_function_top) && $get_or_pay==0) || (in_array(138, $use_function_top) && $get_or_pay==1)">
+                <td>
+                  <select v-model="new_unit.accountant_id">
+                    <option value="0">無</option>
+                    <option v-for="layer in layer_sub" :value="layer.id" v-text="layer.top_name+' - '+layer.name"></option>
+                  </select>
+                </td>
+              </if>
+              <td>
+                <select v-model="new_unit.category_id">
+                  <option value="0">無</option>
+                  <option v-for="category in categorys" :value="category.id" v-text="category.name"></option>
+                </select>
+              </td>
+              <td v-for="column in columns">
+                <input type="text" 
+                     :class="['list_price', 'sale_price', 'profit', 'orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                     v-model="new_unit[column.key]">
+              </td>
+              <td>
+                <a href="###" class="btn addbtn" @click="add_unit()"/>送出</a>
+              </td>
+            </tr>
+          </if>
+          <tr v-for="(item,key) in units">
+            <td>
+              <input :id="'ck_'+item.id" type="checkbox" class="groups" name="ids[]" :value="item.id">
+              <label :for="'ck_'+item.id" v-text="(currentPage-1)*countOfPage + key+1"></label>
+            </td>
+            <if condition="(in_array(132, $use_function_top) && $get_or_pay==0) || (in_array(138, $use_function_top) && $get_or_pay==1)">
+              <td>
+                <select v-model="item.accountant_id" @change="update_unit('accountant_id', item.id, key)">
+                  <option value="0">無</option>
+                  <option v-for="layer in layer_sub" :value="layer.id" v-text="layer.top_name+' - '+layer.name"></option>
+                </select>
+              </td>
+            </if>
+            <td>
+              <select v-model="item.category_id" @change="update_unit('category_id', item.id, key)">
+                <option value="0">無</option>
+                <option v-for="category in categorys" :value="category.id" v-text="category.name"></option>
+              </select>
+            </td>
+            <td v-for="column in columns"
+              :class="['list_price', 'sale_price', 'profit', 'orders'].indexOf(column.key)!=-1 ? 'text-right' : ''">
+              <if condition="$access[$access_controller.'_edi'] eq '1' && $current_position=='列表'">
+                <!-- 可編輯 -->
+                <input type="text" v-model="item[column.key]"
+                  :id="'input_'+column.key+'_'+item.id"
+                  :class="['list_price', 'sale_price', 'profit', 'orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                  @focus="save_ori_data(column.key, item.id)" 
+                  @keyup.esc="reset_data(column.key, item.id, key)"
+                  @blur="update_unit(column.key, item.id, key)"
+                  @keyup.enter="update_unit(column.key, item.id, key)">
+              <else />
+                <!-- 不可編輯 -->
+                <span class="item" v-text="item[column.key]"></span>
+              </if>
+            </td>
+
+            <td>
+              <!-- 刪除 -->
+              <if condition="$access[$access_controller.'_hid'] eq '1' && $current_position=='列表'">
+                <a href="###" class="btn delate" @click="del_unit(item.id)">
+                  <i aria-hidden="true" class="far fa-trash-alt"></i>
+                </a>
+              </if>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <div>
+        <if condition="$access[$access_controller.'_hid']">
+          <if condition="$current_position=='列表'">
+            <input type="hidden" name="action" value="移到垃圾桶">
+            <button class="delate btn mt-2">移到垃圾桶</button>
+          </if>
+          <if condition="$current_position=='垃圾桶'">
+            <input type="hidden" name="action" value="還原">
+            <button class="sendbtn btn mt-2">還原</button>
+          </if>
+        </if>
+      </div>
+      <div style="font-size:1rem">p.s. {$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}</div>
+    </div>
+  </form>
+</section>
+
+<a class="d-none" data-toggle="modal" data-target="#crm_cum_cat_unit_category"></a>
+<div class="modal fade" id="crm_cum_cat_unit_category" tabindex="-1" role="dialog"
+      aria-labelledby="crm_cum_cat_unit_categoryTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="crm_cum_cat_unit_categoryTitle">分類設定</h5>
+      </div>
+      <div class="modal-body">
+        <div class="edit_form">
+          <table cellpadding="2" cellspacing="1" class="table edit_table" style="min-width: 320px;">
+            <thead class="edit_table_thead">
+              <tr class="edit_table tr ">
+                <th style="width: 70px">
+                  <label class="mb-0" for="ck_all">項次</label>
+                </th>
+                <th v-for="column in category_columns"
+                    :class="['orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                    v-text="column.name"
+                ></th>
+                <th style="width: 70px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 新增 -->
+              <if condition="$access[$access_controller.'_new'] eq '1'">
+                <tr>
+                  <td class="text-right">新增：</td>
+                  <td v-for="column in category_columns">
+                    <input type="text" 
+                         :class="['orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                         v-model="new_category[column.key]">
+                  </td>
+                  <td>
+                    <a href="###" class="btn addbtn" @click="add_unit()">送出</a>
+                  </td>
+                </tr>
+              </if>
+              <tr v-for="(item,key) in units">
+                <td>
+                  <label :for="'ck_'+item.id" v-text="key+1"></label>
+                </td>
+                <td v-for="column in category_columns"
+                  :class="['order_id'].indexOf(column.key)!=-1 ? 'text-right' : ''">
+                  <if condition="$access[$access_controller.'_edi'] eq '1'">
+                    <!-- 可編輯 -->
+                    <input type="text" v-model="item[column.key]"
+                      :id="'input_'+column.key+'_'+item.id"
+                      :class="['orders'].indexOf(column.key)!=-1 ? 'text-right' : ''"
+                      @focus="save_ori_data(column.key, item.id)" 
+                      @keyup.esc="reset_data(column.key, item.id, key)"
+                      @blur="update_unit(column.key, item.id, key)"
+                      @keyup.enter="update_unit(column.key, item.id, key)">
+                  <else />
+                    <!-- 不可編輯 -->
+                    <span class="item" v-text="item[column]"></span>
+                  </if>
+                </td>
+                <td>
+                  <!-- 刪除 -->
+                  <if condition="$access[$access_controller.'_hid'] eq '1'">
+                    <a href="###" class="btn delate" @click="del_unit(item.id)">
+                      <i aria-hidden="true" class="far fa-trash-alt"></i>
+                    </a>
+                  </if>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  var empty_new_unit = {
+    accountant_id: 0,
+    category_id: 0,
+    name: "",
+    number: "",
+    type: "",
+    unit: "",
+    list_price: "",
+    sale_price: "",
+    profit: "",
+    orders: "",
+  };
+  var columns = [
+    {name:'商品代號', key:'number'},
+    {name:'品名', key:'name'},
+    {name:'規格', key:'type'},
+    {name:'單位', key:'unit'},
+    {name:'{$system_parameter[商品網路價]}', key:'list_price'},
+    {name:'{$system_parameter[商品售價]}', key:'sale_price'},
+    {name:'<if condition="$get_or_pay eq 0">業績BV</if>', key:'profit'},
+    {name:'排序', key:'orders'},
+  ];
+  columns = columns.filter((a)=>{ return a.name!=''; });
+  var vm_data = {
+    columns: columns,
+    units:[],
+    layer_sub: [],
+    categorys: [],
+    ori_data:{},
+
+    search_category_id: -1,
+    searchKeyword:"",
+
+    countOfPage: 0,
+    currentPage: 1,
+    totalPage: 1,
+    pages: [],
+    p_prev: "",
+    p_next: "",
+
+    new_unit: Object.assign({}, empty_new_unit),
+  };
+  var tableVM = new Vue({
+    el: '#vm_table', 
+    data: vm_data,
+    computed: {
+    },
+    methods: {
+      add_unit: function(){
+        update_cum_cat_unit(this.new_unit, function(){
+          tableVM.new_unit = Object.assign({}, empty_new_unit);
+          get_cat_unit();
+        });
+      },
+      save_ori_data: function(column_key, id){
+        this.ori_data[column_key+'_'+id] = $('#input_'+column_key+'_'+id).val();
+      },
+      reset_data: function(column_key, id, index){
+        ori_data = this.ori_data[column_key+'_'+id];
+        this.units[index][column_key] = ori_data;
+      },
+      update_unit: function(column_key, id, index){
+        current_value = this.units[index][column_key];
+
+        if(column_key=='name'){
+          if(current_value == ""){
+            Vue.toasted.show('請輸入內容', { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            this.reset_data(column_key, id, index);
+            return;
+          }
+        }
+        unit_data = {
+          id		: id,
+          column	: column_key,
+          value	: current_value,
+        }
+        if(current_value == this.ori_data[column_key+'_'+id]){ return; }
+        var success_funtion = null;
+        if(column_key=='orders'){
+          success_funtion = function(){
+            tableVM.new_unit = Object.assign({}, empty_new_unit);
+            get_cat_unit();
+          }
+        }
+        update_cum_cat_unit(unit_data, success_funtion);
+      },
+      del_unit: function(id, index){
+        unit_data = {
+          id		: id,
+          delete	: true,
+        }
+        update_cum_cat_unit(unit_data, function(){
+          get_cat_unit();
+        });
+      },
+      change_page: function(p){
+        this.currentPage = p;
+        get_cat_unit();
+      },
+    },
+  });
+
+  function update_cum_cat_unit(data, success_funtion=null){
+    $.ajax({
+      method:'post',
+      data:data,
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/update_cum_cat_unit')}",
+      success:function(res){
+        if(res.status==0){
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+        }else{
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          if(success_funtion){
+            success_funtion();
+          }
+        }
+      },
+    });
+  }
+  // 載入執行項目資料
+  function get_cat_unit(){
+    tableVM.units = [];
+    $.ajax({
+      method:'post',
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/get_cat_unit_ajax', $search_status)}",
+      data:{
+        cond: {
+          currentPage: tableVM.currentPage,
+          search_category_id: tableVM.search_category_id,
+          searchKeyword: tableVM.searchKeyword,
+        },
+      },
+      success:function(res){
+        // console.log(res)
+        tableVM.units=res.cat_units;
+        tableVM.layer_sub=res.layer_sub.filter(function(value) {
+          // return value.id > 7;
+          return true;
+        });
+        tableVM.countOfPage = res.countOfPage;
+        tableVM.currentPage = res.currentPage;
+        tableVM.totalPage = res.totalPage;
+        tableVM.pages = res.pages;
+        tableVM.p_prev = res.p_prev;
+        tableVM.p_next = res.p_next;
+
+        init_checkbox_event();
+      }
+    });
+  }
+  get_cat_unit();
+</script>
+<script type="text/javascript">
+  function init_checkbox_event(){
+    $(".click_all").off();
+    $(".click_all").click(function(){
+      if($(this).prop('checked'))
+      {
+        $('.groups').prop('checked',true);
+      }else
+      {
+        $('.groups').prop('checked',false);
+      }
+    });
+  }
+</script>
+
+<script type="text/javascript">
+  var empty_new_category = {
+    name: "",
+    orders: "",
+  };
+  var category_columns = [
+    {name:'名稱', key:'name'},
+    {name:'排序', key:'orders'},
+  ];
+  category_columns = category_columns.filter((a)=>{ return a.name!=''; });
+  var vm_category_data = {
+    columns: category_columns,
+    units:[],
+    ori_data:{},
+
+    new_category: Object.assign({}, empty_new_category),
+  };
+  var table_categoryVM = new Vue({
+    el: '#crm_cum_cat_unit_category', 
+    data: vm_category_data,
+    computed: {
+    },
+    methods: {
+      add_unit: function(){
+        update_cum_cat_unit_category(this.new_category, function(){
+          table_categoryVM.new_category = Object.assign({}, empty_new_category);
+          get_cat_unit_category();
+        });
+      },
+      save_ori_data: function(column_key, id){
+        this.ori_data[column_key+'_'+id] = $('#input_'+column_key+'_'+id).val();
+      },
+      reset_data: function(column_key, id, index){
+        ori_data = this.ori_data[column_key+'_'+id];
+        this.units[index][column_key] = ori_data;
+      },
+      update_unit: function(column_key, id, index){
+        current_value = this.units[index][column_key];
+
+        if(column_key=='name'){
+          if(current_value == ""){
+            Vue.toasted.show('請輸入內容', { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+            this.reset_data(column_key, id, index);
+            return;
+          }
+        }
+        unit_data = {
+          id		: id,
+          column	: column_key,
+          value	: current_value,
+        }
+        if(current_value == this.ori_data[column_key+'_'+id]){ return; }
+        var success_funtion = null;
+        if(column_key=='orders'){
+          success_funtion = function(){
+            table_categoryVM.new_category = Object.assign({}, empty_new_category);
+            get_cat_unit_category();
+          }
+        }
+        update_cum_cat_unit_category(unit_data, success_funtion);
+      },
+      del_unit: function(id, index){
+        unit_data = {
+          id		: id,
+          delete	: true,
+        }
+        update_cum_cat_unit_category(unit_data, function(){
+          get_cat_unit_category();
+        });
+      },
+    },
+  });
+  
+  function update_cum_cat_unit_category(data, success_funtion=null){
+    $.ajax({
+      method:'post',
+      data:data,
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/update_cum_cat_unit_category')}",
+      success:function(res){
+        if(res.status==0){
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+        }else{
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-success"] });
+          if(success_funtion){
+            success_funtion();
+          }
+        }
+      },
+    });
+  }
+  // 載入執行項目資料
+  function get_cat_unit_category(){
+    table_categoryVM.units = [];
+    $.ajax({
+      method:'post',
+      dataType:'json',
+      url:"{:U($CONTROLLER_NAME.'/get_cat_unit_category_ajax', $search_status)}",
+      data:{
+      },
+      success:function(res){
+        // console.log(res)
+        table_categoryVM.units=res.cat_units;
+        tableVM.categorys = res.cat_units;
+      }
+    });
+  }
+  get_cat_unit_category();
+</script>

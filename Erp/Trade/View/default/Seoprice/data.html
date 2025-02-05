@@ -1,0 +1,73 @@
+
+			<div class="page">
+				{$show}
+			</div>
+			
+			<div class="seo_box">
+				<table  class="seo_table table" cellpadding="0" cellspacing="0">
+					<thead>
+						<tr>
+							<th width="26">序號</th>
+							<th width="80">客戶名</th>
+							<th>搜索引擎</th>
+							<th>網址</th>
+							<th>字組</th>
+							<th>分類</th>
+							<foreach name="ddate" item="list" key="key">
+								<th>{$key}</th>
+							</foreach>
+						</tr>
+					</thead>
+					<tbody>
+						<volist name="data" id="list" key="k">
+							<if condition="$k%2 eq 1"> 
+								<tr class="color1">
+								<else />
+								<tr>
+							</if>								
+								<td width="30">{$k}</td>
+								
+								<td width="80">{$list[name]}<br/><input type="text" child="{$list.id}" field="cnamememo" class="memo" size="10" value="{$list.cnamememo}"/></td>
+								
+								<td>{$list.engine}<br/><input type="text" child="{$list.id}" field="enginememo"  class="memo" size="10" value="{$list.enginememo}" /></td>
+								
+								<td>{$list.url1} <br/><input type="text" child="{$list.id}" field="url1memo"  class="memo" size="10" value="{$list.url1memo}" /></td>
+								
+								<td>{$list.key_name}<br/><input type="text" child="{$list.id}" field="key_namememo"  class="memo" size="10" value="{$list.key_namememo}" /></td>
+								
+								<td>
+									<br />
+									<select>
+										<foreach name="gcs" item="d" key="key">
+											<if condition="$key eq $list['gcsele']">
+												<option selected>{$d}</option>
+												<else />
+												<option>{$d}</option>
+											</if>
+										</foreach>
+									</select>
+									
+								</td>
+								<foreach name="ddate" item="d">
+									<if condition="$list['rank'][$d] eq ''">
+										<td>-</td>
+										<elseif condition="$list['rank'][$d] eq '1001'" />
+										<td>n</td>
+										<else />
+										<td>{$list['rank'][$d]}</td>
+									</if>
+								</foreach> 
+							</tr>
+						</volist>
+					</tbody>
+				</table>
+			</div>
+			<!-- </div> -->
+			<!--right end-->
+			
+			<div class="page">
+				{$show}
+			</div>
+			
+			<!--content end-->
+			

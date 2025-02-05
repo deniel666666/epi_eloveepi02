@@ -1,0 +1,56 @@
+<include file="Public:header2" />
+
+
+<section class="document main">
+	<div class="below">
+		<!-- 共用階層列表 -->
+		<include file="Org:menu" />
+		<!-- END 共用階層列表 -->
+		
+		<div class="right">
+			<div class="apart">
+				<h3 class="apart_op p-2">分組垃圾桶</h3>
+				<div class="apart_content">
+					<form action="{:U('Org/statusaparts')}" method="post">
+						<table class="apartlist table" id="apartlist">
+							<foreach name="apartlist" item="one">
+								<tr>
+									<td><label class="apartname mb-0">
+										<input type="checkbox" name="id[]" value="{$one.id}" class='aparts' style="width: 18px;height: 18px;"/>
+											{$one.name}
+										</label> 
+										<span class="op_list"> </span>
+									</td>
+								</tr>
+							</foreach>
+						</table>
+						
+						<div class="apart_send">
+							<input type="checkbox" class="allaparts" style="width: 18px;height: 18px;" name="allaparts" id="allaparts"/>
+							<label for="allaparts">選擇全部</label>
+							
+							<if condition="$access['org_hid'] eq '1'">
+								<input type="submit" class="btn sendbtn pl-2 pr-2" value="還原" name="st" />
+							</if>
+							<if condition="$access['org_del'] eq '1'">
+								<input type="submit" class="btn delate pl-2 pr-2" value="刪除" class="delete" name="st"/>
+							</if>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<include file="Public:footer" /> 
+
+<script language="javascript">
+	$('.allaparts').click(function(){
+		if($(this).attr('checked')){
+			$('.aparts').attr('checked',true);
+		}else{
+			$('.aparts').attr('checked',false);
+		}
+	});
+</script>				

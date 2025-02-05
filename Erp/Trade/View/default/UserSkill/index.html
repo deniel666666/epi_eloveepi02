@@ -1,0 +1,251 @@
+<include file="Public:header2" />
+
+<div class="container mw1920 p-4" id="UserSkill">
+  <ol class="col-12 text-danger" style="list-style: auto;">
+    <li>此處定接為預設值，仍可於「人事管理」頁面個別調整員的薪資；也可於「新增合約」時設定個別工種應收款的金額</li>
+    <li>「請款金額」部分皆{$control_money_input|compare_return=0,'請輸入「未稅」金額','請輸入「實收」金額'}</li>
+  </ol>
+  <div style="overflow-x:auto;">
+    <table class="table edit_table mb-2" style="min-width: 300px; max-width: 350px;">
+      <thead>
+        <tr>
+          <th style="min-width: 150px;">名稱</th>
+          <th style="min-width: 100px;" class="text-right">時薪</th>
+          <th style="min-width: 100px;" class="text-right">加班時薪</th>
+          <th style="min-width: 150px;" class="text-right">請款金額</th>
+          <th style="min-width: 150px;" class="text-right">加班請款金額</th>
+          <th style="min-width: 100px;">單位</th>
+          <th style="min-width: 100px;" class="text-right">進項會計名稱</th>
+          <th style="min-width: 100px;" class="text-right">出項會計名稱</th>
+          <th style="min-width: 75px;" class="text-right">排序</th>
+          <th style="min-width: 75px;">操作</th>
+        </tr>
+      </thead>
+      <tbody> 
+        <tr>
+          <td><input type="text" v-model="new_data.name" class="w100"></td>
+          <td><input type="number" v-model="new_data.hour_pay" min="0" step="1" class="w100 text-right"></td>
+          <td><input type="number" v-model="new_data.hour_pay_over" min="0" step="1" class="w100 text-right"></td>
+          <td><input type="number" v-model="new_data.hour_price" step="1" class="w100 text-right"></td>
+          <td><input type="number" v-model="new_data.hour_price_over" step="1" class="w100 text-right"></td>
+          <td><input type="text" v-model="new_data.unit_name" class="w100"></td>
+          <td>
+            <select v-model="new_data.account_in_id">
+              <option value="0">無</option>
+              <option v-for="layer in layer_sub_in" :value="layer.id" v-text="layer.top_name+' - '+layer.name"></option>
+            </select>
+          </td>
+          <td>
+            <select v-model="new_data.account_out_id">
+              <option value="0">無</option>
+              <option v-for="layer in layer_sub_out" :value="layer.id" v-text="layer.top_name+' - '+layer.name"></option>
+            </select>
+          </td>
+          <td><input type="number" v-model="new_data.order_id" step="1" class="w100 text-right"></td>
+          <td>
+            <input type="submit" class="btn addbtn" value="新增" @click="add"/>
+          </td>
+        </tr>
+        <tr v-for="(skill, skill_idx) in user_skill">
+          <td>
+            <input class="w100 update_input" type="text" 
+                   v-model="skill.name" @focus="record_ori_data($event)" @blur="update(skill, 'name')"/>
+          </td>
+          <td class="text-right">
+            <div class="d-flex align-items-center">
+              <input min="0" step="1" class="w100 text-right update_input" type="number" 
+                     v-model="skill.hour_pay" @focus="record_ori_data($event)" @blur="update(skill, 'hour_pay')"/>
+            </div>
+          </td>
+          <td class="text-right">
+            <div class="d-flex align-items-center">
+              <input min="0" step="1" class="w100 text-right update_input"  type="number" 
+                     v-model="skill.hour_pay_over" @focus="record_ori_data($event)" @blur="update(skill, 'hour_pay_over')"/>
+            </div>
+          </td>
+          <td class="text-right">
+            <div class="d-flex align-items-center">
+              <input min="0" step="1" class="w100 text-right update_input" type="number" 
+                     v-model="skill.hour_price" @focus="record_ori_data($event)" @blur="update(skill, 'hour_price')"/>
+            </div>
+          </td>
+          <td class="text-right">
+            <div class="d-flex align-items-center">
+              <input min="0" step="1" class="w100 text-right update_input" type="number" 
+                      v-model="skill.hour_price_over" @focus="record_ori_data($event)" @blur="update(skill, 'hour_price_over')"/>
+            </div>
+          </td>
+          <td>
+            <input class="w100 update_input" type="text" 
+                   v-model="skill.unit_name" @focus="record_ori_data($event)" @blur="update(skill, 'unit_name')"/>
+          </td>
+          <td class="text-right">
+            <select v-model="skill.account_in_id" @change="update(skill, 'account_in_id')">
+              <option value="0">無</option>
+              <option v-for="layer in layer_sub_in" :value="layer.id" v-text="layer.top_name+' - '+layer.name"></option>
+            </select>
+          </td>
+          <td class="text-right">
+            <select v-model="skill.account_out_id" @change="update(skill, 'account_out_id')">
+              <option value="0">無</option>
+              <option v-for="layer in layer_sub_out" :value="layer.id" v-text="layer.top_name+' - '+layer.name"></option>
+            </select>
+          </td>
+          <td class="text-right">
+            <div class="d-flex align-items-center">
+              <input step="1" class="w100 text-right update_input" type="number" 
+                      v-model="skill.order_id" @focus="record_ori_data($event)" @blur="update(skill, 'order_id')"/>
+            </div>
+          </td>
+          <td>
+            <if condition="$vo.id neq 1">
+              <button type="button" class="btn delate d-inline" @click="delete_layer(skill.id)">
+                <i aria-hidden="true" class="far fa-trash-alt"></i>
+              </button>
+            </if>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<include file="Public:footer" />
+
+<script type="text/javascript">
+  var UserSkillVM = new Vue({
+    el: '#UserSkill',
+    data: {
+      layer_sub_in: [],
+      layer_sub_out: [],
+      user_skill: [],
+
+      new_data:{
+        name: '',
+        hour_pay: '',
+        hour_pay_over: '',
+        hour_price: '',
+        hour_price_over: '',
+        unit_name: '',
+        account_in_id: 0,
+        account_out_id: 0,
+        order_id: 0,
+      },
+
+      remember_text: '', /*編輯用，聚焦時紀錄原始值*/
+    },
+    methods: {
+      async init_account_option(){
+        await UserSkillVM.get_cat_unit_ajax(0);
+        await UserSkillVM.get_cat_unit_ajax(1);
+      },
+      get_cat_unit_ajax(get_or_pay=0){
+        var get_url = '/index.php/Ajax/get_cat_unit_ajax/status/1/get_or_pay/' + get_or_pay;
+        return $.ajax({
+          method:'post',
+          dataType:'json',
+          url:get_url,
+          data:{},
+          success:function(res){
+            // console.log(res)
+            layer_sub = res.layer_sub.filter(function(value) {
+              // return value.id > 7;
+              return true;
+            });
+            if(get_or_pay==0){
+              UserSkillVM.layer_sub_in = layer_sub;
+            }else{
+              UserSkillVM.layer_sub_out = layer_sub;
+            }
+          }
+        });
+      },
+
+      get_user_skill(){
+        return $.ajax({
+          method:'post',
+          dataType:'json',
+          url:"{:U('UserSkill/get_user_skill')}",
+          data:{},
+          success:function(res){
+            // console.log(res)
+            UserSkillVM.user_skill = res;
+          }
+        });
+      },
+
+      async add(){
+        post_data = JSON.parse(JSON.stringify(UserSkillVM.new_data));
+        $('#body_block').show();
+        try {
+          res = await $.ajax({
+            method:'post',
+            dataType:'json',
+            url:"{:u($CONTROLLER_NAME.'/add')}",
+            data:post_data,
+          });
+          // console.log(res);
+          if(res.status){
+            await UserSkillVM.get_user_skill();
+          }else{
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          }
+          $('#body_block').hide();
+        } catch (error) {
+          $('#body_block').hide();
+        }
+      },
+      async delete_layer(id){
+        if(!confirm('確定刪除?')){ return; }
+        get_url = "{:u($CONTROLLER_NAME.'/delete')}?id="+id;
+        $('#body_block').show();
+        try {
+          res = await $.ajax({
+            method:'get',
+            dataType:'json',
+            url:get_url,
+          });
+          // console.log(res);
+          if(res.status){
+            await UserSkillVM.get_user_skill();
+          }else{
+            Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", "bg-danger"] });
+          }
+          $('#body_block').hide();
+        } catch (error) {
+          $('#body_block').hide();
+        }
+      },
+      record_ori_data($event){
+        const item = $($event.target);
+        UserSkillVM.remember_text = item.val();
+      },
+      async update(skill, column){
+        var value = skill[column];
+        if(['account_in_id', 'account_out_id'].indexOf(column)==-1){/*非免檢查原始值是否相同的欄位*/
+          if(UserSkillVM.remember_text==value){ return; } /*失焦後值與原始值相同，略過不處理*/
+        }
+
+        var post_data = {};
+        post_data['id'] = skill.id;
+        post_data[column] = value;
+        $('#body_block').show();
+        try {
+          res = await $.ajax({
+            method:'post',
+            dataType:'json',
+            url:"{:u($CONTROLLER_NAME.'/update')}",
+            data:post_data,
+          });
+          // console.log(res);
+          bg_class = res.status ? 'bg-success' : 'bg-danger';
+          Vue.toasted.show(res.info, { duration: 1500, className: ["toasted-primary", bg_class] });
+          $('#body_block').hide();
+        } catch (error) {
+          $('#body_block').hide();
+        }
+      },
+    },
+  });
+  UserSkillVM.get_user_skill();
+  UserSkillVM.init_account_option();
+</script>

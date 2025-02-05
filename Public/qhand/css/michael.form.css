@@ -1,0 +1,73 @@
+*{
+	
+	padding:0;
+	margin:0;
+}
+
+/**----------------- 項目設定 ---------------------**/
+.ul_option{
+	
+	
+}
+.ul_option li{
+    position: relative;
+	
+	
+}
+.li_content{
+	background-repeat:no-repeat;
+	background-position: 10px center;
+    background-size: 15px;
+	padding:0 0 0 40px;
+    line-height: 50px;
+	
+}
+.li_content:hover{
+	
+	background-color:#cecece;
+}
+.li_back{
+	text-align:right;
+}
+.li_back img{
+	width:30px;
+	height:30px;
+	padding:5px;
+	margin:0 10px;
+	
+	
+}
+.li_back img:hover{
+	border-radius:5px;
+	background-color:#cecece;
+	
+}
+.li_title{
+}
+.li_title input{
+	font-size:20pt;
+	height:30pt;
+	margin:30px;
+	padding:3px;
+	width:100%;
+	
+}
+.ul_option .denied{
+    height: 15px;
+    width: 15px;
+    float: right;
+    vertical-align: middle;
+    position: absolute;
+    right: 10;
+    top: 20px;
+}
+.ul_option input{
+	background-color:transparent;
+	border:0px;
+	width:90%;
+}
+.ul_option .textbox{
+	border:   1px;
+	border-bottom-style:solid; 
+border-bottom-color:#cecece;
+}
