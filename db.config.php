@@ -41,10 +41,10 @@ return array(
 	// Database Server 位址
 	'DB_HOST' => 'localhost',
 	// 使用的資料庫名稱
-	'DB_NAME' => 'eip_test',
+	'DB_NAME' => 'eloveeip_eip01',
 	// 登入 SQL 的用戶帳號
-	'DB_USER' => 'root',
-	'DB_PWD' => '',
+	'DB_USER' => 'eloveeip_eloveeip_eip01',
+	'DB_PWD' => 'elo$()n9e#!',
 	// 登入資料庫使用的 port
 	'DB_PORT' => '3306',
 	// 資料庫的名稱前綴
