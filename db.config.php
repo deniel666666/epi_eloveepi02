@@ -10,9 +10,9 @@ if (!defined('PHOTONICCMS')) exit();
 
 /////// Mail 設定///////
 	define('MAIL_FROM_TITLE', 'EIP系統提醒');
-	define('MAIL_HOST', 'mail.erp2000.com');
-	define('MAIL_FROM_ADDRESS', 'admin@erp2000.com');
-	define('MAIL_FROM_PASSWROD', '');
+	define('MAIL_HOST', 'cima.websitewelcome.com');
+	define('MAIL_FROM_ADDRESS', 'admin@eloveeip.com');
+	define('MAIL_FROM_PASSWROD', 'elo$()n9e#!');
 
 /////// 稅率 設定///////
 	define('TAX_RATE', 0.05);
@@ -73,8 +73,10 @@ return array(
 	),
 
 /////// 推播通知 無設定NOTIFICATION_PUBKEY視為不用///////
-	'NOTIFICATION_PUBKEY' => 'BHAWEuTvLrhhDk8-3ItMsN65M6FOOYWt0yYy_mIgKm75r5Gxp7Ox1O6D314ef2ZH1TjUwZrGwL6avFHuHqinWaI',
-	'NOTIFICATION_PRIKEY' => 'CDRJNkbBu8O4ZMfP0YEPd35Db4nc6MHK1ZWfthwVbks',
+	// 'NOTIFICATION_PUBKEY' => 'BHAWEuTvLrhhDk8-3ItMsN65M6FOOYWt0yYy_mIgKm75r5Gxp7Ox1O6D314ef2ZH1TjUwZrGwL6avFHuHqinWaI',
+	// 'NOTIFICATION_PRIKEY' => 'CDRJNkbBu8O4ZMfP0YEPd35Db4nc6MHK1ZWfthwVbks',
+	'NOTIFICATION_PUBKEY' => '',
+	'NOTIFICATION_PRIKEY' => '',
 /////// GOOGLE儲存空間 桶名///////
 	'GOOGLE_STORAGE_BUCKET_NAME' => '', // 可指定，不然則用網站域名去除「.」後的字串
 );

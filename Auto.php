@@ -4,7 +4,7 @@
 // 以上命令需修改二處：
 // 1. /usr/local/bin/php需改成Cpanel中「PHP command examples」所寫的那段，對應到主機的php路徑
 // 2. /home/erp2000/eip.erp2000.com/Auto.php 需改成此主機放置此網站的Auto.php的路徑
-$main_url = "http://eip.test"; /*EIP主網址(需修改，且注意是否有強制跳轉https，須設定正確協議方式)*/
+$main_url = "https://eip01.eloveeip.com"; /*EIP主網址(需修改，且注意是否有強制跳轉https，須設定正確協議方式)*/
 
 /*自動出貨，每日執行一次*/
     $autoTime_create_sale = '09:00:00'; /*預設每日凌晨1點*/
